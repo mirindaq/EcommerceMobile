@@ -3,12 +3,15 @@ import {
   ScrollView,
   Image,
   Dimensions,
+  Modal  ,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import {
   Box, HStack, VStack, Text, Pressable,
   Heading, Badge, BadgeText, Icon, Avatar, AvatarImage, AvatarFallbackText,
-  SafeAreaView, Input, InputField, InputIcon, InputSlot, Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter,
+  SafeAreaView, Input, InputField, InputIcon, InputSlot,
 } from '@/components/ui';
 import {
   ArrowLeftIcon, SearchIcon, CameraIcon, XIcon, ShareIcon, ShoppingCartIcon,
@@ -133,7 +136,7 @@ export default function ProductDetailScreen() {
             },
             {
               id: 4,
-              price: 100000.0,
+              price: 120000.0,
               oldPrice: 0.0,
               sku: "LATG-2-5",
               stock: 50,
@@ -168,7 +171,7 @@ export default function ProductDetailScreen() {
         if (mockProduct.variants && mockProduct.variants.length > 0) {
           setSelectedVariant(mockProduct.variants[0]);
           extractVariantsFromProduct(mockProduct);
-        }
+        } 
       } catch (error) {
         console.error('Error loading product:', error);
       } finally {
@@ -482,134 +485,150 @@ export default function ProductDetailScreen() {
           </HStack>
 
           <Pressable
-            className="bg-red-500 rounded-lg px-6 py-2 flex-1 ml-4"
+            className="bg-red-500 rounded-lg px-6 py-3 flex-1 ml-4"
             onPress={() => setShowVariantModal(true)}
+            style={({ pressed }) => [
+              { 
+                backgroundColor: pressed ? '#dc2626' : '#ef4444',
+                opacity: pressed ? 0.9 : 1, 
+              }
+            ]}
           >
             <VStack className="items-center">
               <Text className="text-white font-bold text-lg">Mua ngay</Text>
-              <Text className="text-white text-sm">
-                {selectedVariant ? formatPrice(selectedVariant.price) : formatPrice(0)}
-              </Text>
             </VStack>
           </Pressable>
         </HStack>
       </Box>
 
-      {/* Variant Selection Modal */}
-      <Modal isOpen={showVariantModal} onClose={() => setShowVariantModal(false)}>
-        <ModalBackdrop />
-        <ModalContent className="h-3/5 rounded-t-3xl rounded-b-none w-full max-w-full" style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-        }}>
-          <ModalHeader className="pb-2">
-            <HStack className="items-center justify-between w-full">
+      <Modal
+        visible={showVariantModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowVariantModal(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+          <TouchableOpacity 
+            style={{ flex: 1 }} 
+            activeOpacity={1} 
+            onPress={() => setShowVariantModal(false)}
+          />
+          <View style={{
+            backgroundColor: 'white',
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            height: '60%',
+            position: 'absolute',
+            bottom: 30,
+            left: 0,
+            right: 0,
+          }}>
+            {/* Header */}
+            <HStack className="items-center justify-between p-4 border-b border-gray-200">
               <Text className="text-gray-900 font-bold text-lg">Chọn mô hình</Text>
-              <ModalCloseButton>
+              <TouchableOpacity onPress={() => setShowVariantModal(false)}>
                 <Icon as={XIcon} size="sm" className="text-gray-400" />
-              </ModalCloseButton>
+              </TouchableOpacity>
             </HStack>
-          </ModalHeader>
 
-          <ModalBody className="flex-1">
-            {/* Product Preview */}
-            <HStack className="mb-6">
-              <VStack className="mr-4">
-                <Image
-                  source={{ uri: product.thumbnail }}
-                  className="w-20 h-20 rounded-lg"
-                  resizeMode="cover"
-                  alt="product-thumbnail"
-                />
-                {/* Thumbnail images below main image */}
-                <HStack className="mt-2 space-x-1">
-                  {product.productImages.slice(0, 3).map((image, index) => (
-                    <Image
-                      key={index}
-                      source={{ uri: image }}
-                      className="w-6 h-6 rounded"
-                      resizeMode="cover"
-                      alt={`product-image-${index}`}
-                    />
-                  ))}
-                </HStack>
-              </VStack>
-              <VStack className="flex-1">
-                <Text className="text-red-500 font-bold text-xl">
-                  {selectedVariant ? formatPrice(selectedVariant.price) : formatPrice(0)}
-                </Text>
-                {selectedVariant && selectedVariant.oldPrice > 0 && (
-                  <Text className="text-gray-400 text-sm line-through">
-                    {formatPrice(selectedVariant.oldPrice)}
+            {/* Body */}
+            <ScrollView className="flex-1 p-4">
+              {/* Product Preview */}
+              <HStack className="mb-6">
+                <VStack className="mr-4">
+                  <Image
+                    source={{ uri: product.thumbnail }}
+                    className="w-20 h-20 rounded-lg"
+                    resizeMode="cover"
+                    alt="product-thumbnail"
+                  />
+                  {/* Thumbnail images below main image */}
+                  <HStack className="mt-2 space-x-1">
+                    {product.productImages.slice(0, 3).map((image, index) => (
+                      <Image
+                        key={index}
+                        source={{ uri: image }}
+                        className="w-6 h-6 rounded"
+                        resizeMode="cover"
+                        alt={`product-image-${index}`}
+                      />
+                    ))}
+                  </HStack>
+                </VStack>
+                <VStack className="flex-1">
+                  <Text className="text-red-500 font-bold text-xl">
+                    {selectedVariant ? formatPrice(selectedVariant.price) : formatPrice(0)}
                   </Text>
-                )}
-                <Text className="text-gray-500 text-sm">Kho: {selectedVariant?.stock || 0}</Text>
-              </VStack>
-            </HStack>
+                  {selectedVariant && selectedVariant.oldPrice > 0 && (
+                    <Text className="text-gray-400 text-sm line-through">
+                      {formatPrice(selectedVariant.oldPrice)}
+                    </Text>
+                  )}
+                  <Text className="text-gray-500 text-sm">Kho: {selectedVariant?.stock || 0}</Text>
+                </VStack>
+              </HStack>
 
-            {/* Variant Selection */}
-            {Object.keys(availableVariants).map((variantName) => (
-              <Box key={variantName} className="mb-6">
-                <Text className="text-gray-900 font-bold text-lg mb-3">{variantName}</Text>
-                <HStack className="flex-wrap">
-                  {availableVariants[variantName].map((value) => (
-                    <Pressable
-                      key={value}
-                      onPress={() => handleVariantSelection(variantName, value)}
-                      className={`mr-2 mb-2 p-3 rounded-lg border ${selectedVariants[variantName] === value
-                        ? 'border-red-500 bg-red-50'
-                        : 'border-gray-200 bg-white'
-                        }`}
-                    >
-                      <Text className={`text-sm font-medium ${selectedVariants[variantName] === value ? 'text-red-700' : 'text-gray-700'
-                        }`}>
-                        {value}
-                      </Text>
-                    </Pressable>
-                  ))}
+              {/* Variant Selection */}
+              {Object.keys(availableVariants).map((variantName) => (
+                <Box key={variantName} className="mb-6">
+                  <Text className="text-gray-900 font-bold text-lg mb-3">{variantName}</Text>
+                  <HStack className="flex-wrap">
+                    {availableVariants[variantName].map((value) => (
+                      <Pressable
+                        key={value}
+                        onPress={() => handleVariantSelection(variantName, value)}
+                        className={`mr-2 mb-2 p-3 rounded-lg border ${selectedVariants[variantName] === value
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-gray-200 bg-white'
+                          }`}
+                      >
+                        <Text className={`text-sm font-medium ${selectedVariants[variantName] === value ? 'text-red-700' : 'text-gray-700'
+                          }`}>
+                          {value}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </HStack>
+                </Box>
+              ))}
+
+              {/* Quantity Selection */}
+              <Box className="mb-6">
+                <Text className="text-gray-900 font-bold text-lg mb-3">Số lượng</Text>
+                <HStack className="items-center">
+                  <Pressable
+                    onPress={() => handleQuantityChange('decrease')}
+                    className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
+                  >
+                    <Icon as={MinusIcon} size="sm" className="text-gray-600" />
+                  </Pressable>
+                  <Text className="text-gray-900 font-bold text-lg mx-4">{quantity}</Text>
+                  <Pressable
+                    onPress={() => handleQuantityChange('increase')}
+                    className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
+                  >
+                    <Icon as={PlusIcon} size="sm" className="text-gray-600" />
+                  </Pressable>
                 </HStack>
               </Box>
-            ))}
+            </ScrollView>
 
-            {/* Quantity Selection */}
-            <Box className="mb-6">
-              <Text className="text-gray-900 font-bold text-lg mb-3">Số lượng</Text>
-              <HStack className="items-center">
-                <Pressable
-                  onPress={() => handleQuantityChange('decrease')}
-                  className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
-                >
-                  <Icon as={MinusIcon} size="sm" className="text-gray-600" />
-                </Pressable>
-                <Text className="text-gray-900 font-bold text-lg mx-4">{quantity}</Text>
-                <Pressable
-                  onPress={() => handleQuantityChange('increase')}
-                  className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
-                >
-                  <Icon as={PlusIcon} size="sm" className="text-gray-600" />
-                </Pressable>
-              </HStack>
-            </Box>
-          </ModalBody>
-
-          <ModalFooter>
-            <Pressable
-              className="bg-red-500 rounded-lg px-6 py-4 flex-1"
-              onPress={() => {
-                // Handle buy now logic here
-                console.log('Buy now with variant:', selectedVariant, 'quantity:', quantity);
-                setShowVariantModal(false);
-                // Navigate to checkout or handle purchase
-              }}
-            >
-              <Text className="text-white font-bold text-lg text-center">Mua ngay</Text>
-            </Pressable>
-          </ModalFooter>
-        </ModalContent>
+            {/* Footer */}
+            <View className="p-4 border-t border-gray-200">
+              <Pressable
+                className="bg-red-500 rounded-lg px-6 py-4"
+                onPress={() => {
+                  // Handle buy now logic here
+                  console.log('Buy now with variant:', selectedVariant, 'quantity:', quantity);
+                  setShowVariantModal(false);
+                  // Navigate to checkout or handle purchase
+                }}
+              >
+                <Text className="text-white font-bold text-lg text-center">Mua ngay</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
       </Modal>
     </SafeAreaView>
   );

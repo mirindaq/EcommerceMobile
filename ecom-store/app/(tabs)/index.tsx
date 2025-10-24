@@ -204,9 +204,9 @@ export default function HomeScreen() {
           </HStack>
 
           <ScrollView>
-            <HStack space="md" className="grid grid-cols-2">
-              {products.map((product) => (
-                <Box key={product.id}>
+            <HStack space="md" className="flex-wrap">
+              {products.map((product, index) => (
+                <Box key={product.id} style={{ width: '48%' }}>
                   <ProductBox product={product} />
                 </Box>
               ))}

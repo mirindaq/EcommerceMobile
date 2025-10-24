@@ -35,6 +35,7 @@ export default function ProductBox({ product }: ProductBoxProps) {
   return (
     <Pressable 
       className="bg-white rounded-2xl overflow-hidden border border-gray-300 mb-4"
+      style={{ minWidth: 160, width: '100%' }}
       onPress={handleProductPress}
     >
       <Box className="relative">
