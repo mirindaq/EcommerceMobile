@@ -35,8 +35,10 @@ import {
   GiftIcon,
   PersonStandingIcon,
 } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -141,13 +143,18 @@ export default function ProfileScreen() {
           </Text>
           <HStack className="flex-wrap justify-between">
             {[
-              { label: "Thông tin cá nhân", icon: PersonStandingIcon },
+              {
+                label: "Thông tin cá nhân",
+                icon: PersonStandingIcon,
+                onPress: () => router.push("/edit-profile"),
+              },
               { label: "Địa chỉ giao hàng", icon: MapPinIcon },
               { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
               { label: "Ưu đãi giảm giá", icon: GiftIcon },
             ].map((item, i) => (
               <Pressable
                 key={i}
+                onPress={item.onPress}
                 className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
               >
                 <Icon as={item.icon} size="lg" className="text-red-500 mb-1" />
