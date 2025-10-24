@@ -24,14 +24,14 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Beranda',
+          title: 'Home',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Pay',
+          title: 'Tôi',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="dollarsign.circle" color={color} />,
         }}
       />

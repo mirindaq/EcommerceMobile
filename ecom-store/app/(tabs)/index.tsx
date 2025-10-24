@@ -3,21 +3,22 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import {
   Box, HStack, VStack, Text, Pressable,
   Heading, Badge, BadgeText, Icon, Avatar, AvatarImage, AvatarFallbackText,
-  SafeAreaView,
+  SafeAreaView, Input, InputField, InputIcon, InputSlot,
 } from '@/components/ui';
 import {
-  BellIcon, ShoppingCartIcon, MessageCircleIcon, MenuIcon,
-  SearchIcon, CameraIcon, WalletIcon, CoinsIcon, ArrowRightIcon,
-  ChevronRightIcon, GiftIcon, CreditCardIcon, ShoppingBagIcon,
-  HeartIcon, Gamepad2Icon, Grid3X3Icon, BuildingIcon, ClockIcon
+  ShoppingCartIcon, MessageCircleIcon,
+  SearchIcon, CameraIcon,
+  ChevronRightIcon,
+  LaptopIcon, SmartphoneIcon, WatchIcon, HeadphonesIcon,
+  ShirtIcon, FootprintsIcon, BookIcon, HomeIcon
 } from 'lucide-react-native';
+import ProductBox from '@/components/ProductBox';
 
-const shopeeColor = '#FF5722';
-
-// --- Mock data ---
 const banners = [
   {
     id: 1,
@@ -33,88 +34,133 @@ const banners = [
   },
 ];
 
-const services = [
-  { id: 1, name: 'Voucher & Freeship', icon: GiftIcon, color: '#FF6B6B' },
-  { id: 2, name: 'Nạp thẻ, Thanh toán', icon: CreditCardIcon, color: '#4ECDC4' },
-  { id: 3, name: 'Shopee Mall', icon: ShoppingBagIcon, color: '#45B7D1' },
-  { id: 4, name: 'Ví ShopeePay', icon: WalletIcon, color: '#96CEB4' },
-  { id: 5, name: 'Yêu thích', icon: HeartIcon, color: '#FFEAA7' },
-  { id: 6, name: 'Shopee Games', icon: Gamepad2Icon, color: '#DDA0DD' },
-  { id: 7, name: 'Tài chính', icon: CoinsIcon, color: '#98D8C8' },
-  { id: 8, name: 'Shopee Pinjam', icon: BuildingIcon, color: '#F7DC6F' },
-  { id: 9, name: 'SPayLater', icon: ClockIcon, color: '#FF6B6B' },
-  { id: 10, name: 'Xem thêm', icon: Grid3X3Icon, color: '#4ECDC4' },
+const categories = [
+  { id: 1, name: 'Laptop', icon: LaptopIcon, color: '#FF6B6B' },
+  { id: 2, name: 'Điện thoại', icon: SmartphoneIcon, color: '#4ECDC4' },
+  { id: 3, name: 'Đồng hồ', icon: WatchIcon, color: '#45B7D1' },
+  { id: 4, name: 'Tai nghe', icon: HeadphonesIcon, color: '#96CEB4' },
+  { id: 5, name: 'Thời trang', icon: ShirtIcon, color: '#FFEAA7' },
+  { id: 6, name: 'Giày dép', icon: FootprintsIcon, color: '#DDA0DD' },
+  { id: 7, name: 'Sách', icon: BookIcon, color: '#98D8C8' },
+  { id: 8, name: 'Nội thất', icon: HomeIcon, color: '#F7DC6F' },
 ];
 
-const liveStreams = [
+const products = [
   {
     id: 1,
-    title: 'Shopee LIVE',
-    subtitle: 'Giảm cực sốc',
-    viewers: '1.2K',
-    image: 'https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=200&h=120&fit=crop',
+    name: 'Đồng hồ nam dây da Casio MTP-V004L-1AUDF',
+    price: '619.200₫',
+    originalPrice: '825.600₫',
+    discount: '25',
+    rating: 5.0,
+    soldCount: 'Đã bán 8k+',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+    deliveryTime: '4 Giờ',
+    location: 'TP. Hồ Chí Minh',
+    isLive: true,
   },
   {
     id: 2,
-    title: 'kedaimart',
-    subtitle: 'Sale đến 70%',
-    viewers: '382',
-    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=200&h=120&fit=crop',
+    name: 'Áo khoác nam dù chống nước',
+    price: '299.000₫',
+    originalPrice: '399.000₫',
+    discount: '25',
+    rating: 4.8,
+    soldCount: 'Đã bán 2k+',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+    deliveryTime: '2 Giờ',
+    location: 'Hà Nội',
+    isLive: false,
+  },
+  {
+    id: 3,
+    name: 'Giày thể thao nam Nike Air Max',
+    price: '1.299.000₫',
+    originalPrice: '1.599.000₫',
+    discount: '19',
+    rating: 4.9,
+    soldCount: 'Đã bán 5k+',
+    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop',
+    deliveryTime: '6 Giờ',
+    location: 'TP. Hồ Chí Minh',
+    isLive: true,
+  },
+  {
+    id: 4,
+    name: 'Áo khoác nam dù chống nước',
+    price: '299.000₫',
+    originalPrice: '399.000₫',
+    discount: '25',
+    rating: 4.8,
+    soldCount: 'Đã bán 2k+',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop',
+    deliveryTime: '2 Giờ',
+    location: 'Hà Nội',
+    isLive: false,
+  },
+  {
+    id: 5,
+    name: 'Giày thể thao nam Nike Air Max',
+    price: '1.299.000₫',
+    originalPrice: '1.599.000₫',
+    discount: '19',
+    rating: 4.9,
+    soldCount: 'Đã bán 5k+',
+    image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop',
+    deliveryTime: '6 Giờ',
+    location: 'TP. Hồ Chí Minh',
+    isLive: true,
   },
 ];
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const [cartCount] = useState(3);
+  const [searchText, setSearchText] = useState('Áo Khoác Nam');
+
+  const handleSearchPress = () => {
+    navigation.navigate('search' as never);
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
+      <Box className="bg-red-500 px-4 py-4 z-50">
+        <HStack className="items-center justify-between">
+          <Pressable onPress={handleSearchPress} className="flex-1 mr-3">
+            <Input className="bg-white rounded-full" variant="rounded" pointerEvents="none">
+              <InputSlot className="pl-4">
+                <InputIcon>
+                  <SearchIcon size={16} color="#6B7280" />
+                </InputIcon>
+              </InputSlot>
+              <InputField
+                placeholder="Áo Khoác Nam"
+                value={searchText}
+                className="text-orange-500"
+                placeholderTextColor="#F97316"
+                editable={false}
+              />
+              <InputSlot className="pr-4">
+                <InputIcon>
+                  <CameraIcon size={16} color="#6B7280" />
+                </InputIcon>
+              </InputSlot>
+            </Input>
+          </Pressable>
+          <Pressable className="relative mr-3">
+            <ShoppingCartIcon size={24} color="white" />
+            <Badge className="absolute -top-1 -right-1 bg-red-500">
+            </Badge>
+          </Pressable>
+
+          <Pressable>
+            <MessageCircleIcon size={24} color="white" />
+          </Pressable>
+        </HStack>
+      </Box>
+
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <Box className="px-4 py-3 bg-white shadow-sm">
-          <HStack className="items-center justify-between">
-            <HStack className="items-center space-x-3">
-              <Pressable><Icon as={MenuIcon} size="lg" className="text-gray-700" /></Pressable>
-              <VStack>
-                <Text className="text-gray-500 text-xs">Xin chào 👋</Text>
-                <Text className="text-gray-900 font-semibold text-sm">Nguyễn Văn A</Text>
-              </VStack>
-            </HStack>
-
-            <HStack className="items-center space-x-3">
-              <Pressable className="relative">
-                <Icon as={BellIcon} size="lg" className="text-gray-700" />
-                <Badge className="absolute -top-1 -right-1 bg-red-500">
-                  <BadgeText className="text-white text-xs">3</BadgeText>
-                </Badge>
-              </Pressable>
-
-              <Pressable className="relative">
-                <Icon as={ShoppingCartIcon} size="lg" className="text-gray-700" />
-                <Badge className="absolute -top-1 -right-1 bg-red-500">
-                  <BadgeText className="text-white text-xs">{cartCount}</BadgeText>
-                </Badge>
-              </Pressable>
-
-              <Pressable><Icon as={MessageCircleIcon} size="lg" className="text-gray-700" /></Pressable>
-              <Avatar size="sm">
-                <AvatarImage source={{ uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop' }} />
-                <AvatarFallbackText>NV</AvatarFallbackText>
-              </Avatar>
-            </HStack>
-          </HStack>
-        </Box>
-
-        {/* Search Bar */}
-        <Box className="px-4 py-3">
-          <HStack className="bg-gray-100 rounded-full px-4 py-2 items-center">
-            <Icon as={SearchIcon} size="sm" className="text-gray-500 mr-2" />
-            <Text className="text-gray-500 flex-1">Tìm kiếm sản phẩm, thương hiệu...</Text>
-            <Icon as={CameraIcon} size="sm" className="text-gray-500" />
-          </HStack>
-        </Box>
-
-        {/* Banner */}
-        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="mb-4">
+        <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} className="py-4">
           <HStack>
             {banners.map((b) => (
               <Box key={b.id} className="mx-2 w-80">
@@ -130,79 +176,39 @@ export default function HomeScreen() {
           </HStack>
         </ScrollView>
 
-        {/* Wallet Section */}
-        <Box className="px-4 mb-4">
-          <HStack className="justify-between space-x-2">
-            <Pressable className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-              <HStack className="items-center space-x-3">
-                <Icon as={WalletIcon} size="lg" style={{ color: shopeeColor }} />
-                <VStack>
-                  <Text className="text-gray-600 text-xs">₫320.000</Text>
-                  <Text className="text-gray-800 font-semibold text-sm">Nạp tiền</Text>
-                </VStack>
-              </HStack>
-            </Pressable>
-            <Pressable className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-              <HStack className="items-center space-x-3">
-                <Icon as={CoinsIcon} size="lg" className="text-yellow-500" />
-                <VStack>
-                  <Text className="text-gray-600 text-xs">0</Text>
-                  <Text className="text-gray-800 font-semibold text-sm">Nhận xu</Text>
-                </VStack>
-              </HStack>
-            </Pressable>
-            <Pressable className="flex-1 bg-white rounded-xl p-3 shadow-sm border border-gray-100">
-              <HStack className="items-center space-x-3">
-                <Icon as={ArrowRightIcon} size="lg" className="text-green-500" />
-                <VStack>
-                  <Text className="text-gray-600 text-xs">Chuyển</Text>
-                  <Text className="text-gray-800 font-semibold text-sm">Miễn phí</Text>
-                </VStack>
-              </HStack>
-            </Pressable>
-          </HStack>
-        </Box>
 
-        {/* Service Grid */}
+        {/* Categories */}
         <Box className="px-4 mb-6">
-          <HStack className="flex-wrap justify-between">
-            {services.map((s) => (
-              <Pressable key={s.id} className="w-[18%] items-center mb-4">
-                <Box className="w-12 h-12 rounded-lg items-center justify-center mb-2" style={{ backgroundColor: s.color + '22' }}>
-                  <Icon as={s.icon} size="md" style={{ color: s.color }} />
-                </Box>
-                <Text className="text-gray-600 text-xs text-center" numberOfLines={2}>{s.name}</Text>
-              </Pressable>
-            ))}
-          </HStack>
+          <Text className="text-gray-900 font-bold text-lg mb-3">Danh mục sản phẩm</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <HStack space="md" className="px-1">
+              {categories.map((category) => (
+                <Pressable key={category.id} className="items-center min-w-[80px]">
+                  <Box className="w-16 h-16 rounded-xl items-center justify-center mb-2 shadow-sm" style={{ backgroundColor: category.color + '20' }}>
+                    <Icon as={category.icon} size="lg" style={{ color: category.color }} />
+                  </Box>
+                  <Text className="text-gray-700 text-xs text-center font-medium" numberOfLines={1}>{category.name}</Text>
+                </Pressable>
+              ))}
+            </HStack>
+          </ScrollView>
         </Box>
 
-        {/* Shopee LIVE Section */}
         <Box className="px-4 mb-6">
           <HStack className="items-center justify-between mb-3">
-            <Text className="text-gray-900 font-bold text-lg">Shopee LIVE</Text>
+            <Text className="text-gray-900 font-bold text-lg">Sản phẩm</Text>
             <Pressable className="flex-row items-center">
               <Text className="text-shopee text-sm text-orange-500">Xem tất cả</Text>
               <Icon as={ChevronRightIcon} size="sm" className="text-orange-500" />
             </Pressable>
           </HStack>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <HStack space="md">
-              {liveStreams.map((l) => (
-                <Pressable key={l.id} className="w-44">
-                  <Box className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
-                    <Image source={{ uri: l.image }} className="w-full h-28" />
-                    <Badge className="absolute top-2 left-2 bg-red-500">
-                      <BadgeText className="text-white text-xs">LIVE</BadgeText>
-                    </Badge>
-                    <VStack className="p-2">
-                      <Text className="text-gray-900 font-bold text-sm" numberOfLines={1}>{l.title}</Text>
-                      <Text className="text-gray-600 text-xs" numberOfLines={2}>{l.subtitle}</Text>
-                      <Text className="text-orange-500 text-xs mt-1">{l.viewers} đang xem</Text>
-                    </VStack>
-                  </Box>
-                </Pressable>
+          <ScrollView>
+            <HStack space="md" className="grid grid-cols-2">
+              {products.map((product) => (
+                <Box key={product.id}>
+                  <ProductBox product={product} />
+                </Box>
               ))}
             </HStack>
           </ScrollView>
