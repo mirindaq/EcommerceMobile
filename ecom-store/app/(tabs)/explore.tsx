@@ -212,7 +212,7 @@ export default function ExploreScreen() {
           <Box className="flex-row flex-wrap justify-between">
             {filteredProducts.map((product) => (
               <Box key={product.id} className="w-[48%] mb-4">
-                <Box className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <Box className="bg-white rounded-xl box-shadow-soft-1 border border-gray-200 overflow-hidden">
                   <Box className="relative">
         <Image
                       source={{ uri: product.image }}
@@ -245,7 +245,7 @@ export default function ExploreScreen() {
                     <Text className="text-gray-600 text-xs">
                       {product.category}
                     </Text>
-                    <Text className="text-gray-900 font-medium text-sm" numberOfLines={2}>
+                    <Text className="text-gray-900 font-medium text-sm">
                       {product.name}
                     </Text>
                     

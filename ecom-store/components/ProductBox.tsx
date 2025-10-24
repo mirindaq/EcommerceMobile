@@ -42,6 +42,7 @@ export default function ProductBox({ product }: ProductBoxProps) {
           source={{ uri: product.image }}
           className="w-full h-48"
           resizeMode="cover"
+          alt={`product-image-${product.id}`}
         />
 
         {/* Tag giảm giá */}
@@ -64,7 +65,7 @@ export default function ProductBox({ product }: ProductBoxProps) {
 
       {/* Thông tin sản phẩm */}
       <VStack className="p-3">
-        <Text className="text-gray-900 font-medium text-sm mb-1" numberOfLines={2}>
+        <Text className="text-gray-900 font-medium text-sm mb-1">
           {product.name}
         </Text>
 

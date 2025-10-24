@@ -346,6 +346,7 @@ export default function ProductDetailScreen() {
                   style={{ width: width, height: width }}
                   className="rounded"
                   resizeMode="cover"
+                  alt={`product-image-${index}`}
                 />
               ))}
             </HStack>
@@ -369,7 +370,7 @@ export default function ProductDetailScreen() {
             </Badge>
           </HStack>
 
-          <Text className="text-gray-900 font-bold text-lg mb-3" numberOfLines={2}>
+          <Text className="text-gray-900 font-bold text-lg mb-3" >
             {product.name}
           </Text>
 
@@ -481,7 +482,7 @@ export default function ProductDetailScreen() {
           </HStack>
 
           <Pressable
-            className="bg-red-500 rounded-lg px-6 py-2 flex-1 ml-4"
+            className="bg-red-500 rounded-lg px-6 py- flex-1 ml-4"
             onPress={() => setShowVariantModal(true)}
           >
             <VStack className="items-center">
@@ -522,6 +523,7 @@ export default function ProductDetailScreen() {
                   source={{ uri: product.thumbnail }}
                   className="w-20 h-20 rounded-lg"
                   resizeMode="cover"
+                  alt="product-thumbnail"
                 />
                 {/* Thumbnail images below main image */}
                 <HStack className="mt-2 space-x-1">
@@ -531,6 +533,7 @@ export default function ProductDetailScreen() {
                       source={{ uri: image }}
                       className="w-6 h-6 rounded"
                       resizeMode="cover"
+                      alt={`product-image-${index}`}
                     />
                   ))}
                 </HStack>
