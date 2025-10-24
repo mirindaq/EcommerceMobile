@@ -35,8 +35,10 @@ import {
   GiftIcon,
   PersonStandingIcon,
 } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
+  const router = useRouter();
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -103,6 +105,9 @@ export default function ProfileScreen() {
             ].map((item, i) => (
               <Pressable
                 key={i}
+                onPress={() => {
+                  if (item.label === "Hạng thành viên") router.push("/ranking");
+                }}
                 className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
               >
                 <Icon as={item.icon} size="lg" className="text-red-500 mb-1" />
