@@ -40,6 +40,18 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="(profile)/ranking"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/edit-profile"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
