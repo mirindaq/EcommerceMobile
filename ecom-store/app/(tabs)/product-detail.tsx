@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ScrollView,
   Image,
@@ -60,7 +60,6 @@ interface ProductData {
 
 export default function ProductDetailScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const params = useLocalSearchParams();
   const [product, setProduct] = useState<ProductData | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -71,12 +70,6 @@ export default function ProductDetailScreen() {
   const [selectedVariants, setSelectedVariants] = useState<{ [key: string]: string }>({});
   const [availableVariants, setAvailableVariants] = useState<{ [key: string]: string[] }>({});
   const [showVariantModal, setShowVariantModal] = useState(false);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, [navigation]);
 
 
   useEffect(() => {

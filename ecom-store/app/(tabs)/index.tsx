@@ -4,7 +4,7 @@ import {
   Image,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useNavigation } from '@react-navigation/native';
+
 import {
   Box, HStack, VStack, Text, Pressable,
   Heading, Badge, BadgeText, Icon, Avatar, AvatarImage, AvatarFallbackText,
@@ -114,12 +114,12 @@ const products = [
 ];
 
 export default function HomeScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [cartCount] = useState(3);
   const [searchText, setSearchText] = useState('Áo Khoác Nam');
 
   const handleSearchPress = () => {
-    navigation.navigate('search' as never);
+    router.push('/search');
   };
 
   return (
