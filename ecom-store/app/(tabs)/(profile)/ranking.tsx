@@ -42,7 +42,7 @@ export default function RankingScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <HStack className="items-center px-4 py-3 bg-white">
-          <Pressable onPress={() => router.back()}>
+          <Pressable onPress={() => router.navigate("/profile")}>
             <Icon as={ArrowLeftIcon} size="lg" color="black" />
           </Pressable>
           <Text className="flex-1 text-center font-semibold text-lg text-black">
