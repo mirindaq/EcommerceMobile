@@ -482,7 +482,7 @@ export default function ProductDetailScreen() {
           </HStack>
 
           <Pressable
-            className="bg-red-500 rounded-lg px-6 py- flex-1 ml-4"
+            className="bg-red-500 rounded-lg px-6 py-2 flex-1 ml-4"
             onPress={() => setShowVariantModal(true)}
           >
             <VStack className="items-center">
