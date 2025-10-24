@@ -126,7 +126,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <Box className="bg-red-500 px-4 py-4 z-50">
         <HStack className="items-center justify-between">
-          <Pressable onPress={handleSearchPress} className="flex-1 mr-3">
+          <Pressable onPress={handleSearchPress} className="flex-1 mr-3 py-2">
             <Input className="bg-white rounded-full" variant="rounded" pointerEvents="none">
               <InputSlot className="pl-4">
                 <InputIcon>
