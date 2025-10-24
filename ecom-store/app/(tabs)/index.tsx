@@ -126,7 +126,7 @@ export default function HomeScreen() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <Box className="bg-red-500 px-4 py-4 z-50">
         <HStack className="items-center justify-between">
-          <Pressable onPress={handleSearchPress} className="flex-1 mr-3">
+          <Pressable onPress={handleSearchPress} className="flex-1 mr-3 py-2">
             <Input className="bg-white rounded-full" variant="rounded" pointerEvents="none">
               <InputSlot className="pl-4">
                 <InputIcon>
@@ -164,7 +164,7 @@ export default function HomeScreen() {
           <HStack>
             {banners.map((b) => (
               <Box key={b.id} className="mx-2 w-80">
-                <Pressable className="rounded-2xl overflow-hidden shadow-sm">
+                <Pressable className="rounded-2xl overflow-hidden box-shadow-soft-1">
                   <Image source={{ uri: b.image }} className="w-full h-40 rounded-2xl" />
                   <Box className="absolute bottom-3 left-3">
                     <Text className="text-white font-bold text-lg">{b.title}</Text>
@@ -184,10 +184,10 @@ export default function HomeScreen() {
             <HStack space="md" className="px-1">
               {categories.map((category) => (
                 <Pressable key={category.id} className="items-center min-w-[80px]">
-                  <Box className="w-16 h-16 rounded-xl items-center justify-center mb-2 shadow-sm" style={{ backgroundColor: category.color + '20' }}>
+                  <Box className="w-16 h-16 rounded-xl items-center justify-center mb-2 box-shadow-soft-1 " style={{ backgroundColor: category.color + '20' }}>
                     <Icon as={category.icon} size="lg" style={{ color: category.color }} />
                   </Box>
-                  <Text className="text-gray-700 text-xs text-center font-medium" numberOfLines={1}>{category.name}</Text>
+                  <Text className="text-gray-700 text-xs text-center font-medium" >{category.name}</Text>
                 </Pressable>
               ))}
             </HStack>

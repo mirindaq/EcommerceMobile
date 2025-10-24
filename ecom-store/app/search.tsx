@@ -13,6 +13,7 @@ import {
 import {
   ArrowLeftIcon, SearchIcon, CameraIcon, XIcon
 } from 'lucide-react-native';
+import ProductBox from '@/components/ProductBox';
 
 // Mock data for search suggestions
 const searchSuggestions = [
@@ -26,21 +27,29 @@ const searchSuggestions = [
 const suggestedProducts = [
   {
     id: 1,
-    title: 'Clean Code',
+    name: 'Clean Code',
     author: 'Robert C. Martin',
     image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=200&h=300&fit=crop',
     price: '299.000₫',
     originalPrice: '399.000₫',
     discount: '25',
+    rating: 4.8,
+    soldCount: '1.2k',
+    deliveryTime: '2-3 ngày',
+    location: 'Hà Nội',
   },
   {
     id: 2,
-    title: 'Harajuku Style',
+    name: 'Harajuku Style',
     brand: 'HANLU',
     image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=200&h=300&fit=crop',
     price: '599.000₫',
     originalPrice: '799.000₫',
     discount: '25',
+    rating: 4.6,
+    soldCount: '856',
+    deliveryTime: '1-2 ngày',
+    location: 'TP.HCM',
   },
 ];
 
@@ -113,45 +122,14 @@ export default function SearchScreen() {
           </HStack>
         </Box>
 
-        {/* Search Suggestions Section */}
         <Box className="px-4 pb-6">
           <Text className="text-gray-900 font-bold text-lg mb-4">Gợi ý tìm kiếm</Text>
           
-          <HStack space="md" className="justify-between">
+          <VStack space="md" className="grid grid-cols-2 gap-4">
             {suggestedProducts.map((product) => (
-              <Pressable key={product.id} className="flex-1">
-                <Box className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                  <Image 
-                    source={{ uri: product.image }} 
-                    className="w-full h-40"
-                    resizeMode="cover"
-                  />
-                  <Box className="p-3">
-                    {product.author && (
-                      <Text className="text-gray-500 text-xs mb-1">{product.author}</Text>
-                    )}
-                    {product.brand && (
-                      <HStack className="items-center mb-1">
-                        <Text className="text-gray-500 text-xs mr-1">{product.brand}</Text>
-                      </HStack>
-                    )}
-                    <Text className="text-gray-900 font-medium text-sm mb-2" numberOfLines={2}>
-                      {product.title}
-                    </Text>
-                    <HStack className="items-center justify-between">
-                      <HStack className="items-center">
-                        <Text className="text-red-500 font-bold text-sm">{product.price}</Text>
-                        <Text className="text-gray-400 text-xs line-through ml-2">{product.originalPrice}</Text>
-                      </HStack>
-                      <Badge className="bg-red-500">
-                        <BadgeText className="text-white text-xs">-{product.discount}%</BadgeText>
-                      </Badge>
-                    </HStack>
-                  </Box>
-                </Box>
-              </Pressable>
+              <ProductBox key={product.id} product={product} />
             ))}
-          </HStack>
+          </VStack>
         </Box>
 
         {/* Recent Searches */}

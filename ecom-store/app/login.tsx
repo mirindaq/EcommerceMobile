@@ -44,6 +44,7 @@ export default function LoginScreen() {
               <Image
                 source={require('../assets/images/logo.png')}
                 resizeMode="contain"
+                alt="logo"
               />
             </Box>
             <VStack space="sm" className="items-center">

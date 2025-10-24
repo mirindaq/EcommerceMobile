@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image } from 'react-native';
+import { useRouter } from 'expo-router';
 import {
   Box, HStack, VStack, Text, Pressable, Badge, BadgeText, Icon,
 } from '@/components/ui';
@@ -25,13 +26,23 @@ interface ProductBoxProps {
 }
 
 export default function ProductBox({ product }: ProductBoxProps) {
+  const router = useRouter();
+
+  const handleProductPress = () => {
+    router.push('/product-detail');
+  };
+
   return (
-    <Pressable className="bg-white rounded-2xl overflow-hidden border border-gray-300 mb-4">
+    <Pressable 
+      className="bg-white rounded-2xl overflow-hidden border border-gray-300 mb-4"
+      onPress={handleProductPress}
+    >
       <Box className="relative">
         <Image
           source={{ uri: product.image }}
           className="w-full h-48"
           resizeMode="cover"
+          alt={`product-image-${product.id}`}
         />
 
         {/* Tag giảm giá */}
@@ -54,7 +65,7 @@ export default function ProductBox({ product }: ProductBoxProps) {
 
       {/* Thông tin sản phẩm */}
       <VStack className="p-3">
-        <Text className="text-gray-900 font-medium text-sm mb-1" numberOfLines={2}>
+        <Text className="text-gray-900 font-medium text-sm mb-1">
           {product.name}
         </Text>
 
