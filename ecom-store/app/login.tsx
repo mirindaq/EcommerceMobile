@@ -1,3 +1,4 @@
+import { Image } from '@/components/ui';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
@@ -23,9 +24,9 @@ export default function LoginScreen() {
       alert('Vui lòng nhập đầy đủ thông tin');
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
@@ -39,8 +40,11 @@ export default function LoginScreen() {
         <VStack space="xl" className="flex-1">
           {/* Logo and Header */}
           <VStack space="lg" className="items-center mt-8">
-            <Box className="w-20 h-20 bg-red-500 rounded-full items-center justify-center">
-              <Text className="text-3xl font-bold text-white">E</Text>
+            <Box className="w-30 h-30 bg-red-500 rounded-full items-center justify-center">
+              <Image
+                source={require('../assets/images/logo.png')}
+                resizeMode="contain"
+              />
             </Box>
             <VStack space="sm" className="items-center">
               <Heading size="2xl" className="text-gray-900">
@@ -132,7 +136,7 @@ export default function LoginScreen() {
                   Tiếp tục với Google
                 </ButtonText>
               </Button>
-              
+
               <Button
                 variant="outline"
                 className="border-gray-300 rounded-lg"
