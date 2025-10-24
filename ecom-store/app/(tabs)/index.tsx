@@ -141,12 +141,11 @@ const products = [
 
 export default function HomeScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
   const [cartCount] = useState(3);
   const [searchText, setSearchText] = useState("Áo Khoác Nam");
 
   const handleSearchPress = () => {
-    navigation.navigate("search" as never);
+    router.push('/search');
   };
 
   return (
