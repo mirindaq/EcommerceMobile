@@ -32,7 +32,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="(profile)/profile"
         options={{
           title: "Tôi",
           tabBarIcon: ({ color }) => (

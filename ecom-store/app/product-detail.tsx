@@ -519,7 +519,7 @@ export default function ProductDetailScreen() {
             borderTopRightRadius: 24,
             height: '60%',
             position: 'absolute',
-            bottom: 30,
+            bottom: 0,
             left: 0,
             right: 0,
           }}>

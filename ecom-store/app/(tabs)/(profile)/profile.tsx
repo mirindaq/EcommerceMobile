@@ -44,11 +44,12 @@ export default function ProfileScreen() {
         <Box className="bg-red-500 px-4 pt-8 pb-6">
           <HStack className="items-center justify-between mb-4">
             <HStack className="items-center space-x-3">
-              <Avatar size="lg" className="border-2 border-white">
+              <Avatar size="lg" className="border-2 mr-3 border-white">
                 <AvatarImage
                   source={{
                     uri: "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
                   }}
+                  alt="avatar"
                 />
               </Avatar>
               <VStack>
