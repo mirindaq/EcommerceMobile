@@ -16,7 +16,7 @@ import {
   ButtonText,
   Icon,
 } from "@/components/ui";
-import { ChevronLeftIcon, Trash2Icon } from "lucide-react-native";
+import { ArrowLeftIcon, CheckIcon, ChevronLeftIcon, Trash2Icon } from "lucide-react-native";
 
 export default function CartScreen() {
   const router = useRouter();
@@ -28,7 +28,7 @@ export default function CartScreen() {
       variant: "MÀU ĐEN, XL - (73~87kg/1m8)",
       price: 238000,
       image:
-        "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
       shop: "GLO OO",
     },
     {
@@ -46,7 +46,7 @@ export default function CartScreen() {
       variant: "Màu trắng",
       price: 4990000,
       image:
-        "https://images.unsplash.com/photo-1512499617640-c2f999018b72?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
       shop: "Apple Center VN",
     },
     {
@@ -89,25 +89,23 @@ export default function CartScreen() {
   }, 0);
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <Box className="bg-white px-4 py-3 border-b border-gray-200">
-        <HStack className="items-center space-x-3">
-          <Pressable onPress={() => router.back()}>
-            <ChevronLeftIcon size={22} color="#000" />
-          </Pressable>
-          <Text className="text-lg font-bold text-gray-900">
-            Giỏ hàng ({cartItems.length})
-          </Text>
-        </HStack>
-      </Box>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <HStack className="items-center justify-between px-4 py-4 bg-white border-b border-gray-200">
+        <Pressable onPress={() => router.back()}>
+          <ArrowLeftIcon size={24} color="#000" />
+        </Pressable>
+        <Text className="text-lg font-semibold"> Giỏ hàng ({cartItems.length})</Text>
+        <Pressable onPress={() => console.log("Save profile")}>
+          <CheckIcon size={24} color="#EF4444" />
+        </Pressable>
+      </HStack>
 
       {/* Cart Items */}
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView className="pb-4" showsVerticalScrollIndicator={false} bounces={false}>
         {cartItems.map((item) => (
           <Box
             key={item.id}
-            className="bg-white mt-3 px-4 py-3 rounded-xl mx-3 shadow-sm"
+            className="bg-white mt-3 px-4 py-3 rounded-md mx-3 border border-gray-200"
           >
             {/* Shop header */}
             <HStack className="items-center justify-between mb-3">
@@ -118,18 +116,17 @@ export default function CartScreen() {
             </HStack>
 
             {/* Product Row */}
-            <HStack className="space-x-3 items-start">
+            <HStack className="items-start gap-3">
               <Checkbox
                 value={item.id.toString()}
                 isChecked={selectedItems.includes(item.id)}
                 onChange={() => toggleSelect(item.id)}
               >
                 <CheckboxIndicator
-                  className={`w-5 h-5 rounded-md border-2 ${
-                    selectedItems.includes(item.id)
-                      ? "bg-[#EF4444] border-[#EF4444]"
-                      : "border-gray-400 bg-white"
-                  } items-center justify-center`}
+                  className={`w-5 h-5 rounded-md border-2 ${selectedItems.includes(item.id)
+                    ? "bg-[#EF4444] border-[#EF4444]"
+                    : "border-gray-400 bg-white"
+                    } items-center justify-center`}
                 >
                   {selectedItems.includes(item.id) && (
                     <CheckboxIcon color="#fff" />
@@ -163,11 +160,11 @@ export default function CartScreen() {
             </HStack>
           </Box>
         ))}
-        <Box className="h-28" />
+        {/* <Box className="h-28" /> */}
       </ScrollView>
 
       {/* Footer */}
-      <Box className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+      <Box className="bg-white border-t border-gray-200 px-4 py-3">
         <HStack className="items-center justify-between mb-2">
           <HStack className="items-center space-x-2">
             <Checkbox
@@ -176,57 +173,41 @@ export default function CartScreen() {
               onChange={toggleSelectAll}
             >
               <CheckboxIndicator
-                className={`w-5 h-5 rounded-md border-2 ${
-                  selectedItems.length === cartItems.length
-                    ? "bg-[#EF4444] border-[#EF4444]"
-                    : "border-gray-400 bg-white"
-                } items-center justify-center`}
+                className={`w-5 h-5 rounded-md border-2 ${selectedItems.length === cartItems.length
+                  ? "bg-[#EF4444] border-[#EF4444]"
+                  : "border-gray-400 bg-white"
+                  } items-center justify-center`}
               >
                 {selectedItems.length === cartItems.length && (
                   <CheckboxIcon color="#fff" />
                 )}
               </CheckboxIndicator>
-              <CheckboxLabel className="text-gray-700 text-sm ml-2">
+              <CheckboxLabel className="text-gray-700 text-md ml-2">
                 Tất cả
               </CheckboxLabel>
             </Checkbox>
           </HStack>
 
-          <Text className="text-gray-700 text-sm">
+          <Text className="text-gray-700 text-md">
             Tạm tính:{" "}
-            <Text className="text-[#EF4444] font-bold text-base">
+            <Text className="text-[#EF4444] font-bold">
               {totalPrice.toLocaleString()}₫
             </Text>
           </Text>
         </HStack>
 
-        {/* <Button
-          className={`rounded-full ${
-            selectedItems.length === 0
-              ? "bg-gray-300"
-              : "bg-[#EF4444] active:bg-red-600"
-          }`}
-          isDisabled={selectedItems.length === 0}
-        >
-          <ButtonText className="font-bold text-white text-base">
-            Mua hàng ({selectedItems.length})
-          </ButtonText>
-        </Button> */}
-
         <Pressable
-          className="bg-red-500 rounded-lg px-6 py-3 flex-1"
+          className="bg-red-500 rounded-lg px-6 py-3"
+          onPress={() => { console.log("mua") }}
           style={({ pressed }) => [
             {
-              backgroundColor: pressed ? "#dc2626" : "#ef4444",
+              backgroundColor: pressed ? '#dc2626' : '#ef4444',
               opacity: pressed ? 0.9 : 1,
-            },
+            }
           ]}
-          // isDisabled={selectedItems.length === 0}
         >
           <VStack className="items-center">
-            <Text className="text-white font-bold text-lg">
-              Mua hàng ({selectedItems.length})
-            </Text>
+            <Text className="text-white font-bold text-lg">Mua hàng {selectedItems.length}</Text>
           </VStack>
         </Pressable>
       </Box>

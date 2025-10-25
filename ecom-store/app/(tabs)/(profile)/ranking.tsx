@@ -1,7 +1,6 @@
 import React from "react";
 import { ScrollView, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Box, VStack, HStack, Text, Pressable, Icon } from "@/components/ui";
+import { Box, VStack, HStack, Text, Pressable, Icon, SafeAreaView } from "@/components/ui";
 import { ArrowLeftIcon } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
@@ -38,17 +37,18 @@ export default function RankingScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView className="flex-1 bg-[#0A327C]">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <HStack className="items-center px-4 py-3 bg-white">
-          <Pressable onPress={() => router.navigate("/profile")}>
-            <Icon as={ArrowLeftIcon} size="lg" color="black" />
-          </Pressable>
-          <Text className="flex-1 text-center font-semibold text-lg text-black">
-            Hạng thành viên
-          </Text>
-        </HStack>
+    <SafeAreaView className="flex-1 bg-[#0A327C]" edges={['top']}>
+      {/* Header */}
+      <HStack className="items-center px-4 py-3 bg-white">
+        <Pressable onPress={() => router.navigate("/profile")}>
+          <Icon as={ArrowLeftIcon} size="lg" color="black" />
+        </Pressable>
+        <Text className="flex-1 text-center font-semibold text-lg text-black">
+          Hạng thành viên
+        </Text>
+      </HStack>
+
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
 
         {/* Thông tin thành viên */}
         <VStack className="px-5 py-6 bg-[#0A327C]">
@@ -59,7 +59,7 @@ export default function RankingScreen() {
             Bạn đang là thành viên hạng{" "}
             <Text className="font-bold text-white">S - New</Text>
           </Text>
-          import LinearGradient from "react-native-linear-gradient";
+          {/* import LinearGradient from "react-native-linear-gradient"; */}
           <LinearGradient
             colors={["#7F7F7F", "#B5B5B5", "#E6E6E6", "#FFFFFF"]}
             start={{ x: 0, y: 0 }}
@@ -128,6 +128,7 @@ export default function RankingScreen() {
             />
           </Pressable>
         </Box>
+        <Box className="h-20" />
       </ScrollView>
     </SafeAreaView>
   );

@@ -37,6 +37,7 @@ import {
   HomeIcon,
 } from "lucide-react-native";
 import ProductBox from "@/components/ProductBox";
+import CartIcon from "@/components/CartIcon";
 
 const banners = [
   {
@@ -149,12 +150,12 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       <Box className="bg-red-500 px-4 py-4 z-50">
-        <HStack className="items-center justify-between">
+        <HStack className="items-center justify-between gap-4">
           <Pressable onPress={handleSearchPress} className="flex-1 mr-3 py-2">
             <Input
-              className="bg-white rounded-full"
+              className="bg-white rounded-md"
               variant="rounded"
               pointerEvents="none"
             >
@@ -177,13 +178,12 @@ export default function HomeScreen() {
               </InputSlot>
             </Input>
           </Pressable>
-          <Pressable
-            className="relative mr-3"
-            onPress={() => router.push("/cart")}
-          >
-            <ShoppingCartIcon size={24} color="white" />
-            <Badge className="absolute -top-1 -right-1 bg-red-500"></Badge>
-          </Pressable>
+          <CartIcon 
+            size={24} 
+            color="white" 
+            badgeCount={3}
+            className="mr-3"
+          />
 
           <Pressable>
             <MessageCircleIcon size={24} color="white" />
@@ -191,7 +191,7 @@ export default function HomeScreen() {
         </HStack>
       </Box>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         <ScrollView
           horizontal
           pagingEnabled
@@ -275,7 +275,7 @@ export default function HomeScreen() {
           </ScrollView>
         </Box>
 
-        <Box className="h-20" />
+        {/* <Box className="h-20" /> */}
       </ScrollView>
     </SafeAreaView>
   );

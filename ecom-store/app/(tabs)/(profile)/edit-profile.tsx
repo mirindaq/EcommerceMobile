@@ -36,7 +36,7 @@ export default function EditProfileScreen() {
   const genders = ["Nam", "Nữ", "Khác"];
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
       <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <Pressable onPress={() => router.back()}>

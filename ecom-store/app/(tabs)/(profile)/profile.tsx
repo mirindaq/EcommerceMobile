@@ -40,8 +40,8 @@ import { useRouter } from "expo-router";
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
           <HStack className="items-center justify-between mb-4">
@@ -192,8 +192,8 @@ export default function ProfileScreen() {
           ))}
         </Box>
 
-        <Divider className="my-3" />
-        <Box className="h-24" />
+        {/* <Divider className="my-3" /> */}
+        {/* <Box className="h-24" /> */}
       </ScrollView>
     </SafeAreaView>
   );

@@ -18,6 +18,7 @@ import {
   StarIcon, HeartIcon, MessageCircleIcon, SettingsIcon, TruckIcon, MapPinIcon,
   ShieldIcon, CheckIcon, ChevronRightIcon, MinusIcon, PlusIcon
 } from 'lucide-react-native';
+import CartIcon from '@/components/CartIcon';
 
 const { width } = Dimensions.get('window');
 
@@ -288,14 +289,14 @@ export default function ProductDetailScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <Box className="bg-white px-4 py-3 border-b border-gray-200">
         <HStack className="items-center">
           <Pressable className="mr-3" onPress={handleGoBack}>
             <ArrowLeftIcon size={24} color="#374151" />
           </Pressable>
           
-          <Input className="bg-gray-100 rounded-full flex-1 mr-3" variant="rounded">
+          <Input className="bg-gray-100 rounded-md flex-1 mr-3" variant="rounded">
             <InputSlot className="pl-4">
               <InputIcon>
                 <SearchIcon size={16} color="#6B7280" />
@@ -472,9 +473,12 @@ export default function ProductDetailScreen() {
             <Pressable className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center">
               <MessageCircleIcon size={20} color="#6B7280" />
             </Pressable>
-            <Pressable className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center">
-              <ShoppingCartIcon size={20} color="#6B7280" />
-            </Pressable>
+            <CartIcon 
+              size={20} 
+              color="#6B7280" 
+              badgeCount={2}
+              className="w-10 h-10 bg-gray-100 rounded-full items-center justify-center"
+            />
           </HStack>
 
           <Pressable
@@ -525,7 +529,7 @@ export default function ProductDetailScreen() {
             </HStack>
 
             {/* Body */}
-            <ScrollView className="flex-1 p-4">
+            <ScrollView className="flex-1 p-4" bounces={false}>
               {/* Product Preview */}
               <HStack className="mb-6">
                 <VStack className="mr-4">

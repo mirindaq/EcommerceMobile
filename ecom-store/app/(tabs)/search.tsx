@@ -69,14 +69,14 @@ export default function SearchScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
       <Box className="bg-white px-4 py-3 border-b border-gray-200">
         <HStack className="items-center">
           <Pressable className="mr-3" onPress={handleGoBack}>
             <ArrowLeftIcon size={24} color="#374151" />
           </Pressable>
           
-          <Input className="bg-gray-100 rounded-full flex-1 mr-3" variant="rounded">
+          <Input className="bg-gray-100 rounded-md flex-1 mr-3" variant="rounded">
             <InputSlot className="pl-4">
               <InputIcon>
                 <SearchIcon size={16} color="#6B7280" />
