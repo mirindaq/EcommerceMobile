@@ -40,7 +40,7 @@ import { useRouter } from "expo-router";
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
@@ -153,7 +153,11 @@ export default function ProfileScreen() {
               },
               { label: "Địa chỉ giao hàng", icon: MapPinIcon },
               { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
-              { label: "Ưu đãi giảm giá", icon: GiftIcon },
+              {
+                label: "Ưu đãi giảm giá",
+                icon: GiftIcon,
+                onPress: () => router.push("/view-promotion"),
+              },
             ].map((item, i) => (
               <Pressable
                 key={i}
