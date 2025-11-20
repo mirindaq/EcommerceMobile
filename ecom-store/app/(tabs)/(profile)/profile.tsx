@@ -21,26 +21,21 @@ import {
   PackageIcon,
   TruckIcon,
   CheckCircleIcon,
-  CreditCardIcon,
-  SmartphoneIcon,
-  UtensilsIcon,
   WalletIcon,
   TicketIcon,
-  PiggyBankIcon,
   ShieldCheckIcon,
   LogOut,
-  WrenchIcon,
-  ReceiptIcon,
   MapPinIcon,
   GiftIcon,
   PersonStandingIcon,
+  NotebookText,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
@@ -117,29 +112,6 @@ export default function ProfileScreen() {
           </HStack>
         </Box>
 
-        {/* <Box className="bg-white mt-3 px-4 py-3">
-          <Text className="font-semibold text-gray-900 mb-3">
-            Dịch vụ tài chính
-          </Text>
-          <HStack className="justify-between">
-            {[
-              { label: "Vay tiêu dùng", icon: ShieldCheckIcon },
-              { label: "Tải ShopeePay", icon: SmartphoneIcon },
-            ].map((item, i) => (
-              <Pressable key={i} className="items-center flex-1">
-                <Icon
-                  as={item.icon}
-                  size="lg"
-                  className="text-orange-500 mb-1"
-                />
-                <Text className="text-xs text-gray-700 text-center">
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
-          </HStack>
-        </Box> */}
-
         <Box className="bg-white mt-3 px-4 py-3 rounded-xl">
           <Text className="font-semibold text-gray-900 mb-3">
             Tiện ích khác
@@ -151,8 +123,15 @@ export default function ProfileScreen() {
                 icon: PersonStandingIcon,
                 onPress: () => router.push("/edit-profile"),
               },
-              { label: "Địa chỉ giao hàng", icon: MapPinIcon },
-              { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
+              {
+                label: "Địa chỉ giao hàng",
+                icon: MapPinIcon,
+              },
+              {
+                label: "Bài viết nổi bật",
+                icon: NotebookText,
+                onPress: () => router.push("/featured-posts"),
+              },
               { label: "Ưu đãi giảm giá", icon: GiftIcon },
             ].map((item, i) => (
               <Pressable
@@ -191,9 +170,7 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </Box>
-
-        {/* <Divider className="my-3" /> */}
-        {/* <Box className="h-24" /> */}
+        <Box className="h-24" />
       </ScrollView>
     </SafeAreaView>
   );
