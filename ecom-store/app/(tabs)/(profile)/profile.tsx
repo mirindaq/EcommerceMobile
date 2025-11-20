@@ -34,13 +34,14 @@ import {
   MapPinIcon,
   GiftIcon,
   PersonStandingIcon,
+  HeartIcon,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
@@ -59,7 +60,14 @@ export default function ProfileScreen() {
                 <Text className="text-white text-sm">S - New</Text>
               </VStack>
             </HStack>
-            <HStack space="3xl">
+            <HStack space="xl">
+              <Pressable
+                onPress={() => {
+                  router.push("/my-wishlist");
+                }}
+              >
+                <HeartIcon size={24} color="white" />
+              </Pressable>
               <Pressable>
                 <ShoppingCartIcon size={24} color="white" />
               </Pressable>
