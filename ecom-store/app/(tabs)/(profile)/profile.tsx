@@ -40,7 +40,7 @@ import { useRouter } from "expo-router";
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
@@ -60,7 +60,11 @@ export default function ProfileScreen() {
               </VStack>
             </HStack>
             <HStack space="3xl">
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  router.push("/cart");
+                }}
+              >
                 <ShoppingCartIcon size={24} color="white" />
               </Pressable>
               <Pressable>
@@ -73,7 +77,12 @@ export default function ProfileScreen() {
         <Box className="bg-white mt-3 px-4 py-3">
           <HStack className="items-center justify-between mb-3">
             <Text className="font-semibold text-gray-900">Đơn mua</Text>
-            <Pressable className="flex-row items-center">
+            <Pressable
+              className="flex-row items-center"
+              onPress={() => {
+                router.push("/order-history");
+              }}
+            >
               <Text className="text-red-500 text-sm">Xem lịch sử mua hàng</Text>
               <ChevronRightIcon size={16} color="#EF4444" />
             </Pressable>
@@ -84,7 +93,18 @@ export default function ProfileScreen() {
               { label: "Chờ lấy hàng", icon: PackageIcon },
               { label: "Chờ giao hàng", icon: TruckIcon },
             ].map((item, i) => (
-              <Pressable key={i} className="items-center flex-1">
+              <Pressable
+                key={i}
+                onPress={() => {
+                  if (item.label === "Chờ xác nhận")
+                    router.push("/pending-confirm");
+                  if (item.label === "Chờ lấy hàng")
+                    router.push("/pending-pickup");
+                  if (item.label === "Chờ giao hàng")
+                    router.push("/pending-delivery");
+                }}
+                className="items-center flex-1"
+              >
                 <Icon as={item.icon} size="lg" className="text-gray-700 mb-1" />
                 <Text className="text-xs text-gray-700 text-center">
                   {item.label}
