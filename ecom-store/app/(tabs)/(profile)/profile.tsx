@@ -40,7 +40,7 @@ import { useRouter } from "expo-router";
 export default function ProfileScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
         <Box className="bg-red-500 px-4 pt-8 pb-6">
@@ -180,6 +180,10 @@ export default function ProfileScreen() {
             { label: "Đăng xuất", icon: LogOut },
           ].map((item, i) => (
             <Pressable
+              onPress={() => {
+                if (item.label === "Điều khoản sử dụng")
+                  router.push("/term-of-use");
+              }}
               key={i}
               className="flex-row items-center justify-between py-3 border-b border-gray-100"
             >
