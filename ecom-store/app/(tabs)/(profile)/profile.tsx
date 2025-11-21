@@ -29,6 +29,7 @@ import {
   GiftIcon,
   PersonStandingIcon,
   NotebookText,
+  HeartIcon,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
@@ -54,8 +55,21 @@ export default function ProfileScreen() {
                 <Text className="text-white text-sm">S - New</Text>
               </VStack>
             </HStack>
-            <HStack space="3xl">
+            <HStack space="xl">
+              <Pressable
+                onPress={() => {
+                  router.push("/my-wishlist");
+                }}
+              >
+                <HeartIcon size={24} color="white" />
+              </Pressable>
               <Pressable>
+            <HStack space="3xl">
+              <Pressable
+                onPress={() => {
+                  router.push("/cart");
+                }}
+              >
                 <ShoppingCartIcon size={24} color="white" />
               </Pressable>
               <Pressable>
@@ -68,7 +82,12 @@ export default function ProfileScreen() {
         <Box className="bg-white mt-3 px-4 py-3">
           <HStack className="items-center justify-between mb-3">
             <Text className="font-semibold text-gray-900">Đơn mua</Text>
-            <Pressable className="flex-row items-center">
+            <Pressable
+              className="flex-row items-center"
+              onPress={() => {
+                router.push("/order-history");
+              }}
+            >
               <Text className="text-red-500 text-sm">Xem lịch sử mua hàng</Text>
               <ChevronRightIcon size={16} color="#EF4444" />
             </Pressable>
@@ -79,7 +98,18 @@ export default function ProfileScreen() {
               { label: "Chờ lấy hàng", icon: PackageIcon },
               { label: "Chờ giao hàng", icon: TruckIcon },
             ].map((item, i) => (
-              <Pressable key={i} className="items-center flex-1">
+              <Pressable
+                key={i}
+                onPress={() => {
+                  if (item.label === "Chờ xác nhận")
+                    router.push("/pending-confirm");
+                  if (item.label === "Chờ lấy hàng")
+                    router.push("/pending-pickup");
+                  if (item.label === "Chờ giao hàng")
+                    router.push("/pending-delivery");
+                }}
+                className="items-center flex-1"
+              >
                 <Icon as={item.icon} size="lg" className="text-gray-700 mb-1" />
                 <Text className="text-xs text-gray-700 text-center">
                   {item.label}
@@ -102,6 +132,7 @@ export default function ProfileScreen() {
                 key={i}
                 onPress={() => {
                   if (item.label === "Hạng thành viên") router.push("/ranking");
+                  if (item.label === "Voucher") router.push("/my-voucher");
                 }}
                 className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
               >
@@ -132,6 +163,9 @@ export default function ProfileScreen() {
                 icon: NotebookText,
                 onPress: () => router.push("/featured-posts"),
               },
+                onPress: () => router.push("/my-address"),
+              },
+              { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
               { label: "Ưu đãi giảm giá", icon: GiftIcon },
             ].map((item, i) => (
               <Pressable
@@ -159,6 +193,10 @@ export default function ProfileScreen() {
             { label: "Đăng xuất", icon: LogOut },
           ].map((item, i) => (
             <Pressable
+              onPress={() => {
+                if (item.label === "Điều khoản sử dụng")
+                  router.push("/term-of-use");
+              }}
               key={i}
               className="flex-row items-center justify-between py-3 border-b border-gray-100"
             >
