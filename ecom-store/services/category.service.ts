@@ -1,6 +1,6 @@
 import axiosClient from '@/configurations/axios.config';
-import type { 
-  CategoryListResponse 
+import type {
+  CategoryListResponse
 } from '@/types/category.type';
 
 export const categoryService = {
