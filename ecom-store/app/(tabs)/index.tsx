@@ -1,43 +1,40 @@
-import React, { useState } from "react";
-import { ScrollView, Image } from "react-native";
-import { useRouter } from "expo-router";
-import { useNavigation } from "@react-navigation/native";
+import CartIcon from "@/components/CartIcon";
+import ProductBox from "@/components/ProductBox";
 import {
   Box,
   HStack,
-  VStack,
-  Text,
-  Pressable,
-  Heading,
-  Badge,
-  BadgeText,
   Icon,
-  Avatar,
-  AvatarImage,
-  AvatarFallbackText,
-  SafeAreaView,
   Input,
   InputField,
   InputIcon,
   InputSlot,
+  Pressable,
+  SafeAreaView,
+  Text
 } from "@/components/ui";
+import { cartService } from "@/services/cart.service";
+import { categoryService } from "@/services/category.service";
+import { productService } from "@/services/product.service";
+import type { Category } from "@/types/category.type";
+import type { Product } from "@/types/product.type";
+import AuthStorageUtil from "@/utils/authStorage.util";
+import { useRouter } from "expo-router";
 import {
-  ShoppingCartIcon,
-  MessageCircleIcon,
-  SearchIcon,
+  BookIcon,
   CameraIcon,
   ChevronRightIcon,
-  LaptopIcon,
-  SmartphoneIcon,
-  WatchIcon,
-  HeadphonesIcon,
-  ShirtIcon,
   FootprintsIcon,
-  BookIcon,
+  HeadphonesIcon,
   HomeIcon,
+  LaptopIcon,
+  MessageCircleIcon,
+  SearchIcon,
+  ShirtIcon,
+  SmartphoneIcon,
+  WatchIcon
 } from "lucide-react-native";
-import ProductBox from "@/components/ProductBox";
-import CartIcon from "@/components/CartIcon";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Image, ScrollView } from "react-native";
 
 const banners = [
   {
@@ -56,98 +53,95 @@ const banners = [
   },
 ];
 
-const categories = [
-  { id: 1, name: "Laptop", icon: LaptopIcon, color: "#FF6B6B" },
-  { id: 2, name: "Điện thoại", icon: SmartphoneIcon, color: "#4ECDC4" },
-  { id: 3, name: "Đồng hồ", icon: WatchIcon, color: "#45B7D1" },
-  { id: 4, name: "Tai nghe", icon: HeadphonesIcon, color: "#96CEB4" },
-  { id: 5, name: "Thời trang", icon: ShirtIcon, color: "#FFEAA7" },
-  { id: 6, name: "Giày dép", icon: FootprintsIcon, color: "#DDA0DD" },
-  { id: 7, name: "Sách", icon: BookIcon, color: "#98D8C8" },
-  { id: 8, name: "Nội thất", icon: HomeIcon, color: "#F7DC6F" },
-];
+// Icon mapping cho categories
+const categoryIcons: { [key: string]: any } = {
+  "Laptop": LaptopIcon,
+  "Điện thoại": SmartphoneIcon,
+  "Đồng hồ": WatchIcon,
+  "Tai nghe": HeadphonesIcon,
+  "Thời trang": ShirtIcon,
+  "Giày dép": FootprintsIcon,
+  "Sách": BookIcon,
+  "Nội thất": HomeIcon,
+};
 
-const products = [
-  {
-    id: 1,
-    name: "Đồng hồ nam dây da Casio MTP-V004L-1AUDF",
-    price: "619.200₫",
-    originalPrice: "825.600₫",
-    discount: "25",
-    rating: 5.0,
-    soldCount: "Đã bán 8k+",
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-    deliveryTime: "4 Giờ",
-    location: "TP. Hồ Chí Minh",
-    isLive: true,
-  },
-  {
-    id: 2,
-    name: "Áo khoác nam dù chống nước",
-    price: "299.000₫",
-    originalPrice: "399.000₫",
-    discount: "25",
-    rating: 4.8,
-    soldCount: "Đã bán 2k+",
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-    deliveryTime: "2 Giờ",
-    location: "Hà Nội",
-    isLive: false,
-  },
-  {
-    id: 3,
-    name: "Giày thể thao nam Nike Air Max",
-    price: "1.299.000₫",
-    originalPrice: "1.599.000₫",
-    discount: "19",
-    rating: 4.9,
-    soldCount: "Đã bán 5k+",
-    image:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
-    deliveryTime: "6 Giờ",
-    location: "TP. Hồ Chí Minh",
-    isLive: true,
-  },
-  {
-    id: 4,
-    name: "Áo khoác nam dù chống nước",
-    price: "299.000₫",
-    originalPrice: "399.000₫",
-    discount: "25",
-    rating: 4.8,
-    soldCount: "Đã bán 2k+",
-    image:
-      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=300&fit=crop",
-    deliveryTime: "2 Giờ",
-    location: "Hà Nội",
-    isLive: false,
-  },
-  {
-    id: 5,
-    name: "Giày thể thao nam Nike Air Max",
-    price: "1.299.000₫",
-    originalPrice: "1.599.000₫",
-    discount: "19",
-    rating: 4.9,
-    soldCount: "Đã bán 5k+",
-    image:
-      "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop",
-    deliveryTime: "6 Giờ",
-    location: "TP. Hồ Chí Minh",
-    isLive: true,
-  },
-];
+const categoryColors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"];
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [cartCount] = useState(3);
   const [searchText, setSearchText] = useState("Áo Khoác Nam");
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [cartCount, setCartCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      
+      const categoriesRes = await categoryService.getAllCategoriesSimple();
+      setCategories(categoriesRes.data?.data || []);
+
+      const productsRes = await productService.getProducts(1, 10, "");
+      setProducts(productsRes.data?.data || []);
+
+      const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+      if (isAuthenticated) {
+        try {
+          const cartRes = await cartService.getCart();
+          const itemCount = cartRes.data?.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+          setCartCount(itemCount);
+        } catch (error) {
+          setCartCount(0);
+        }
+      } else {
+        setCartCount(0);
+      }
+    } catch (error) {
+      console.error("Error loading data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatProductForDisplay = (product: Product) => {
+    const variant = product.variants?.[0];
+    const price = variant?.price || 0;
+    const oldPrice = variant?.oldPrice || 0;
+    const discount = oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
+
+    return {
+      id: product.id,
+      name: product.name,
+      price: `${price.toLocaleString('vi-VN')}₫`,
+      originalPrice: oldPrice > 0 ? `${oldPrice.toLocaleString('vi-VN')}₫` : undefined,
+      discount: discount > 0 ? discount.toString() : undefined,
+      rating: product.rating || 0,
+      soldCount: "Đã bán 0",
+      image: product.thumbnail || product.productImages?.[0] || "",
+      deliveryTime: "2-3 ngày",
+      location: "TP. Hồ Chí Minh",
+      isLive: product.status,
+    };
+  };
 
   const handleSearchPress = () => {
     router.push('/search');
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+        <Box className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#EF4444" />
+        </Box>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
@@ -181,7 +175,7 @@ export default function HomeScreen() {
           <CartIcon 
             size={24} 
             color="white" 
-            badgeCount={3}
+            badgeCount={cartCount}
             className="mr-3"
           />
 
@@ -225,26 +219,38 @@ export default function HomeScreen() {
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
             <HStack space="md" className="px-1">
-              {categories.map((category) => (
-                <Pressable
-                  key={category.id}
-                  className="items-center min-w-[80px]"
-                >
-                  <Box
-                    className="w-16 h-16 rounded-xl items-center justify-center mb-2 box-shadow-soft-1 "
-                    style={{ backgroundColor: category.color + "20" }}
+              {categories.slice(0, 8).map((category, index) => {
+                const IconComponent = categoryIcons[category.name] || HomeIcon;
+                const color = categoryColors[index % categoryColors.length];
+               
+                const handleCategoryPress = () => {
+                  if (category.slug) {
+                    router.push(`/search-category?slug=${category.slug}`);
+                  }
+                };
+                
+                return (
+                  <Pressable
+                    key={category.id}
+                    className="items-center min-w-[80px]"
+                    onPress={handleCategoryPress}
                   >
-                    <Icon
-                      as={category.icon}
-                      size="lg"
-                      style={{ color: category.color }}
-                    />
-                  </Box>
-                  <Text className="text-gray-700 text-xs text-center font-medium">
-                    {category.name}
-                  </Text>
-                </Pressable>
-              ))}
+                    <Box
+                      className="w-16 h-16 rounded-xl items-center justify-center mb-2 box-shadow-soft-1"
+                      style={{ backgroundColor: color + "20" }}
+                    >
+                      <Icon
+                        as={IconComponent}
+                        size="lg"
+                        style={{ color: color }}
+                      />
+                    </Box>
+                    <Text className="text-gray-700 text-xs text-center font-medium">
+                      {category.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </HStack>
           </ScrollView>
         </Box>
@@ -266,16 +272,17 @@ export default function HomeScreen() {
 
           <ScrollView>
             <HStack space="md" className="flex-wrap">
-              {products.map((product, index) => (
-                <Box key={product.id} style={{ width: "48%" }}>
-                  <ProductBox product={product} />
-                </Box>
-              ))}
+              {products.map((product) => {
+                const displayProduct = formatProductForDisplay(product);
+                return (
+                  <Box key={product.id} style={{ width: "48%" }}>
+                    <ProductBox product={displayProduct} />
+                  </Box>
+                );
+              })}
             </HStack>
           </ScrollView>
         </Box>
-
-        {/* <Box className="h-20" /> */}
       </ScrollView>
     </SafeAreaView>
   );

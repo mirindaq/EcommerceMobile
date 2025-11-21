@@ -29,7 +29,7 @@ export default function ProductBox({ product }: ProductBoxProps) {
   const router = useRouter();
 
   const handleProductPress = () => {
-    router.push('/product-detail');
+    router.push(`/product-detail?id=${product.id}`);
   };
 
   return (

@@ -1,18 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import ProductBox from '@/components/ProductBox';
 import {
-  ScrollView,
-  Image,
-} from 'react-native';
+  Box, HStack,
+  Icon,
+  Input, InputField, InputIcon, InputSlot,
+  Pressable,
+  SafeAreaView,
+  Text,
+  VStack
+} from '@/components/ui';
 import { useRouter } from 'expo-router';
 import {
-  Box, HStack, VStack, Text, Pressable,
-  Heading, Badge, BadgeText, Icon, Avatar, AvatarImage, AvatarFallbackText,
-  SafeAreaView, Input, InputField, InputIcon, InputSlot,
-} from '@/components/ui';
-import {
-  ArrowLeftIcon, SearchIcon, CameraIcon, XIcon
+  ArrowLeftIcon,
+  CameraIcon,
+  SearchIcon,
+  XIcon
 } from 'lucide-react-native';
-import ProductBox from '@/components/ProductBox';
+import React, { useState } from 'react';
+import {
+  ScrollView
+} from 'react-native';
 
 // Mock data for search suggestions
 const searchSuggestions = [

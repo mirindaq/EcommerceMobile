@@ -1,9 +1,41 @@
-import { Tabs } from "expo-router";
-import React from "react";
+import { Tabs, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import AuthStorageUtil from "@/utils/authStorage.util";
+
 export default function TabLayout() {
+  const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+        if (!isAuthenticated) {
+          router.replace('/login');
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        router.replace('/login');
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (isChecking) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#EF4444" />
+      </View>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{

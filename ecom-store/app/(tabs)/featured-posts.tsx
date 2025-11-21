@@ -1,8 +1,8 @@
-import React from "react";
-import { ScrollView, Image, TouchableOpacity } from "react-native";
-import { VStack, HStack, Text, SafeAreaView } from "@/components/ui";
-import { UserIcon, ClockIcon } from "lucide-react-native";
+import { HStack, SafeAreaView, Text, VStack } from "@/components/ui";
 import { useRouter } from "expo-router";
+import { ClockIcon, UserIcon } from "lucide-react-native";
+import React from "react";
+import { Image, ScrollView, TouchableOpacity } from "react-native";
 
 // Khai báo kiểu dữ liệu cho một bài viết
 interface Post {
@@ -86,7 +86,7 @@ const PostItem: React.FC<{ post: Post }> = ({ post }) => {
             <ClockIcon size={14} color="#555" />
             <Text className="text-xs text-gray-600">
               {post.time.split(" ")[0]}
-            </Text>{" "}
+            </Text>
             {/* Chỉ lấy ngày */}
           </HStack>
         </HStack>
@@ -100,6 +100,11 @@ export default function FeaturedPostsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+      <VStack className="px-4 pt-4 pb-2 bg-white border-b border-gray-200 items-center">
+        <Text className="text-2xl font-bold text-gray-900">
+          Bài viết
+        </Text>
+      </VStack>
       <ScrollView showsVerticalScrollIndicator={false} className="px-4 py-2">
         {DUMMY_POSTS.map((post) => (
           <PostItem key={post.id} post={post} />
