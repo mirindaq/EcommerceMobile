@@ -107,6 +107,7 @@ export default function ProfileScreen() {
                 key={i}
                 onPress={() => {
                   if (item.label === "Hạng thành viên") router.push("/ranking");
+                  if (item.label === "Voucher") router.push("/my-voucher");
                 }}
                 className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
               >
