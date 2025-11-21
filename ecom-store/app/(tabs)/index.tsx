@@ -108,27 +108,6 @@ export default function HomeScreen() {
     }
   };
 
-  const formatProductForDisplay = (product: Product) => {
-    const variant = product.variants?.[0];
-    const price = variant?.price || 0;
-    const oldPrice = variant?.oldPrice || 0;
-    const discount = oldPrice > price ? Math.round(((oldPrice - price) / oldPrice) * 100) : 0;
-
-    return {
-      id: product.id,
-      name: product.name,
-      price: `${price.toLocaleString('vi-VN')}₫`,
-      originalPrice: oldPrice > 0 ? `${oldPrice.toLocaleString('vi-VN')}₫` : undefined,
-      discount: discount > 0 ? discount.toString() : undefined,
-      rating: product.rating || 0,
-      soldCount: "Đã bán 0",
-      image: product.thumbnail || product.productImages?.[0] || "",
-      deliveryTime: "2-3 ngày",
-      location: "TP. Hồ Chí Minh",
-      isLive: product.status,
-    };
-  };
-
   const handleSearchPress = () => {
     router.push('/search');
   };
@@ -273,10 +252,9 @@ export default function HomeScreen() {
           <ScrollView>
             <HStack space="md" className="flex-wrap">
               {products.map((product) => {
-                const displayProduct = formatProductForDisplay(product);
                 return (
                   <Box key={product.id} style={{ width: "48%" }}>
-                    <ProductBox product={displayProduct} />
+                    <ProductBox product={product} />
                   </Box>
                 );
               })}

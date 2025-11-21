@@ -1,110 +1,152 @@
+import {
+  Box,
+  HStack,
+  Icon,
+  Pressable,
+  Text,
+  VStack
+} from '@/components/ui';
+import type { Product } from '@/types/product.type';
+import { useRouter } from 'expo-router';
+import { HeartIcon, StarIcon } from 'lucide-react-native';
 import React from 'react';
 import { Image } from 'react-native';
-import { useRouter } from 'expo-router';
-import {
-  Box, HStack, VStack, Text, Pressable, Badge, BadgeText, Icon,
-} from '@/components/ui';
-import {
-  StarIcon, TruckIcon, MapPinIcon,
-  HeartIcon,
-} from 'lucide-react-native';
 
 interface ProductBoxProps {
-  product: {
-    id: number;
-    name: string;
-    price: string;
-    originalPrice?: string;
-    discount?: string;
-    rating: number;
-    soldCount: string;
-    image: string;
-    deliveryTime: string;
-    location: string;
-    isLive?: boolean;
-  };
+  product: Product;
 }
 
 export default function ProductBox({ product }: ProductBoxProps) {
   const router = useRouter();
 
+  // Format price helper
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0,
+    }).format(price);
+  };
+
+  const firstVariant =
+    product.variants && product.variants.length > 0
+      ? product.variants[0]
+      : null;
+
+  const productImage =
+    product.thumbnail ||
+    (product.productImages && product.productImages.length > 0
+      ? product.productImages[0]
+      : 'https://via.placeholder.com/150'); // Fallback image
+
+  const discountPercent =
+    firstVariant &&
+    firstVariant.oldPrice > 0 &&
+    firstVariant.price < firstVariant.oldPrice
+      ? Math.round(
+          ((firstVariant.oldPrice - firstVariant.price) /
+            firstVariant.oldPrice) *
+            100
+        )
+      : firstVariant?.discount || 0;
+
+  const displayRating = product.rating > 0 ? product.rating.toFixed(1) : null;
+
   const handleProductPress = () => {
-    router.push(`/product-detail?id=${product.id}`);
+    router.push(`/product-detail?slug=${product.slug}`);
+  };
+
+  const handleAddToWishlist = (e: any) => {
+    e.stopPropagation(); // Ngăn chặn click vào cha (chuyển trang)
+    // TODO: Logic add wishlist
+    console.log('Add to wishlist');
   };
 
   return (
-    <Pressable 
-      className="bg-white rounded-2xl overflow-hidden border border-gray-300 mb-4"
-      style={{ minWidth: 160, width: '100%' }}
+    <Pressable
+      className="bg-white rounded-xl overflow-hidden border border-gray-100 flex-1 m-1"
+      style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05, // Giảm shadow cho nhẹ nhàng hơn
+        shadowRadius: 8,
+        elevation: 2,
+      }}
       onPress={handleProductPress}
     >
-      <Box className="relative">
+      {/* --- IMAGE AREA --- */}
+      <Box className="relative bg-gray-50 aspect-square">
         <Image
-          source={{ uri: product.image }}
-          className="w-full h-48"
+          source={{ uri: productImage }}
+          className="w-full h-full"
           resizeMode="cover"
-          alt={`product-image-${product.id}`}
         />
 
-        {/* Tag giảm giá */}
-        {product.discount && (
-          <Badge className="absolute top-2 right-2 bg-red-500 rounded-lg px-2 py-1">
-            <BadgeText className="text-white font-bold text-xs">
-              -{product.discount}%
-            </BadgeText>
-          </Badge>
+        {/* Discount Badge - Minimalist */}
+        {discountPercent > 0 && (
+          <Box className="absolute top-0 left-0 bg-red-500 px-2 py-1 rounded-br-xl z-10">
+            <Text className="text-white font-bold text-[10px]">
+              -{discountPercent}%
+            </Text>
+          </Box>
         )}
 
-        {/* Icon tiện ích ở cạnh phải */}
-        <VStack className="absolute right-2 bottom-2">
-          <Box className="bg-blue-50 rounded-full p-2">
-            <HeartIcon size={16} color="#EF4444" />
-          </Box>
-
-        </VStack>
+        {/* Wishlist Button - Floating & Accessible */}
+        <Pressable
+          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm"
+          onPress={handleAddToWishlist}
+        >
+          <Icon as={HeartIcon} size="sm" className="text-gray-600" />
+        </Pressable>
       </Box>
 
-      {/* Thông tin sản phẩm */}
-      <VStack className="p-3">
-        <Text className="text-gray-900 font-medium text-sm mb-1">
+      {/* --- INFO AREA --- */}
+      <VStack className="p-3 justify-between flex-1 gap-1">
+        {/* Category / Brand (Optional - adds context) */}
+        {/* <Text className="text-gray-400 text-[10px] uppercase font-bold tracking-wider">
+          {product.category?.name || 'Sản phẩm'}
+        </Text> */}
+
+        {/* Product Name */}
+        <Text
+          className="text-gray-800 font-medium text-sm leading-5"
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
           {product.name}
         </Text>
 
-        {/* Rating & đã bán */}
-        <HStack className="items-center mb-2">
-          <Icon as={StarIcon} size="sm" className="text-yellow-400 mr-1" />
-          <Text className="text-gray-800 font-semibold text-xs">{product.rating}</Text>
-          <Text className="text-gray-400 text-xs mx-1">•</Text>
-          <Text className="text-gray-500 text-xs">Đã bán {product.soldCount}</Text>
+        {/* Rating & Sold Count */}
+        <HStack className="items-center gap-1 mt-1">
+          <Icon as={StarIcon} size="xs" className="text-yellow-400 fill-yellow-400" />
+          <Text className="text-gray-600 text-xs font-medium">
+            {displayRating || '5.0'}
+          </Text>
+
         </HStack>
 
-        {/* Giá */}
-        <HStack className="items-center mb-2">
-          <Text className="text-red-500 font-bold text-lg mr-2">{product.price}</Text>
-          {product.originalPrice && (
-            <Text className="text-gray-400 text-xs line-through">
-              {product.originalPrice}
+        {/* Price Section - Bottom Align */}
+        <VStack className="mt-2">
+          <HStack className="items-baseline gap-1">
+            <Text className="text-red-600 font-bold text-base">
+              {firstVariant ? formatPrice(firstVariant.price) : 'Liên hệ'}
             </Text>
-          )}
-        </HStack>
-
-        {/* Giao hàng & vị trí */}
-        <HStack className="items-center justify-between">
-          <HStack className="items-center">
-            <Box className="bg-green-500 rounded-full p-1 mr-1">
-              <TruckIcon size={12} color="white" />
-            </Box>
-            <Text className="text-green-600 text-xs font-semibold">
-              {product.deliveryTime}
-            </Text>
+            {/* <Text className="text-gray-500 font-semibold text-xs underline">đ</Text> */}
           </HStack>
-
-          <HStack className="items-center">
-            <Icon as={MapPinIcon} size="xs" className="text-gray-400 mr-1" />
-            <Text className="text-gray-500 text-xs">{product.location}</Text>
-          </HStack>
-        </HStack>
+          
+          {/* Old Price - Subtle */}
+          {firstVariant &&
+            firstVariant.oldPrice > 0 &&
+            firstVariant.price < firstVariant.oldPrice && (
+              <Text className="text-gray-400 text-xs line-through">
+                {formatPrice(firstVariant.oldPrice)}
+              </Text>
+            )}
+        </VStack>
       </VStack>
+
+      {/* Optional: Add Cart Button overlay on bottom right if needed, 
+          but usually clean card is better */}
     </Pressable>
   );
 }

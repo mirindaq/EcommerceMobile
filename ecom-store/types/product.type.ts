@@ -7,7 +7,6 @@ export type Product = {
   name: string;
   slug: string;
   stock: number;
-  // discount: number;
   description: string;
   thumbnail: string;
   status: boolean;

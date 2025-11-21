@@ -1,8 +1,8 @@
-import axiosClient from '@/configurations/axios.config'
+import axiosClient from '@/configurations/axios.config';
 import type {
   ProductListResponse,
   ProductResponse,
-} from '@/types/product.type'
+} from '@/types/product.type';
 
 export const productService = {
   /**
@@ -12,6 +12,7 @@ export const productService = {
     const response = await axiosClient.get<ProductListResponse>(
       `/products?page=${page}&size=${size}&search=${search}`
     )
+
     return response.data
   },
 
@@ -42,6 +43,24 @@ export const productService = {
     })
     const response = await axiosClient.get<ProductListResponse>(
       `/products/search/${categorySlug}?${params.toString()}`
+    )
+    return response.data
+  },
+
+  /**
+   * Tìm kiếm sản phẩm với Elasticsearch
+   */
+  searchProductsWithElasticsearch: async (query: string, page: number = 1, size: number = 12, sortBy?: string) => {
+    const params = new URLSearchParams({
+      query: query,
+      page: page.toString(),
+      size: size.toString()
+    })
+    if (sortBy) {
+      params.set('sortBy', sortBy)
+    }
+    const response = await axiosClient.get<ProductListResponse>(
+      `/products/search?${params.toString()}`
     )
     return response.data
   }
