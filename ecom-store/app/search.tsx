@@ -3,8 +3,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
-import { useLayoutEffect } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import {
   Box, HStack, VStack, Text, Pressable,
   Heading, Badge, BadgeText, Icon, Avatar, AvatarImage, AvatarFallbackText,
@@ -54,18 +53,12 @@ const suggestedProducts = [
 ];
 
 export default function SearchScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [searchText, setSearchText] = useState('LỄ HỘI SÁCH -50%');
   const [isSearchFocused, setIsSearchFocused] = useState(true);
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-  }, [navigation]);
-
   const handleGoBack = () => {
-    navigation.goBack();
+    router.back();
   };
 
   return (

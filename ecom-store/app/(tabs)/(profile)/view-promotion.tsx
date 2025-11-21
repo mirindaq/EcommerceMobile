@@ -23,6 +23,7 @@ import {
   ChevronRightIcon, // 👈 ĐÃ KHẮC PHỤC: Thêm import ChevronRightIcon
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Khai báo kiểu dữ liệu cho sản phẩm (Tham khảo từ HomeScreen)
 interface Product {
@@ -159,11 +160,12 @@ const ProductBox: React.FC<{ product: Product }> = ({ product }) => (
 );
 
 export default function DiscountedProductsScreen() {
+  useHideTabBar();
   const router = useRouter();
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   return (
@@ -195,7 +197,6 @@ export default function DiscountedProductsScreen() {
           </HStack>
         </Box>
 
-        <Box className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );

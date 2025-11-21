@@ -1,27 +1,30 @@
 import React from "react";
-import { ScrollView, View, Text, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, View, Text } from "react-native";
 import { ArrowLeftIcon } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView, HStack, Pressable, Text as UIText } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Tên file: TermsOfServiceScreen.tsx
 export default function TermsOfServiceScreen() {
   const router = useRouter();
+  useHideTabBar();
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 border-b border-gray-200 bg-white">
-        <TouchableOpacity onPress={handleGoBack} className="mr-4">
-          <ArrowLeftIcon size={24} />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold">Điều khoản sử dụng</Text>
-      </View>
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={handleGoBack}>
+          <ArrowLeftIcon size={24} color="#000" />
+        </Pressable>
+        <UIText className="text-lg font-semibold">Điều khoản sử dụng</UIText>
+        <View style={{ width: 24 }} />
+      </HStack>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 p-4">
         {/* Tiêu đề chính */}
@@ -133,7 +136,6 @@ export default function TermsOfServiceScreen() {
           </View>
         </View>
 
-        <View className="h-20" />
       </ScrollView>
     </SafeAreaView>
   );

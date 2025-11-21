@@ -1,9 +1,10 @@
-import React from "react";
-import { ScrollView, Image } from "react-native";
-import { Box, VStack, HStack, Text, Pressable, Icon, SafeAreaView } from "@/components/ui";
-import { ArrowLeftIcon } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { Box, HStack, Icon, Pressable, SafeAreaView, Text, VStack } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { ArrowLeftIcon } from "lucide-react-native";
+import React from "react";
+import { Image, ScrollView } from "react-native";
 
 export function SilverCard() {
   return (
@@ -35,13 +36,14 @@ export function SilverCard() {
 
 export default function RankingScreen() {
   const router = useRouter();
+  useHideTabBar();
 
   return (
     <SafeAreaView className="flex-1 bg-[#0A327C]" edges={['top']}>
       {/* Header */}
-      <HStack className="items-center px-4 py-3 bg-white">
-        <Pressable onPress={() => router.navigate("/profile")}>
-          <Icon as={ArrowLeftIcon} size="lg" color="black" />
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
+          <Icon as={ArrowLeftIcon} size="lg" color="#000" />
         </Pressable>
         <Text className="flex-1 text-center font-semibold text-lg text-black">
           Hạng thành viên
@@ -128,7 +130,6 @@ export default function RankingScreen() {
             />
           </Pressable>
         </Box>
-        <Box className="h-20" />
       </ScrollView>
     </SafeAreaView>
   );

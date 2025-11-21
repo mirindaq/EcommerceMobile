@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, Image } from "react-native";
+import { ScrollView, Image, View } from "react-native";
 import {
   Box,
   Text,
@@ -10,18 +10,21 @@ import {
 } from "@/components/ui";
 import { ChevronLeft } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 export default function VoucherScreen() {
   const router = useRouter();
+  useHideTabBar();
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* Header */}
-      <HStack className="items-center px-4 py-3 border-b border-gray-200">
-        <Pressable onPress={() => router.back()} className="mr-3">
-          <ChevronLeft size={24} color="#EF4444" />
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
+          <ChevronLeft size={24} color="#000" />
         </Pressable>
         <Text className="text-lg font-semibold">Mã Giảm Giá</Text>
+        <View style={{ width: 24 }} />
       </HStack>
 
       {/* List */}

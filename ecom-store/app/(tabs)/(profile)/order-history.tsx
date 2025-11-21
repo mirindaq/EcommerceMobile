@@ -1,7 +1,7 @@
 // app/(tabs)/profile/order-history.tsx
 
 import React from "react";
-import { ScrollView, Image, TouchableOpacity } from "react-native";
+import { ScrollView, Image, View } from "react-native";
 import {
   Box,
   VStack,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { ArrowLeftIcon } from "lucide-react-native";
 import { useRouter, Stack } from "expo-router";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Dữ liệu đơn hàng đã giao
 const deliveredOrders = [
@@ -112,17 +113,19 @@ const OrderCard = ({ order }: { order: (typeof deliveredOrders)[0] }) => {
 
 export default function OrderHistoryScreen() {
   const router = useRouter();
+  useHideTabBar();
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* Header */}
-      <HStack className="bg-white items-center p-4 border-b border-gray-200">
-        <TouchableOpacity onPress={() => router.back()} className="mr-4">
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
           <ArrowLeftIcon size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="font-bold text-lg">Đơn đã mua</Text>
+        </Pressable>
+        <Text className="text-lg font-semibold">Đơn đã mua</Text>
+        <View style={{ width: 24 }} />
       </HStack>
 
       {/* List đơn đã giao */}
@@ -133,7 +136,6 @@ export default function OrderHistoryScreen() {
           ))}
         </VStack>
 
-        <Box className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );

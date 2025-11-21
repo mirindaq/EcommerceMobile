@@ -1,27 +1,30 @@
-import React from "react";
-import { ScrollView, Image } from "react-native";
 import {
   Box,
-  Text,
   HStack,
-  VStack,
   Pressable,
   SafeAreaView,
+  Text,
+  VStack,
 } from "@/components/ui";
-import { ChevronLeftIcon } from "lucide-react-native";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { useRouter } from "expo-router";
+import { ChevronLeftIcon } from "lucide-react-native";
+import React from "react";
+import { Image, ScrollView, View } from "react-native";
 
 export default function PendingDelivery() {
   const router = useRouter();
+  useHideTabBar();
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
-      <Box className="flex-row items-center px-4 py-3 bg-white shadow">
-        <Pressable onPress={() => router.back()}>
-          <ChevronLeftIcon size={24} color="black" />
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
+          <ChevronLeftIcon size={24} color="#000" />
         </Pressable>
-        <Text className="ml-3 text-lg font-semibold">Chờ giao hàng</Text>
-      </Box>
+        <Text className="text-lg font-semibold">Chờ giao hàng</Text>
+        <View style={{ width: 24 }} />
+      </HStack>
 
       <ScrollView className="px-4 mt-3">
         <Box className="bg-white p-3 rounded-xl mb-3">

@@ -1,7 +1,7 @@
 import React from "react";
 import { ScrollView, Image, TouchableOpacity } from "react-native";
-import { Box, VStack, HStack, Text, Icon, SafeAreaView } from "@/components/ui";
-import { ArrowLeftIcon, UserIcon, ClockIcon } from "lucide-react-native";
+import { VStack, HStack, Text, SafeAreaView } from "@/components/ui";
+import { UserIcon, ClockIcon } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
 // Khai báo kiểu dữ liệu cho một bài viết
@@ -97,27 +97,13 @@ const PostItem: React.FC<{ post: Post }> = ({ post }) => {
 
 export default function FeaturedPostsScreen() {
   const router = useRouter();
-  const ICON_COLOR = "#EF4444";
-
-  const handleGoBack = () => {
-    router.back();
-  };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Header */}
-      <Box className="flex-row items-center px-4 py-3 border-b border-gray-200">
-        <TouchableOpacity onPress={handleGoBack} className="mr-4">
-          <ArrowLeftIcon size={24} />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold">Bài viết nổi bật</Text>
-      </Box>
-
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} className="px-4 py-2">
         {DUMMY_POSTS.map((post) => (
           <PostItem key={post.id} post={post} />
         ))}
-        <Box className="h-8" />
       </ScrollView>
     </SafeAreaView>
   );

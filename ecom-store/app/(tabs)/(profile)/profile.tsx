@@ -1,37 +1,34 @@
-import React from "react";
-import { ScrollView, Image } from "react-native";
 import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Pressable,
-  Icon,
-  Badge,
-  BadgeText,
   Avatar,
   AvatarImage,
+  Box,
+  HStack,
+  Icon,
+  Pressable,
   SafeAreaView,
-  Divider,
+  Text,
+  VStack
 } from "@/components/ui";
+import { useRouter } from "expo-router";
 import {
-  ShoppingCartIcon,
-  MessageCircleIcon,
-  ChevronRightIcon,
-  PackageIcon,
-  TruckIcon,
   CheckCircleIcon,
-  WalletIcon,
-  TicketIcon,
-  ShieldCheckIcon,
+  ChevronRightIcon,
+  GiftIcon,
+  HeartIcon,
   LogOut,
   MapPinIcon,
-  GiftIcon,
+  MessageCircleIcon,
+  PackageIcon,
   PersonStandingIcon,
-  NotebookText,
-  HeartIcon,
+  ShieldCheckIcon,
+  ShoppingCartIcon,
+  TicketIcon,
+  TruckIcon,
+  WalletIcon,
+  WrenchIcon
 } from "lucide-react-native";
-import { useRouter } from "expo-router";
+import React from "react";
+import { ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -63,8 +60,6 @@ export default function ProfileScreen() {
               >
                 <HeartIcon size={24} color="white" />
               </Pressable>
-              <Pressable>
-            <HStack space="3xl">
               <Pressable
                 onPress={() => {
                   router.push("/cart");
@@ -157,15 +152,13 @@ export default function ProfileScreen() {
               {
                 label: "Địa chỉ giao hàng",
                 icon: MapPinIcon,
-              },
-              {
-                label: "Bài viết nổi bật",
-                icon: NotebookText,
-                onPress: () => router.push("/featured-posts"),
-              },
                 onPress: () => router.push("/my-address"),
               },
-              { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
+              { 
+                label: "Bảo hành & sửa chữa", 
+                icon: WrenchIcon,
+                onPress: () => {},
+              },
               {
                 label: "Ưu đãi giảm giá",
                 icon: GiftIcon,

@@ -24,9 +24,11 @@ import DateTimePicker, {
 } from "@react-native-community/datetimepicker";
 
 import { useRouter } from "expo-router";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  useHideTabBar();
   const [name, setName] = useState("Việt Hoàng");
   const [bio, setBio] = useState("");
   const [gender, setGender] = useState("Nam");
@@ -39,7 +41,7 @@ export default function EditProfileScreen() {
     <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
       <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
           <ArrowLeftIcon size={24} color="#000" />
         </Pressable>
         <Text className="text-lg font-semibold">Thông tin cá nhân</Text>
@@ -117,7 +119,6 @@ export default function EditProfileScreen() {
           <ProfileInput label="Tài khoản liên kết" value="-" editable={false} />
         </Box>
 
-        <Box className="h-24" />
       </ScrollView>
     </SafeAreaView>
   );

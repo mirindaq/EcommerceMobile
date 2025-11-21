@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   ScrollView,
   TextInput,
@@ -9,13 +8,14 @@ import {
   TextInputProps,
   Alert,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ArrowLeftIcon,
   ChevronRightIcon,
   Trash2Icon,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView, HStack, Pressable, Text } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Khai báo kiểu Props cho component phụ AddressInput
 interface AddressInputProps extends TextInputProps {
@@ -47,11 +47,12 @@ const AddressInput: React.FC<AddressInputProps> = ({
 
 export default function EditAddressScreen() {
   const router = useRouter();
+  useHideTabBar();
   const [isDefault, setIsDefault] = useState(true);
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   const handleDeleteAddress = () => {
@@ -64,7 +65,7 @@ export default function EditAddressScreen() {
           text: "Xóa",
           onPress: () => {
             console.log("Đã xóa địa chỉ");
-            router.back();
+            router.push('/(tabs)/(profile)/profile');
           },
           style: "destructive",
         },
@@ -73,7 +74,7 @@ export default function EditAddressScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header - Có nút Xóa Địa Chỉ */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <View className="flex-row items-center">
@@ -127,7 +128,6 @@ export default function EditAddressScreen() {
           </View>
         </View>
 
-        <View className="h-20" />
       </ScrollView>
 
       {/* Footer - Nút HOÀN THÀNH */}

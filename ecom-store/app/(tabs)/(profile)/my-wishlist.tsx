@@ -18,6 +18,7 @@ import {
   // Bỏ StarIcon vì không còn hiển thị rating theo kiểu Home
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Khai báo kiểu dữ liệu cho sản phẩm
 interface Product {
@@ -153,10 +154,11 @@ const ProductBox: React.FC<{ product: Product }> = ({ product }) => (
 
 export default function FavoriteProductsScreen() {
   const router = useRouter();
+  useHideTabBar();
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   return (
@@ -194,7 +196,6 @@ export default function FavoriteProductsScreen() {
           </HStack>
         </Box>
 
-        <Box className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );

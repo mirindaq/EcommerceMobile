@@ -1,16 +1,16 @@
+import { HStack, Pressable, SafeAreaView, Text } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
+import { useRouter } from "expo-router";
+import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
   ScrollView,
-  TextInput,
   Switch,
+  TextInput,
   TextInputProps,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react-native";
-import { useRouter } from "expo-router";
 
 interface AddressInputProps extends TextInputProps {
   placeholder: string;
@@ -40,23 +40,25 @@ const AddressInput: React.FC<AddressInputProps> = ({
 
 export default function AddAddressScreen() {
   const router = useRouter();
+  useHideTabBar();
   const [isDefault, setIsDefault] = useState(false);
   const ICON_COLOR = "#EF4444";
   const PRIMARY_COLOR = "text-red-500";
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 bg-white border-b border-gray-200">
-        <TouchableOpacity onPress={handleGoBack} className="mr-4">
-          <ArrowLeftIcon size={24} />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold">Địa chỉ mới</Text>
-      </View>
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={handleGoBack}>
+          <ArrowLeftIcon size={24} color="#000" />
+        </Pressable>
+        <Text className="text-lg font-semibold">Địa chỉ mới</Text>
+        <View style={{ width: 24 }} />
+      </HStack>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
         {/* 1. Khu vực Form Nhập Địa Chỉ */}
@@ -95,7 +97,6 @@ export default function AddAddressScreen() {
           </View>
         </View>
 
-        <View className="h-20" />
       </ScrollView>
 
       {/* Footer - Nút HOÀN THÀNH */}

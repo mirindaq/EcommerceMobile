@@ -28,6 +28,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="featured-posts"
+        options={{
+          title: "Bài viết",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="book.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="(profile)/profile"
         options={{
           title: "Tôi",
@@ -49,24 +58,75 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="(profile)/add-address"
         options={{
           href: null,
-          tabBarStyle: { display: 'none' },
         }}
       />
       <Tabs.Screen
-        name="product-detail"
+        name="(profile)/edit-address"
         options={{
           href: null,
-          tabBarStyle: { display: 'none' },
         }}
       />
       <Tabs.Screen
-        name="cart"
+        name="(profile)/my-address"
         options={{
           href: null,
-          tabBarStyle: { display: 'none' },
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/my-voucher"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/my-wishlist"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/order-history"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/pending-confirm"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/pending-delivery"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/pending-pickup"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/post-detail"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/term-of-use"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="(profile)/view-promotion"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

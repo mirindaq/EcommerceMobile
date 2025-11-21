@@ -1,7 +1,8 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeftIcon } from "lucide-react-native";
 import { useRouter } from "expo-router";
+import { SafeAreaView, HStack, Pressable } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 
 // Khai báo kiểu dữ liệu cho một đối tượng địa chỉ
 interface Address {
@@ -14,9 +15,10 @@ interface Address {
 
 export default function MyAddressScreen() {
   const router = useRouter();
+  useHideTabBar();
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   const handleAddNewAddress = () => {
@@ -67,14 +69,15 @@ export default function MyAddressScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 border-b border-gray-200">
-        <TouchableOpacity onPress={handleGoBack} className="mr-4">
-          <ArrowLeftIcon size={24} />
-        </TouchableOpacity>
-        <Text className="text-xl font-bold">Địa chỉ của Tôi</Text>
-      </View>
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={handleGoBack}>
+          <ArrowLeftIcon size={24} color="#000" />
+        </Pressable>
+        <Text className="text-lg font-semibold">Địa chỉ của Tôi</Text>
+        <View style={{ width: 24 }} />
+      </HStack>
 
       <ScrollView className="px-4 pt-2">
         <Text className="text-gray-500 mb-2">Địa Chỉ</Text>

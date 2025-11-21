@@ -1,8 +1,9 @@
-import React from "react";
-import { ScrollView, Image, TouchableOpacity, Dimensions } from "react-native";
-import { Box, VStack, HStack, Text, Icon, SafeAreaView } from "@/components/ui";
-import { ArrowLeftIcon, Share2Icon, BookmarkIcon } from "lucide-react-native";
+import { Box, HStack, SafeAreaView, Text, VStack } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { useRouter } from "expo-router";
+import { ArrowLeftIcon } from "lucide-react-native";
+import React from "react";
+import { Dimensions, Image, ScrollView, TouchableOpacity } from "react-native";
 
 // Dữ liệu giả lập nội dung chi tiết
 const DUMMY_POST_DETAIL = {
@@ -73,7 +74,7 @@ const PostContent: React.FC<{
     const imageWidth = (windowWidth - 48 - 8) / 2; // windowWidth - padding(32) - margin(16) - space(8) / 2
     return (
       <HStack className="justify-between mb-4">
-        {content.images.map((img, index) => (
+        {content.images?.map((img, index) => (
           <VStack key={index} className="w-[49%]">
             <Image
               source={{ uri: img.uri }}
@@ -91,13 +92,14 @@ const PostContent: React.FC<{
 };
 
 export default function PostDetailScreen() {
+  useHideTabBar();
   const router = useRouter();
   const ICON_COLOR = "#EF4444";
 
   // const { id } = useLocalSearchParams(); // Dùng để lấy id bài viết nếu cần
 
   const handleGoBack = () => {
-    router.back();
+    router.push('/(tabs)/(profile)/profile');
   };
 
   return (
@@ -127,7 +129,6 @@ export default function PostDetailScreen() {
           ))}
         </VStack>
 
-        <Box className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
