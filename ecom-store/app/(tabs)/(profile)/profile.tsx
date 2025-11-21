@@ -166,7 +166,11 @@ export default function ProfileScreen() {
                 onPress: () => router.push("/my-address"),
               },
               { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
-              { label: "Ưu đãi giảm giá", icon: GiftIcon },
+              {
+                label: "Ưu đãi giảm giá",
+                icon: GiftIcon,
+                onPress: () => router.push("/view-promotion"),
+              },
             ].map((item, i) => (
               <Pressable
                 key={i}
