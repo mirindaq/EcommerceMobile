@@ -215,6 +215,10 @@ export default function ProfileScreen() {
             { label: "Đăng xuất", icon: LogOut },
           ].map((item, i) => (
             <Pressable
+              onPress={() => {
+                if (item.label === "Điều khoản sử dụng")
+                  router.push("/term-of-use");
+              }}
               key={i}
               className="flex-row items-center justify-between py-3 border-b border-gray-100"
             >
