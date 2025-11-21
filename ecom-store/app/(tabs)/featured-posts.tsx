@@ -1,63 +1,28 @@
 import { HStack, SafeAreaView, Text, VStack } from "@/components/ui";
+import { articleService } from "@/services/article.service"; // Import service
+import type { Article } from "@/types/article.type"; // Import Article type
 import { useRouter } from "expo-router";
 import { ClockIcon, UserIcon } from "lucide-react-native";
-import React from "react";
-import { Image, ScrollView, TouchableOpacity } from "react-native";
+import React, { useEffect, useState } from "react"; // Thêm import useEffect, useState
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native"; // Thêm ActivityIndicator
 
-// Khai báo kiểu dữ liệu cho một bài viết
-interface Post {
-  id: number;
-  title: string;
-  author: string;
-  time: string;
-  imageUri: string;
+interface PostDisplay extends Article {
+  author: string; // staffName
+  time: string; // createdAt
+  imageUri: string; // thumbnail
 }
 
-// Dữ liệu giả (Dựa trên hình ảnh bạn cung cấp)
-const DUMMY_POSTS: Post[] = [
-  {
-    id: 1,
-    title:
-      "Đánh giá Apple Watch Series 11: Yếu tố quan trọng nhất đã được nâng cấp!",
-    author: "Jay Nguyen",
-    time: "19/11/2025 16:30",
-    imageUri:
-      "https://cdn-media.sforum.vn/storage/app/media/thanhnam/danh-gia-apple-watch-series-11/danh-gia-apple-watch-series-11-thumb.jpg",
-  },
-  {
-    id: 2,
-    title:
-      "Trên tay Cuktech 10 Mini: Sạc dự phòng siêu nhỏ gọn, dung lượng 10,000mAh, công suất 55W, giá 820K",
-    author: "minhcab_",
-    time: "19/11/2025 14:19",
-    imageUri:
-      "https://cdn-media.sforum.vn/storage/app/media/hoangminh/tren-tay-cuktech-10-mini/tren-tay-cuktech-10-mini-thumbnail.jpg",
-  },
-  {
-    id: 3,
-    title:
-      "3 năm dùng MacBook Air M2: Điều gì khiến mình vẫn chưa thấy cần nâng cấp?",
-    author: "Hải Trần",
-    time: "19/11/2025 09:58",
-    imageUri:
-      "https://cdn-media.sforum.vn/storage/app/media/thongvo/danh-gia-macbook-air-m2-sau-3-nam/danh-gia-macbook-air-m2-13-inch-cover.jpg",
-  },
-  {
-    id: 4,
-    title: "Review chi tiết Galaxy S25 Ultra: Camera 200MP và AI đột phá",
-    author: "AnhKhoa",
-    time: "18/11/2025 21:00",
-    imageUri:
-      "https://cdn-media.sforum.vn/storage/app/media/trannghia/Galaxy-S25-Ultra-cau-hinh-cover.jpg",
-  },
-];
-
 // Component hiển thị mỗi bài viết
-const PostItem: React.FC<{ post: Post }> = ({ post }) => {
+const PostItem: React.FC<{ post: PostDisplay }> = ({ post }) => {
   const router = useRouter();
 
   const handlePress = () => {
-    // Chuyển hướng đến màn hình chi tiết bài viết
+    // Chuyển hướng đến màn hình chi tiết bài viết, dùng ID
     router.push(`/post-detail?id=${post.id}`);
   };
 
@@ -67,7 +32,7 @@ const PostItem: React.FC<{ post: Post }> = ({ post }) => {
       className="flex-row items-start py-3 border-b border-gray-100"
     >
       <Image
-        source={{ uri: post.imageUri }}
+        source={{ uri: post.imageUri || "placeholder_uri" }} // Sửa thành post.imageUri
         className="w-24 h-24 rounded-lg mr-4 object-cover"
       />
       <VStack className="flex-1 justify-between h-24">
@@ -80,14 +45,14 @@ const PostItem: React.FC<{ post: Post }> = ({ post }) => {
         <HStack className="items-center justify-start space-x-3 mt-1">
           <HStack className="items-center space-x-1 mr-3">
             <UserIcon size={14} color="#555" />
-            <Text className="text-xs text-gray-600">{post.author}</Text>
+            <Text className="text-xs text-gray-600">{post.author}</Text>{" "}
+            {/* staffName */}
           </HStack>
           <HStack className="items-center space-x-1">
             <ClockIcon size={14} color="#555" />
             <Text className="text-xs text-gray-600">
-              {post.time.split(" ")[0]}
+              {post.time.split("T")[0]} {/* Cắt chỉ lấy ngày */}
             </Text>
-            {/* Chỉ lấy ngày */}
           </HStack>
         </HStack>
       </VStack>
@@ -97,18 +62,67 @@ const PostItem: React.FC<{ post: Post }> = ({ post }) => {
 
 export default function FeaturedPostsScreen() {
   const router = useRouter();
+  const [posts, setPosts] = useState<PostDisplay[]>([]); // Sửa DUMMY_POSTS thành posts
+  const [loading, setLoading] = useState(true);
+  const formatArticleForDisplay = (article: Article): PostDisplay => {
+    return {
+      ...article,
+      id: article.id, // ID là số
+      author: article.staffName || "Admin",
+      time: article.createdAt || "", // 'YYYY-MM-DDTHH:MM:SS...'
+      imageUri: article.thumbnail || "https://via.placeholder.com/150",
+      // Các trường khác được kế thừa từ Article
+    };
+  };
+  const loadPosts = async () => {
+    try {
+      setLoading(true);
+      // Lấy các bài viết có status = true (đã xuất bản)
+      const response = await articleService.getArticles(1, 10, "", true);
 
+      const fetchedPosts: PostDisplay[] = response.data.data
+        ? response.data.data.map(formatArticleForDisplay)
+        : [];
+
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+      // Xử lý lỗi (ví dụ: hiển thị thông báo)
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+        <VStack className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#EF4444" />
+        </VStack>
+      </SafeAreaView>
+    );
+  }
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <VStack className="px-4 pt-4 pb-2 bg-white border-b border-gray-200 items-center">
-        <Text className="text-2xl font-bold text-gray-900">
-          Bài viết
-        </Text>
+        <Text className="text-2xl font-bold text-gray-900">Bài viết</Text>
       </VStack>
       <ScrollView showsVerticalScrollIndicator={false} className="px-4 py-2">
-        {DUMMY_POSTS.map((post) => (
-          <PostItem key={post.id} post={post} />
-        ))}
+        {posts.map(
+          (
+            post // Dùng state posts
+          ) => (
+            <PostItem key={post.id} post={post} />
+          )
+        )}
+        {posts.length === 0 && (
+          <Text className="text-center text-gray-500 mt-10">
+            Không tìm thấy bài viết nào.
+          </Text>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
