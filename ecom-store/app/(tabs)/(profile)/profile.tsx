@@ -21,19 +21,14 @@ import {
   PackageIcon,
   TruckIcon,
   CheckCircleIcon,
-  CreditCardIcon,
-  SmartphoneIcon,
-  UtensilsIcon,
   WalletIcon,
   TicketIcon,
-  PiggyBankIcon,
   ShieldCheckIcon,
   LogOut,
-  WrenchIcon,
-  ReceiptIcon,
   MapPinIcon,
   GiftIcon,
   PersonStandingIcon,
+  NotebookText,
   HeartIcon,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -148,29 +143,6 @@ export default function ProfileScreen() {
           </HStack>
         </Box>
 
-        {/* <Box className="bg-white mt-3 px-4 py-3">
-          <Text className="font-semibold text-gray-900 mb-3">
-            Dịch vụ tài chính
-          </Text>
-          <HStack className="justify-between">
-            {[
-              { label: "Vay tiêu dùng", icon: ShieldCheckIcon },
-              { label: "Tải ShopeePay", icon: SmartphoneIcon },
-            ].map((item, i) => (
-              <Pressable key={i} className="items-center flex-1">
-                <Icon
-                  as={item.icon}
-                  size="lg"
-                  className="text-orange-500 mb-1"
-                />
-                <Text className="text-xs text-gray-700 text-center">
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
-          </HStack>
-        </Box> */}
-
         <Box className="bg-white mt-3 px-4 py-3 rounded-xl">
           <Text className="font-semibold text-gray-900 mb-3">
             Tiện ích khác
@@ -185,6 +157,12 @@ export default function ProfileScreen() {
               {
                 label: "Địa chỉ giao hàng",
                 icon: MapPinIcon,
+              },
+              {
+                label: "Bài viết nổi bật",
+                icon: NotebookText,
+                onPress: () => router.push("/featured-posts"),
+              },
                 onPress: () => router.push("/my-address"),
               },
               { label: "Bảo hành & sửa chữa", icon: WrenchIcon },
@@ -230,9 +208,7 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </Box>
-
-        {/* <Divider className="my-3" /> */}
-        {/* <Box className="h-24" /> */}
+        <Box className="h-24" />
       </ScrollView>
     </SafeAreaView>
   );
