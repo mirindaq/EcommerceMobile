@@ -34,6 +34,7 @@ import {
   MapPinIcon,
   GiftIcon,
   PersonStandingIcon,
+  HeartIcon,
 } from "lucide-react-native";
 import { useRouter } from "expo-router";
 
@@ -59,6 +60,15 @@ export default function ProfileScreen() {
                 <Text className="text-white text-sm">S - New</Text>
               </VStack>
             </HStack>
+            <HStack space="xl">
+              <Pressable
+                onPress={() => {
+                  router.push("/my-wishlist");
+                }}
+              >
+                <HeartIcon size={24} color="white" />
+              </Pressable>
+              <Pressable>
             <HStack space="3xl">
               <Pressable
                 onPress={() => {
