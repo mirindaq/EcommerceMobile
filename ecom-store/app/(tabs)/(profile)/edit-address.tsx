@@ -1,29 +1,35 @@
-import React, { useState } from "react";
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Switch,
-  TextInputProps,
-  Alert,
-} from "react-native";
+import { SafeAreaView, Text } from "@/components/ui";
+import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
+import { addressService } from "@/services/address.service";
+import { CreateAddressRequest } from "@/types/address.type";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowLeftIcon,
   ChevronRightIcon,
   Trash2Icon,
 } from "lucide-react-native";
-import { useRouter } from "expo-router";
-import { SafeAreaView, HStack, Pressable, Text } from "@/components/ui";
-import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
+import React, { useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  Switch,
+  TextInput,
+  TextInputProps,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-// Khai báo kiểu Props cho component phụ AddressInput
+// Import Modal và Type
+import { LocationPickerModal } from "@/components/location-modal";
+import { Province } from "@/types/province.type";
+import { Ward } from "@/types/ward.type";
+
 interface AddressInputProps extends TextInputProps {
   placeholder: string;
   noBorder?: boolean;
 }
 
-// Component phụ cho ô nhập liệu
 const AddressInput: React.FC<AddressInputProps> = ({
   placeholder,
   value,
@@ -47,12 +53,105 @@ const AddressInput: React.FC<AddressInputProps> = ({
 
 export default function EditAddressScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams(); // Lấy ID từ params
+  const addressId = Number(id);
+
   useHideTabBar();
-  const [isDefault, setIsDefault] = useState(true);
   const ICON_COLOR = "#EF4444";
 
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Form State
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [subAddress, setSubAddress] = useState("");
+  const [isDefault, setIsDefault] = useState(false);
+
+  // State quản lý Modal
+  const [locationModalVisible, setLocationModalVisible] = useState(false);
+
+  const [selectedWard, setSelectedWard] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+
+  // Fetch chi tiết Address khi vào màn hình
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!addressId) return;
+      try {
+        const data = await addressService.getAddressById(addressId);
+        if (data) {
+          setFullName(data.fullName);
+          setPhone(data.phone);
+          setSubAddress(data.subAddress);
+          setIsDefault(data.isDefault);
+
+          // Set ward info từ API response
+          if (data.wardId) {
+            // Kết hợp wardName và provinceName để hiển thị
+            const displayLocation = `${data.wardName || ""}, ${
+              data.provinceName || ""
+            }`;
+            setSelectedWard({ id: data.wardId, name: displayLocation });
+          }
+        }
+      } catch (error) {
+        Alert.alert("Lỗi", "Không tìm thấy thông tin địa chỉ.");
+        router.back();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDetail();
+  }, [addressId]);
+
   const handleGoBack = () => {
-    router.push('/(tabs)/(profile)/profile');
+    router.back();
+  };
+
+  // Mở Modal
+  const handleSelectLocation = () => {
+    setLocationModalVisible(true);
+  };
+
+  // Xử lý khi chọn xong từ Modal
+  const onLocationSelect = (province: Province, ward: Ward) => {
+    setSelectedWard({
+      id: ward.id,
+      name: `${ward.name}, ${province.name}`,
+    });
+    setLocationModalVisible(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!fullName || !phone || !subAddress || !selectedWard) {
+      Alert.alert("Lỗi", "Vui lòng nhập đủ thông tin.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload: CreateAddressRequest = {
+        fullName,
+        phone,
+        subAddress,
+        wardId: selectedWard.id,
+        isDefault,
+      };
+
+      await addressService.updateAddress(addressId, payload);
+      Alert.alert("Thành công", "Cập nhật địa chỉ thành công", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Lỗi", "Không thể cập nhật địa chỉ.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteAddress = () => {
@@ -63,9 +162,15 @@ export default function EditAddressScreen() {
         { text: "Hủy", style: "cancel" },
         {
           text: "Xóa",
-          onPress: () => {
-            console.log("Đã xóa địa chỉ");
-            router.push('/(tabs)/(profile)/profile');
+          onPress: async () => {
+            try {
+              setSubmitting(true);
+              await addressService.deleteAddress(addressId);
+              router.back();
+            } catch (error) {
+              Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
+              setSubmitting(false);
+            }
           },
           style: "destructive",
         },
@@ -73,47 +178,64 @@ export default function EditAddressScreen() {
     );
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50 justify-center items-center">
+        <ActivityIndicator size="large" color={ICON_COLOR} />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
-      {/* Header - Có nút Xóa Địa Chỉ */}
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
+      {/* Header */}
       <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
         <View className="flex-row items-center">
           <TouchableOpacity onPress={handleGoBack} className="mr-4">
-            <ArrowLeftIcon size={24} />
+            <ArrowLeftIcon size={24} color="#000" />
           </TouchableOpacity>
           <Text className="text-xl font-bold">Chỉnh sửa địa chỉ</Text>
         </View>
 
-        {/* Nút XÓA ĐỊA CHỈ */}
         <TouchableOpacity onPress={handleDeleteAddress} className="p-2">
           <Trash2Icon size={24} color={ICON_COLOR} />
         </TouchableOpacity>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-        {/* 1. Khu vực Form Nhập Địa Chỉ */}
         <View className="bg-white mx-4 rounded-lg shadow-sm overflow-hidden mt-4 mb-4">
           <Text className="px-4 pt-3 font-semibold text-gray-800">Địa chỉ</Text>
 
-          <AddressInput value="Lê Việt Hoàng" placeholder="Họ và tên" />
-          <AddressInput value="0123 456 789" placeholder="Số điện thoại" />
+          <AddressInput
+            value={fullName}
+            onChangeText={setFullName}
+            placeholder="Họ và tên"
+          />
+          <AddressInput
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Số điện thoại"
+            keyboardType="phone-pad"
+          />
 
-          {/* Tỉnh/Thành phố, Quận/Huyện, Phường/Xã (Chọn) */}
-          <TouchableOpacity className="flex-row items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-gray-800 flex-1">
-              TP. Hồ Chí Minh, Thủ Đức
+          <TouchableOpacity
+            onPress={handleSelectLocation}
+            className="flex-row items-center justify-between p-4 border-b border-gray-200"
+          >
+            <Text className="text-gray-800 flex-1 pr-2">
+              {selectedWard ? selectedWard.name : "Chọn Tỉnh/Huyện/Xã"}
             </Text>
             <ChevronRightIcon size={20} color="#9CA3AF" />
           </TouchableOpacity>
 
           <AddressInput
-            value="Đường 123, phố ABC"
+            value={subAddress}
+            onChangeText={setSubAddress}
             placeholder="Tên đường, Toà nhà, Số nhà."
             noBorder={true}
           />
         </View>
 
-        {/* 2. Khu vực Cài đặt Địa chỉ (Đã bỏ Loại địa chỉ) */}
         <View className="bg-white mx-4 rounded-lg shadow-sm mb-4">
           <View className="flex-row items-center justify-between p-4">
             <Text className="text-base font-medium text-gray-800">
@@ -127,15 +249,31 @@ export default function EditAddressScreen() {
             />
           </View>
         </View>
-
       </ScrollView>
 
-      {/* Footer - Nút HOÀN THÀNH */}
+      {/* Footer */}
       <View className="p-4 bg-white border-t border-gray-200">
-        <TouchableOpacity className="py-3 bg-red-500 rounded-lg items-center">
-          <Text className="text-white text-lg font-bold">HOÀN THÀNH</Text>
+        <TouchableOpacity
+          className={`py-3 bg-red-500 rounded-lg items-center ${
+            submitting ? "opacity-70" : ""
+          }`}
+          onPress={handleUpdate}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white text-lg font-bold">HOÀN THÀNH</Text>
+          )}
         </TouchableOpacity>
       </View>
+
+      {/* MODAL */}
+      <LocationPickerModal
+        visible={locationModalVisible}
+        onClose={() => setLocationModalVisible(false)}
+        onSelect={onLocationSelect}
+      />
     </SafeAreaView>
   );
 }
