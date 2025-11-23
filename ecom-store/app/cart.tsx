@@ -337,7 +337,16 @@ export default function CartScreen() {
             disabled={selectedItems.length === 0}
             onPress={() => {
               if (selectedItems.length === 0) return;
-              router.push("/checkout");
+              // Get selected cart items to pass to checkout
+              const selectedCartItems = cartItems.filter((item) =>
+                selectedItems.includes(item.id)
+              );
+              router.push({
+                pathname: "/checkout",
+                params: {
+                  selectedItems: JSON.stringify(selectedCartItems),
+                },
+              });
             }}
             style={({ pressed }) => ({
               opacity: pressed ? 0.9 : 1,
