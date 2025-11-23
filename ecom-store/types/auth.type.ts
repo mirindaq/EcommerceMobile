@@ -30,7 +30,9 @@ export type UserProfile = {
   roles: string[];
   avatar?: string;
   phone?: string;
+  dateOfBirth?: string;
   rank?: Rank;
+  totalSpending?: number;
 };
 
 export type ProfileResponse = ResponseApi<UserProfile>;
