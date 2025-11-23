@@ -44,6 +44,18 @@ export default function RootLayout() {
               options={{ headerShown: false, presentation: "card" }}
             />
             <Stack.Screen
+              name="checkout"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
+              name="payment-status"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
+              name="order-detail"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
               name="modal"
               options={{ presentation: "modal", title: "Modal" }}
             />

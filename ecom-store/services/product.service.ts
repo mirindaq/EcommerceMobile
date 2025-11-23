@@ -2,6 +2,8 @@ import axiosClient from '@/configurations/axios.config';
 import type {
   ProductListResponse,
   ProductResponse,
+  ProductVariantPromotionRequest,
+  ProductVariantPromotionResponseApi,
 } from '@/types/product.type';
 
 export const productService = {
@@ -61,6 +63,17 @@ export const productService = {
     }
     const response = await axiosClient.get<ProductListResponse>(
       `/products/search?${params.toString()}`
+    )
+    return response.data
+  },
+
+  /**
+   * Lấy thông tin khuyến mãi của các product variant
+   */
+  getProductsVariantPromotions: async (request: ProductVariantPromotionRequest) => {
+    const response = await axiosClient.post<ProductVariantPromotionResponseApi>(
+      '/products/variants/promotions',
+      request
     )
     return response.data
   }
