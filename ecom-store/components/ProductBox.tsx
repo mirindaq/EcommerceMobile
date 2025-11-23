@@ -1,43 +1,55 @@
-import {
-  Box,
-  HStack,
-  Icon,
-  Pressable,
-  Text,
-  VStack
-} from '@/components/ui';
-import type { Product } from '@/types/product.type';
-import { useRouter } from 'expo-router';
-import { HeartIcon, StarIcon } from 'lucide-react-native';
-import React from 'react';
-import { Image } from 'react-native';
+import { Box, HStack, Icon, Pressable, Text, VStack } from "@/components/ui";
+import { wishListService } from "@/services/wishList.service";
+import type { Product } from "@/types/product.type";
+import { WishListResponse } from "@/types/wishList.type";
+import AuthStorageUtil from "@/utils/authStorage.util";
+import { useRouter } from "expo-router";
+import { HeartIcon, StarIcon } from "lucide-react-native";
+import React, { useMemo } from "react";
+import { Image } from "react-native";
 
 interface ProductBoxProps {
-  product: Product;
+  product?: Product;
+  wishListItems?: WishListResponse[];
+  onWishlistChange?: () => Promise<void>;
+  wishItem?: WishListResponse;
+  isWishlistScreen?: boolean;
+  onRemove?: (productVariantId: number) => Promise<void>;
 }
 
-export default function ProductBox({ product }: ProductBoxProps) {
+export default function ProductBox({
+  product,
+  wishListItems = [],
+  onWishlistChange,
+  wishItem,
+  isWishlistScreen = false,
+  onRemove,
+}: ProductBoxProps) {
   const router = useRouter();
 
   // Format price helper
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
       maximumFractionDigits: 0,
     }).format(price);
   };
 
-  const firstVariant =
-    product.variants && product.variants.length > 0
-      ? product.variants[0]
-      : null;
+  const sourceData = isWishlistScreen ? wishItem : product;
 
+  const firstVariant = product?.variants?.[0];
+  const productName = sourceData?.productName || product?.name || "Sản phẩm";
+  const productPrice = sourceData?.price || firstVariant?.price || 0;
+  const productVariantId =
+    sourceData?.productVariantId || firstVariant?.id || null;
+  const productSlug = product?.slug;
   const productImage =
-    product.thumbnail ||
-    (product.productImages && product.productImages.length > 0
+    sourceData?.productImage ||
+    product?.thumbnail ||
+    (product?.productImages && product.productImages.length > 0
       ? product.productImages[0]
-      : 'https://via.placeholder.com/150'); // Fallback image
+      : "https://via.placeholder.com/150"); // Fallback image // Tính Discount (Chỉ áp dụng cho Product type trên Home Screen)
 
   const discountPercent =
     firstVariant &&
@@ -50,23 +62,79 @@ export default function ProductBox({ product }: ProductBoxProps) {
         )
       : firstVariant?.discount || 0;
 
-  const displayRating = product.rating > 0 ? product.rating.toFixed(1) : null;
+  const displayRating = product?.rating > 0 ? product.rating.toFixed(1) : null;
 
   const handleProductPress = () => {
-    router.push(`/product-detail?slug=${product.slug}`);
+    if (productSlug) {
+      router.push(`/product-detail?slug=${productSlug}`);
+    } else {
+      // Có thể thêm logic điều hướng dựa trên productVariantId nếu cần
+      console.log("Cannot navigate: No product slug found.");
+    }
   };
+  const isFavorite = useMemo(() => {
+    // Trên màn hình WishList, sản phẩm luôn là yêu thích
+    if (isWishlistScreen) return true;
 
-  const handleAddToWishlist = (e: any) => {
-    e.stopPropagation(); // Ngăn chặn click vào cha (chuyển trang)
-    // TODO: Logic add wishlist
-    console.log('Add to wishlist');
+    if (!wishListItems || wishListItems.length === 0) return false; // Trên màn hình Home, kiểm tra trong danh sách WishListItems được truyền vào
+
+    if (!productVariantId) return false;
+    return wishListItems.some(
+      (item) => item.productVariantId === productVariantId
+    );
+  }, [isWishlistScreen, wishListItems, productVariantId]); // Xử lý Thêm/Xóa WishList (trên Home) hoặc Xóa (trên Wishlist Screen)
+
+  const handleToggleWishlist = async (e: any) => {
+    e.stopPropagation();
+
+    if (!productVariantId) {
+      console.log("Không tìm thấy biến thể sản phẩm.");
+      return;
+    } // Xử lý XÓA trên MÀN HÌNH WISHLIST
+
+    if (isWishlistScreen) {
+      if (onRemove) {
+        await onRemove(productVariantId);
+        console.log(
+          "Removed from wishlist (from Favorite Screen):",
+          productVariantId
+        );
+      }
+      return;
+    } // Xử lý TOGGLE trên MÀN HÌNH HOME
+
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (!isAuthenticated) {
+      console.log("Người dùng chưa đăng nhập, không thể thao tác Wishlist.");
+      return;
+    }
+
+    try {
+      if (isFavorite) {
+        // Xóa khỏi WishList
+        await wishListService.removeProductFromWishList(productVariantId);
+        console.log("Removed from wishlist:", productVariantId);
+      } else {
+        // Thêm vào WishList
+        await wishListService.addProducToWishList({
+          productVariantId: productVariantId,
+        });
+        console.log("Added to wishlist:", productVariantId);
+      } // Cập nhật lại danh sách WishList trên Home Screen
+
+      if (onWishlistChange) {
+        await onWishlistChange();
+      }
+    } catch (error: any) {
+      console.error("Wishlist error:", error);
+    }
   };
 
   return (
     <Pressable
       className="bg-white rounded-xl overflow-hidden border border-gray-100 flex-1 m-1"
       style={{
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05, // Giảm shadow cho nhẹ nhàng hơn
         shadowRadius: 8,
@@ -94,9 +162,15 @@ export default function ProductBox({ product }: ProductBoxProps) {
         {/* Wishlist Button - Floating & Accessible */}
         <Pressable
           className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm"
-          onPress={handleAddToWishlist}
+          onPress={handleToggleWishlist}
         >
-          <Icon as={HeartIcon} size="sm" className="text-gray-600" />
+          <Icon
+            as={HeartIcon}
+            size="sm"
+            className={
+              isFavorite ? "text-red-500 fill-red-500" : "text-gray-600"
+            }
+          />
         </Pressable>
       </Box>
 
@@ -118,22 +192,25 @@ export default function ProductBox({ product }: ProductBoxProps) {
 
         {/* Rating & Sold Count */}
         <HStack className="items-center gap-1 mt-1">
-          <Icon as={StarIcon} size="xs" className="text-yellow-400 fill-yellow-400" />
+          <Icon
+            as={StarIcon}
+            size="xs"
+            className="text-yellow-400 fill-yellow-400"
+          />
           <Text className="text-gray-600 text-xs font-medium">
-            {displayRating || '5.0'}
+            {displayRating || "5.0"}
           </Text>
-
         </HStack>
 
         {/* Price Section - Bottom Align */}
         <VStack className="mt-2">
           <HStack className="items-baseline gap-1">
             <Text className="text-red-600 font-bold text-base">
-              {firstVariant ? formatPrice(firstVariant.price) : 'Liên hệ'}
+              {firstVariant ? formatPrice(firstVariant.price) : "Liên hệ"}
             </Text>
             {/* <Text className="text-gray-500 font-semibold text-xs underline">đ</Text> */}
           </HStack>
-          
+
           {/* Old Price - Subtle */}
           {firstVariant &&
             firstVariant.oldPrice > 0 &&

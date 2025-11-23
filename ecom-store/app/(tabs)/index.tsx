@@ -10,13 +10,15 @@ import {
   InputSlot,
   Pressable,
   SafeAreaView,
-  Text
+  Text,
 } from "@/components/ui";
 import { cartService } from "@/services/cart.service";
 import { categoryService } from "@/services/category.service";
 import { productService } from "@/services/product.service";
+import { wishListService } from "@/services/wishList.service";
 import type { Category } from "@/types/category.type";
 import type { Product } from "@/types/product.type";
+import { WishListResponse } from "@/types/wishList.type";
 import AuthStorageUtil from "@/utils/authStorage.util";
 import { useRouter } from "expo-router";
 import {
@@ -31,9 +33,9 @@ import {
   SearchIcon,
   ShirtIcon,
   SmartphoneIcon,
-  WatchIcon
+  WatchIcon,
 } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView } from "react-native";
 
 const banners = [
@@ -55,17 +57,26 @@ const banners = [
 
 // Icon mapping cho categories
 const categoryIcons: { [key: string]: any } = {
-  "Laptop": LaptopIcon,
+  Laptop: LaptopIcon,
   "Điện thoại": SmartphoneIcon,
   "Đồng hồ": WatchIcon,
   "Tai nghe": HeadphonesIcon,
   "Thời trang": ShirtIcon,
   "Giày dép": FootprintsIcon,
-  "Sách": BookIcon,
+  Sách: BookIcon,
   "Nội thất": HomeIcon,
 };
 
-const categoryColors = ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD", "#98D8C8", "#F7DC6F"];
+const categoryColors = [
+  "#FF6B6B",
+  "#4ECDC4",
+  "#45B7D1",
+  "#96CEB4",
+  "#FFEAA7",
+  "#DDA0DD",
+  "#98D8C8",
+  "#F7DC6F",
+];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -74,15 +85,32 @@ export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
+
+  const refetchWishlist = useCallback(async () => {
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (isAuthenticated) {
+      try {
+        const wishListRes = await wishListService.getMyWishList();
+        setWishListItems(wishListRes || []);
+      } catch (error) {
+        console.error("Error loading wishlist:", error);
+        setWishListItems([]);
+      }
+    } else {
+      setWishListItems([]);
+    }
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+    refetchWishlist();
+  }, [refetchWishlist]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      
+
       const categoriesRes = await categoryService.getAllCategoriesSimple();
       setCategories(categoriesRes.data?.data || []);
 
@@ -93,13 +121,18 @@ export default function HomeScreen() {
       if (isAuthenticated) {
         try {
           const cartRes = await cartService.getCart();
-          const itemCount = cartRes.data?.items?.reduce((sum: number, item: any) => sum + item.quantity, 0) || 0;
+          const itemCount =
+            cartRes.data?.items?.reduce(
+              (sum: number, item: any) => sum + item.quantity,
+              0
+            ) || 0;
           setCartCount(itemCount);
         } catch (error) {
           setCartCount(0);
         }
       } else {
         setCartCount(0);
+        setWishListItems([]);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -109,12 +142,12 @@ export default function HomeScreen() {
   };
 
   const handleSearchPress = () => {
-    router.push('/search');
+    router.push("/search");
   };
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
         <Box className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#EF4444" />
         </Box>
@@ -123,7 +156,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <Box className="bg-red-500 px-4 py-4 z-50">
         <HStack className="items-center justify-between gap-4">
           <Pressable onPress={handleSearchPress} className="flex-1 mr-3 py-2">
@@ -151,9 +184,9 @@ export default function HomeScreen() {
               </InputSlot>
             </Input>
           </Pressable>
-          <CartIcon 
-            size={24} 
-            color="white" 
+          <CartIcon
+            size={24}
+            color="white"
             badgeCount={cartCount}
             className="mr-3"
           />
@@ -201,13 +234,13 @@ export default function HomeScreen() {
               {categories.slice(0, 8).map((category, index) => {
                 const IconComponent = categoryIcons[category.name] || HomeIcon;
                 const color = categoryColors[index % categoryColors.length];
-               
+
                 const handleCategoryPress = () => {
                   if (category.slug) {
                     router.push(`/search-category?slug=${category.slug}`);
                   }
                 };
-                
+
                 return (
                   <Pressable
                     key={category.id}
@@ -254,7 +287,11 @@ export default function HomeScreen() {
               {products.map((product) => {
                 return (
                   <Box key={product.id} style={{ width: "48%" }}>
-                    <ProductBox product={product} />
+                    <ProductBox
+                      product={product}
+                      wishListItems={wishListItems}
+                      onWishlistChange={refetchWishlist}
+                    />
                   </Box>
                 );
               })}
