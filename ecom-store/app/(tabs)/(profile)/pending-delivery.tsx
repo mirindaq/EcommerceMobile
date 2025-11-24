@@ -7,48 +7,133 @@ import {
   VStack,
 } from "@/components/ui";
 import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
+import { orderService } from "@/services/order.service";
+import { OrderResponse } from "@/types/order.type";
 import { useRouter } from "expo-router";
 import { ChevronLeftIcon } from "lucide-react-native";
-import React from "react";
-import { Image, ScrollView, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Image, ScrollView, View } from "react-native";
 
 export default function PendingDelivery() {
   const router = useRouter();
   useHideTabBar();
 
+  const [orders, setOrders] = useState<OrderResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const formatCurrency = (amount: number) =>
+    amount.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        // Lấy trạng thái SHIPPED và DELIVERING
+        const [shippedRes, deliveringRes, assignedRes] = await Promise.all([
+          orderService.getMyOrders(1, 50, ["SHIPPED"]),
+          orderService.getMyOrders(1, 50, ["DELIVERING"]),
+          orderService.getMyOrders(1, 50, ["ASSIGNED_SHIPPER"]),
+        ]);
+
+        const allOrders = [
+          ...(shippedRes.data?.data || []),
+          ...(deliveringRes.data?.data || []),
+          ...(assignedRes.data?.data || []),
+        ];
+
+        allOrders.sort((a, b) => b.id - a.id);
+        setOrders(allOrders);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#EF4444" />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <Pressable onPress={() => router.push('/(tabs)/(profile)/profile')}>
+        <Pressable onPress={() => router.push("/(tabs)/(profile)/profile")}>
           <ChevronLeftIcon size={24} color="#000" />
         </Pressable>
-        <Text className="text-lg font-semibold">Chờ giao hàng</Text>
+        <Text className="text-lg font-semibold">Đang vận chuyển</Text>
         <View style={{ width: 24 }} />
       </HStack>
 
       <ScrollView className="px-4 mt-3">
-        <Box className="bg-white p-3 rounded-xl mb-3">
-          <HStack className="space-x-3">
-            <Image
-              source={{
-                uri: "data:image/jpeg;base64,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",
-              }}
-              className="w-20 h-20 rounded mr-3"
-            />
+        {orders.length === 0 ? (
+          <Box className="items-center py-10">
+            <Text className="text-gray-500">
+              Chưa có đơn hàng nào đang giao.
+            </Text>
+          </Box>
+        ) : (
+          orders.map((order) => {
+            const firstItem = order.orderDetails[0];
+            return (
+              <Box
+                key={order.id}
+                className="bg-white p-3 rounded-xl mb-3 shadow-sm"
+              >
+                <HStack className="justify-between mb-2">
+                  <Text className="text-gray-500 text-xs font-bold">
+                    #{order.id}
+                  </Text>
+                  <Text className="text-orange-500 text-xs font-bold">
+                    Đang giao hàng
+                  </Text>
+                </HStack>
+                <HStack className="space-x-3">
+                  <Image
+                    source={{
+                      uri:
+                        firstItem?.productVariant.productThumbnail ||
+                        "https://via.placeholder.com/150",
+                    }}
+                    className="w-20 h-20 rounded mr-3 bg-gray-100"
+                  />
+                  <VStack className="flex-1 justify-between">
+                    <View>
+                      <Text
+                        className="font-semibold text-gray-800"
+                        numberOfLines={2}
+                      >
+                        {firstItem?.productVariant.productName}
+                      </Text>
+                      <Text className="text-xs text-gray-500 mt-1">
+                        SL:{" "}
+                        {order.orderDetails.reduce(
+                          (acc, item) => acc + item.quantity,
+                          0
+                        )}{" "}
+                        sản phẩm
+                      </Text>
+                    </View>
+                    <Text className="text-red-500 font-bold mt-1">
+                      {formatCurrency(order.finalTotalPrice)}
+                    </Text>
+                  </VStack>
+                </HStack>
 
-            <VStack className="flex-1">
-              <Text className="font-semibold">Giày chạy bộ thể thao</Text>
-              <Text className="text-xs text-gray-500">Số lượng: 1</Text>
-              <Text className="text-red-500 font-bold mt-1">580.000₫</Text>
-            </VStack>
-          </HStack>
-
-          <HStack className="justify-end mt-3">
-            <Pressable className="px-4 py-2 bg-red-500 rounded-lg">
-              <Text className="text-white">Liên hệ shop</Text>
-            </Pressable>
-          </HStack>
-        </Box>
+                <HStack className="justify-end mt-3 space-x-3">
+                  <Pressable className="px-4 py-2 bg-red-500 rounded-lg">
+                    <Text className="text-white font-medium">Đã nhận hàng</Text>
+                  </Pressable>
+                </HStack>
+              </Box>
+            );
+          })
+        )}
       </ScrollView>
     </SafeAreaView>
   );
