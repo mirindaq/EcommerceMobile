@@ -5,6 +5,7 @@ import {
   View,
   ActivityIndicator,
   Alert,
+  TouchableOpacity,
 } from "react-native";
 import {
   Box,
@@ -14,10 +15,18 @@ import {
   Pressable,
   SafeAreaView,
 } from "@/components/ui";
-import { ArrowLeftIcon, PackageIcon, TruckIcon } from "lucide-react-native";
+import {
+  ArrowLeftIcon,
+  PackageIcon,
+  TruckIcon,
+  StarIcon,
+} from "lucide-react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { orderService } from "@/services/order.service";
+import { feedbackService } from "@/services/feedback.service";
 import type { OrderResponse } from "@/types/order.type";
+import { FeedbackModal } from "@/components/FeedbackModal";
+import { ViewFeedbackModal } from "@/components/ViewFeedbackModal";
 
 export default function OrderDetailScreen() {
   const router = useRouter();
@@ -26,6 +35,16 @@ export default function OrderDetailScreen() {
 
   const [order, setOrder] = useState<OrderResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewedProducts, setReviewedProducts] = useState<Set<number>>(
+    new Set()
+  );
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [viewFeedbackModalVisible, setViewFeedbackModalVisible] =
+    useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
   useEffect(() => {
     loadOrderDetail();
@@ -36,6 +55,11 @@ export default function OrderDetailScreen() {
       setLoading(true);
       const response = await orderService.getOrderDetailById(Number(orderId));
       setOrder(response.data);
+
+      // Check review status for each product if order is completed
+      if (response.data.status === "COMPLETED") {
+        await checkReviewStatus(response.data);
+      }
     } catch (error: any) {
       console.error("Error loading order detail:", error);
       Alert.alert("Lỗi", "Không thể tải chi tiết đơn hàng");
@@ -43,6 +67,51 @@ export default function OrderDetailScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const checkReviewStatus = async (orderData: OrderResponse) => {
+    try {
+      const reviewChecks = await Promise.all(
+        orderData.orderDetails.map(async (item) => {
+          const result = await feedbackService.checkIfReviewed(
+            orderData.id,
+            item.productVariant.id
+          );
+          return {
+            productVariantId: item.productVariant.id,
+            reviewed: result.data,
+          };
+        })
+      );
+
+      const reviewed = new Set(
+        reviewChecks.filter((r) => r.reviewed).map((r) => r.productVariantId)
+      );
+      setReviewedProducts(reviewed);
+    } catch (error) {
+      console.error("Error checking review status:", error);
+    }
+  };
+
+  const handleOpenFeedbackModal = (
+    productVariantId: number,
+    productName: string
+  ) => {
+    setSelectedProduct({ id: productVariantId, name: productName });
+    setFeedbackModalVisible(true);
+  };
+
+  const handleOpenViewFeedback = (
+    productVariantId: number,
+    productName: string
+  ) => {
+    setSelectedProduct({ id: productVariantId, name: productName });
+    setViewFeedbackModalVisible(true);
+  };
+
+  const handleReviewSuccess = async () => {
+    // Reload order to refresh review status
+    await loadOrderDetail();
   };
 
   const formatCurrency = (amount: number) =>
@@ -171,47 +240,91 @@ export default function OrderDetailScreen() {
         <Box className="bg-white p-4 mb-2">
           <Text className="font-bold text-base mb-3">Sản phẩm đã đặt</Text>
           <VStack className="gap-3">
-            {order.orderDetails.map((item, index) => (
-              <Box
-                key={item.id}
-                className={`flex-row gap-3 ${
-                  index < order.orderDetails.length - 1
-                    ? "pb-3 mb-3 border-b border-gray-200"
-                    : ""
-                }`}
-              >
-                <Image
-                  source={{ uri: item.productVariant.productThumbnail }}
-                  className="w-20 h-20 rounded bg-gray-100"
-                  resizeMode="cover"
-                />
-                <VStack className="flex-1 justify-between">
-                  <View>
-                    <Text numberOfLines={2} className="text-sm font-medium">
-                      {item.productVariant.productName}
-                    </Text>
-                    <Text className="text-xs text-gray-500 mt-1">
-                      {item.productVariant.sku}
-                    </Text>
-                  </View>
-                  <HStack className="justify-between items-end">
-                    <Text className="text-xs text-gray-600">
-                      x{item.quantity}
-                    </Text>
-                    <VStack className="items-end">
-                      <Text className="text-sm font-semibold text-red-600">
-                        {formatCurrency(item.finalPrice)}
-                      </Text>
-                      {item.discount > 0 && (
-                        <Text className="text-xs text-gray-400 line-through">
-                          {formatCurrency(item.price)}
+            {order.orderDetails.map((item, index) => {
+              const isReviewed = reviewedProducts.has(item.productVariant.id);
+              const canReview = order.status === "COMPLETED";
+
+              return (
+                <Box
+                  key={item.id}
+                  className={`${
+                    index < order.orderDetails.length - 1
+                      ? "pb-3 mb-3 border-b border-gray-200"
+                      : ""
+                  }`}
+                >
+                  <View className="flex-row gap-3">
+                    <Image
+                      source={{ uri: item.productVariant.productThumbnail }}
+                      className="w-20 h-20 rounded bg-gray-100"
+                      resizeMode="cover"
+                    />
+                    <VStack className="flex-1 justify-between">
+                      <View>
+                        <Text numberOfLines={2} className="text-sm font-medium">
+                          {item.productVariant.productName}
                         </Text>
-                      )}
+                        <Text className="text-xs text-gray-500 mt-1">
+                          {item.productVariant.sku}
+                        </Text>
+                      </View>
+                      <HStack className="justify-between items-end">
+                        <Text className="text-xs text-gray-600">
+                          x{item.quantity}
+                        </Text>
+                        <VStack className="items-end">
+                          <Text className="text-sm font-semibold text-red-600">
+                            {formatCurrency(item.finalPrice)}
+                          </Text>
+                          {item.discount > 0 && (
+                            <Text className="text-xs text-gray-400 line-through">
+                              {formatCurrency(item.price)}
+                            </Text>
+                          )}
+                        </VStack>
+                      </HStack>
                     </VStack>
-                  </HStack>
-                </VStack>
-              </Box>
-            ))}
+                  </View>
+
+                  {/* Review Button */}
+                  {canReview && (
+                    <View className="mt-3">
+                      {isReviewed ? (
+                        <TouchableOpacity
+                          className="flex-row items-center justify-center py-2 bg-yellow-50 rounded-lg border border-yellow-600"
+                          onPress={() =>
+                            handleOpenViewFeedback(
+                              item.productVariant.id,
+                              item.productVariant.productName
+                            )
+                          }
+                        >
+                          <StarIcon size={16} color="#CA8A04" fill="#CA8A04" />
+                          <Text className="text-sm text-yellow-700 font-medium ml-2">
+                            Xem đánh giá
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          className="flex-row items-center justify-center py-2 bg-red-50 rounded-lg border border-red-600"
+                          onPress={() =>
+                            handleOpenFeedbackModal(
+                              item.productVariant.id,
+                              item.productVariant.productName
+                            )
+                          }
+                        >
+                          <StarIcon size={16} color="#DC2626" />
+                          <Text className="text-sm text-red-600 font-medium ml-2">
+                            Đánh giá sản phẩm
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
+                  )}
+                </Box>
+              );
+            })}
           </VStack>
         </Box>
 
@@ -264,6 +377,26 @@ export default function OrderDetailScreen() {
           </VStack>
         </Box>
       </ScrollView>
+
+      {/* Review Modal */}
+      {selectedProduct && (
+        <>
+          <FeedbackModal
+            visible={feedbackModalVisible}
+            onClose={() => setFeedbackModalVisible(false)}
+            onSuccess={handleReviewSuccess}
+            orderId={order.id}
+            productVariantId={selectedProduct.id}
+            productName={selectedProduct.name}
+          />
+          <ViewFeedbackModal
+            visible={viewFeedbackModalVisible}
+            onClose={() => setViewFeedbackModalVisible(false)}
+            orderId={order.id}
+            productVariantId={selectedProduct.id}
+          />
+        </>
+      )}
     </SafeAreaView>
   );
 }
