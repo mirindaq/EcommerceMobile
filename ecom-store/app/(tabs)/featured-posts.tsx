@@ -1,5 +1,7 @@
 import { HStack, SafeAreaView, Text, VStack } from "@/components/ui";
+import { articleCategoryService } from "@/services/article-category.service"; // Import service mới
 import { articleService } from "@/services/article.service";
+import type { ArticleCategory } from "@/types/article-category.type";
 import type { Article } from "@/types/article.type";
 import { useRouter } from "expo-router";
 import { ClockIcon, UserIcon } from "lucide-react-native";
@@ -11,6 +13,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 
+// ... (Giữ nguyên interface PostDisplay và component PostItem như cũ)
 interface PostDisplay extends Article {
   author: string;
   time: string;
@@ -19,7 +22,6 @@ interface PostDisplay extends Article {
 
 const PostItem: React.FC<{ post: PostDisplay }> = ({ post }) => {
   const router = useRouter();
-
   const handlePress = () => {
     router.push(`/post-detail?id=${post.id}`);
   };
@@ -59,8 +61,17 @@ const PostItem: React.FC<{ post: PostDisplay }> = ({ post }) => {
 
 export default function FeaturedPostsScreen() {
   const router = useRouter();
+
+  // State cho bài viết
   const [posts, setPosts] = useState<PostDisplay[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+
+  // State cho danh mục
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
+    null
+  );
+
   const formatArticleForDisplay = (article: Article): PostDisplay => {
     return {
       ...article,
@@ -70,10 +81,31 @@ export default function FeaturedPostsScreen() {
       imageUri: article.thumbnail || "https://via.placeholder.com/150",
     };
   };
+
+  // 1. Hàm load danh mục
+  const loadCategories = async () => {
+    try {
+      const res = await articleCategoryService.getCategories(1, 100);
+      if (res.data && res.data.data) {
+        setCategories(res.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  // 2. Hàm load bài viết (có nhận categoryId)
   const loadPosts = async () => {
     try {
-      setLoading(true);
-      const response = await articleService.getArticles(1, 10, "", true);
+      setLoadingPosts(true);
+      // Gọi hàm getArticles, tham số thứ 5 là categoryId
+      const response = await articleService.getArticles(
+        1,
+        10,
+        "",
+        true,
+        selectedCategoryId // Truyền ID danh mục đang chọn vào đây
+      );
 
       const fetchedPosts: PostDisplay[] = response.data.data
         ? response.data.data.map(formatArticleForDisplay)
@@ -83,37 +115,93 @@ export default function FeaturedPostsScreen() {
     } catch (error) {
       console.error("Error fetching articles:", error);
     } finally {
-      setLoading(false);
+      setLoadingPosts(false);
     }
   };
+
+  // Load categories khi màn hình mount
   useEffect(() => {
-    loadPosts();
+    loadCategories();
   }, []);
 
-  if (loading) {
-    return (
-      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
-        <VStack className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#EF4444" />
-        </VStack>
-      </SafeAreaView>
-    );
-  }
+  // Load posts mỗi khi selectedCategoryId thay đổi
+  useEffect(() => {
+    loadPosts();
+  }, [selectedCategoryId]);
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <VStack className="px-4 pt-4 pb-2 bg-white border-b border-gray-200 items-center">
         <Text className="text-2xl font-bold text-gray-900">Bài viết</Text>
       </VStack>
-      <ScrollView showsVerticalScrollIndicator={false} className="px-4 py-2">
-        {posts.map((post) => (
-          <PostItem key={post.id} post={post} />
-        ))}
-        {posts.length === 0 && (
-          <Text className="text-center text-gray-500 mt-10">
-            Không tìm thấy bài viết nào.
-          </Text>
-        )}
-      </ScrollView>
+
+      {/* --- PHẦN TAB DANH MỤC --- */}
+      <VStack className="bg-white pb-2">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className="px-4 mt-2"
+          contentContainerStyle={{ paddingRight: 16 }}
+        >
+          {/* Tab "Tất cả" */}
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() => setSelectedCategoryId(null)}
+            className={`px-4 py-2 rounded-full mr-2 ${
+              selectedCategoryId === null ? "bg-red-500" : "bg-gray-200"
+            }`}
+          >
+            <Text
+              className={`font-medium ${
+                selectedCategoryId === null ? "text-white" : "text-gray-700"
+              }`}
+            >
+              Tất cả
+            </Text>
+          </TouchableOpacity>
+
+          {/* Các tab danh mục lấy từ API */}
+          {categories.map((cat) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              key={cat.id}
+              onPress={() => setSelectedCategoryId(cat.id)}
+              className={`px-4 py-2 rounded-full mr-2 ${
+                selectedCategoryId === cat.id ? "bg-red-500" : "bg-gray-200"
+              }`}
+            >
+              <Text
+                className={`font-medium ${
+                  selectedCategoryId === cat.id ? "text-white" : "text-gray-700"
+                }`}
+              >
+                {cat.title}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </VStack>
+      {/* --- KẾT THÚC PHẦN TAB --- */}
+
+      {/* Danh sách bài viết */}
+      {loadingPosts ? (
+        <VStack className="flex-1 justify-center items-center mt-10">
+          <ActivityIndicator size="large" color="#EF4444" />
+        </VStack>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} className="px-4 py-2">
+          {posts.map((post) => (
+            <PostItem key={post.id} post={post} />
+          ))}
+          {posts.length === 0 && (
+            <Text className="text-center text-gray-500 mt-10">
+              Không tìm thấy bài viết nào thuộc danh mục này.
+            </Text>
+          )}
+          {/* Thêm khoảng trắng dưới cùng để không bị che mất item cuối */}
+          <VStack className="h-10" />
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
