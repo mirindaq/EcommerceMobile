@@ -7,7 +7,7 @@ import {
   Pressable,
   SafeAreaView,
   Text,
-  VStack
+  VStack,
 } from "@/components/ui";
 import { useRouter } from "expo-router";
 import {
@@ -25,7 +25,7 @@ import {
   TicketIcon,
   TruckIcon,
   WalletIcon,
-  WrenchIcon
+  WrenchIcon,
 } from "lucide-react-native";
 import React from "react";
 import { ScrollView } from "react-native";
@@ -154,8 +154,8 @@ export default function ProfileScreen() {
                 icon: MapPinIcon,
                 onPress: () => router.push("/my-address"),
               },
-              { 
-                label: "Bảo hành & sửa chữa", 
+              {
+                label: "Bảo hành & sửa chữa",
                 icon: WrenchIcon,
                 onPress: () => {},
               },
