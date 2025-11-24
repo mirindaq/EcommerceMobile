@@ -223,7 +223,7 @@ export default function ProfileScreen() {
               {
                 label: "Bảo hành & sửa chữa",
                 icon: WrenchIcon,
-                onPress: () => {},
+                onPress: () => router.push("/guarantee-policy"),
               },
               {
                 label: "Ưu đãi giảm giá",
