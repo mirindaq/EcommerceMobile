@@ -99,7 +99,7 @@ export default function ArticleDetailScreen() {
           />
           <Box className="absolute inset-0 bg-black/20" />
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => router.push("/(tabs)/featured-posts")}
             className="absolute top-12 left-4 w-10 h-10 bg-white/30 rounded-full items-center justify-center backdrop-blur-md"
             style={{ backgroundColor: "rgba(255,255,255,0.9)" }}
           >
