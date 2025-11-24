@@ -1,3 +1,4 @@
+import "react-native-get-random-values";
 import {
   DarkTheme,
   DefaultTheme,
@@ -12,6 +13,16 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
+
+// Polyfill for StompJS - only if not already available
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('text-encoding');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+  console.log('✅ TextEncoder/TextDecoder polyfilled');
+} else {
+  console.log('✅ TextEncoder/TextDecoder already available (native)');
+}
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -41,6 +52,18 @@ export default function RootLayout() {
             />
             <Stack.Screen
               name="cart"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
+              name="checkout"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
+              name="payment-status"
+              options={{ headerShown: false, presentation: "card" }}
+            />
+            <Stack.Screen
+              name="order-detail"
               options={{ headerShown: false, presentation: "card" }}
             />
             <Stack.Screen

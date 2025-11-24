@@ -6,10 +6,14 @@ import {
   Icon,
   Pressable,
   SafeAreaView,
+  Spinner,
   Text,
-  VStack
+  VStack,
 } from "@/components/ui";
-import { useRouter } from "expo-router";
+import { authService } from "@/services/auth.service";
+import { CustomerSummary } from "@/types/customer.type";
+import AuthStorageUtil from "@/utils/authStorage.util";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   CheckCircleIcon,
   ChevronRightIcon,
@@ -25,46 +29,106 @@ import {
   TicketIcon,
   TruckIcon,
   WalletIcon,
-  WrenchIcon
+  WrenchIcon,
 } from "lucide-react-native";
-import React from "react";
-import { ScrollView } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Alert, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [customer, setCustomer] = useState<CustomerSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // ProfileScreen.tsx - Cập nhật hàm fetchProfile
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+
+      // 1. Chỉ cần check Auth (có token chưa)
+      const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+      if (!isAuthenticated) {
+        router.replace("/login");
+        return;
+      }
+
+      // 2. Gọi API getProfile bằng Token (không cần truyền ID)
+      // API này backend sẽ tự biết ai đang gọi dựa vào Token
+      const res = await authService.getProfile();
+
+      // Lưu ý: Kiểm tra cấu trúc response của authService.getProfile
+      // Thường là res.data.data hoặc res.data tùy backend của bạn
+      if (res.data && res.data.data) {
+        setCustomer(res.data.data as unknown as CustomerSummary);
+      } else if (res.data) {
+        // Fallback nếu cấu trúc khác
+        setCustomer(res.data as unknown as CustomerSummary);
+      }
+    } catch (error) {
+      console.error("Lỗi lấy profile:", error);
+      // Nếu token hết hạn (lỗi 401), authService thường có interceptor xử lý hoặc ta tự logout
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Gọi mỗi khi màn hình được focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+    }, [])
+  );
+
+  const handleLogout = async () => {
+    Alert.alert("Đăng xuất", "Bạn có chắc muốn đăng xuất?", [
+      { text: "Hủy", style: "cancel" },
+      {
+        text: "Đồng ý",
+        onPress: async () => {
+          await AuthStorageUtil.clearAll(); // Dùng hàm clearAll như trong file util
+          router.replace("/login");
+        },
+      },
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center">
+        <Spinner size="large" color="#EF4444" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
-        <Box className="bg-red-500 px-4 pt-8 pb-6">
+        <Box className="bg-red-500 px-4 pt-8 pb-3">
           <HStack className="items-center justify-between mb-4">
             <HStack className="items-center space-x-3">
               <Avatar size="lg" className="border-2 mr-3 border-white">
                 <AvatarImage
                   source={{
-                    uri: "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
+                    // Ưu tiên avatar từ API, nếu không có thì dùng ảnh mặc định
+                    uri:
+                      customer?.avatar ||
+                      "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
                   }}
                   alt="avatar"
                 />
               </Avatar>
               <VStack>
-                <Text className="text-white font-bold text-lg">Việt Hoàng</Text>
-                <Text className="text-white text-sm">S - New</Text>
+                <Text className="text-white font-bold text-lg">
+                  {customer?.fullName || "Khách hàng"}
+                </Text>
               </VStack>
             </HStack>
             <HStack space="xl">
-              <Pressable
-                onPress={() => {
-                  router.push("/my-wishlist");
-                }}
-              >
+              <Pressable onPress={() => router.push("/my-wishlist")}>
                 <HeartIcon size={24} color="white" />
               </Pressable>
-              <Pressable
-                onPress={() => {
-                  router.push("/cart");
-                }}
-              >
+              <Pressable onPress={() => router.push("/cart")}>
                 <ShoppingCartIcon size={24} color="white" />
               </Pressable>
               <Pressable>
@@ -72,6 +136,9 @@ export default function ProfileScreen() {
               </Pressable>
             </HStack>
           </HStack>
+          <Text className="text-white text-md text-center mt-3">
+            Hàng ngàn ưu đãi đang chờ bạn khám phá!
+          </Text>
         </Box>
 
         <Box className="bg-white mt-3 px-4 py-3">
@@ -79,9 +146,7 @@ export default function ProfileScreen() {
             <Text className="font-semibold text-gray-900">Đơn mua</Text>
             <Pressable
               className="flex-row items-center"
-              onPress={() => {
-                router.push("/order-history");
-              }}
+              onPress={() => router.push("/order-history")}
             >
               <Text className="text-red-500 text-sm">Xem lịch sử mua hàng</Text>
               <ChevronRightIcon size={16} color="#EF4444" />
@@ -114,6 +179,7 @@ export default function ProfileScreen() {
           </HStack>
         </Box>
 
+        {/* Tiện ích của tôi */}
         <Box className="bg-white mt-3 px-4 py-3">
           <Text className="font-semibold text-gray-900 mb-3">
             Tiện ích của tôi
@@ -154,10 +220,10 @@ export default function ProfileScreen() {
                 icon: MapPinIcon,
                 onPress: () => router.push("/my-address"),
               },
-              { 
-                label: "Bảo hành & sửa chữa", 
+              {
+                label: "Bảo hành & sửa chữa",
                 icon: WrenchIcon,
-                onPress: () => {},
+                onPress: () => router.push("/guarantee-policy"),
               },
               {
                 label: "Ưu đãi giảm giá",
@@ -182,19 +248,21 @@ export default function ProfileScreen() {
         <Box className="bg-white mt-3 px-4 py-3">
           <Text className="font-semibold text-gray-900 mb-3">Hỗ trợ</Text>
           {[
-            { label: "Điều khoản sử dụng", icon: ShieldCheckIcon },
+            {
+              label: "Điều khoản sử dụng",
+              icon: ShieldCheckIcon,
+              onPress: () => router.push("/term-of-use"),
+            },
             {
               label: "Trò chuyện với nhân viên tư vấn",
               icon: MessageCircleIcon,
+              onPress: () => {},
             },
-            { label: "Đăng xuất", icon: LogOut },
+            { label: "Đăng xuất", icon: LogOut, onPress: handleLogout },
           ].map((item, i) => (
             <Pressable
-              onPress={() => {
-                if (item.label === "Điều khoản sử dụng")
-                  router.push("/term-of-use");
-              }}
               key={i}
+              onPress={item.onPress}
               className="flex-row items-center justify-between py-3 border-b border-gray-100"
             >
               <HStack className="items-center space-x-3">

@@ -14,6 +14,13 @@ export interface UserProfile {
   id: string;
   email: string;
   name: string;
+  fullName?: string;
+  phone?: string;
+  avatar?: string;
+  dateOfBirth?: string;
+  roles?: string[];
+  rank?: any;
+  totalSpending?: number;
   // Thêm các field khác tùy theo API
   [key: string]: any;
 }
