@@ -10,6 +10,7 @@ import {
   Text,
   VStack,
 } from "@/components/ui";
+import ChatTypeModal from "@/components/chat/ChatTypeModal";
 import { authService } from "@/services/auth.service";
 import { CustomerSummary } from "@/types/customer.type";
 import AuthStorageUtil from "@/utils/authStorage.util";
@@ -38,6 +39,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const [customer, setCustomer] = useState<CustomerSummary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   // ProfileScreen.tsx - Cập nhật hàm fetchProfile
 
@@ -131,7 +133,7 @@ export default function ProfileScreen() {
               <Pressable onPress={() => router.push("/cart")}>
                 <ShoppingCartIcon size={24} color="white" />
               </Pressable>
-              <Pressable>
+              <Pressable onPress={() => setShowChatModal(true)}>
                 <MessageCircleIcon size={24} color="white" />
               </Pressable>
             </HStack>
@@ -256,7 +258,7 @@ export default function ProfileScreen() {
             {
               label: "Trò chuyện với nhân viên tư vấn",
               icon: MessageCircleIcon,
-              onPress: () => {},
+              onPress: () => setShowChatModal(true),
             },
             { label: "Đăng xuất", icon: LogOut, onPress: handleLogout },
           ].map((item, i) => (
@@ -275,6 +277,11 @@ export default function ProfileScreen() {
         </Box>
         <Box className="h-24" />
       </ScrollView>
+
+      <ChatTypeModal
+        isOpen={showChatModal}
+        onClose={() => setShowChatModal(false)}
+      />
     </SafeAreaView>
   );
 }

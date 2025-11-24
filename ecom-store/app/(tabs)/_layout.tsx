@@ -161,6 +161,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="(profile)/guarantee-policy"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
