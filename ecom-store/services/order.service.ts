@@ -1,7 +1,7 @@
 import axiosClient from '@/configurations/axios.config';
-import type { 
-  OrderCreationRequest, 
-  OrderListResponse, 
+import type {
+  OrderCreationRequest,
+  OrderListResponse,
   OrderApiResponse,
 } from '@/types/order.type';
 
@@ -17,14 +17,18 @@ export const orderService = {
   /**
    * Lấy danh sách đơn hàng của customer hiện tại
    */
-  getMyOrders: async (page: number = 1, size: number = 10, status?: string) => {
+  getMyOrders: async (page: number = 1, size: number = 10, statuses?: string[], startDate?: string, endDate?: string) => {
     const params = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
     });
-    if (status) params.append('status', status);
+    if (statuses && statuses.length > 0) {
+      statuses.forEach(status => params.append('status', status));
+    }
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
 
-    const response = await axiosClient.get<OrderListResponse>(`/orders?${params.toString()}`);
+    const response = await axiosClient.get<OrderListResponse>(`/orders/my-orders?${params.toString()}`);
     return response.data;
   },
 
