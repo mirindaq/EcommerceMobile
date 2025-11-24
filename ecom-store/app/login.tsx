@@ -56,18 +56,35 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
+      // 1. Gọi API login để lấy tokens
       const response = await authService.login({ email, password });
-      console.log(response.data.data);
-      const { accessToken, refreshToken, fullName, email: userEmail } = response.data.data;
+      const { accessToken, refreshToken } = response.data.data;
 
+      // 2. Lưu tokens trước
       await AuthStorageUtil.setTokens({ accessToken, refreshToken });
-      await AuthStorageUtil.setUserData({
-        id: userEmail || '',
-        email: userEmail,
-        name: fullName,
-      });
 
-      router.replace('/(tabs)');
+      // 3. Gọi API getProfile để lấy thông tin user đầy đủ
+      const profileResponse = await authService.getProfile();
+      
+      if (profileResponse.data.status === 200) {
+        const userProfile = profileResponse.data.data;
+        
+        // 4. Lưu user profile đầy đủ vào storage
+        await AuthStorageUtil.setUserData({
+          id: userProfile.id.toString(),
+          email: userProfile.email,
+          name: userProfile.fullName,
+          fullName: userProfile.fullName,
+          phone: userProfile.phone,
+          avatar: userProfile.avatar,
+          dateOfBirth: userProfile.dateOfBirth,
+          roles: userProfile.roles,
+          rank: userProfile.rank,
+          totalSpending: userProfile.totalSpending,
+        });
+
+        router.replace('/(tabs)');
+      }
     } catch (error: any) {
       console.error('Login error details:', {
         message: error?.message,
@@ -75,6 +92,9 @@ export default function LoginScreen() {
         status: error?.response?.status,
         url: error?.config?.url,
       });
+      
+      // Nếu có lỗi, xóa tokens đã lưu
+      await AuthStorageUtil.clearAll();
       
       const errorMessage = error?.response?.data?.message 
         || error?.response?.data?.error 
@@ -126,19 +146,39 @@ export default function LoginScreen() {
           }
 
           if (code) {
-            // Call backend with the code and redirect_uri
+            // 1. Call backend with the code and redirect_uri để lấy tokens
             const authResponse = await authService.socialLoginCallback('google', code, redirectUri);
-            const { accessToken, refreshToken, fullName, email: userEmail } = authResponse.data.data;
+            const { accessToken, refreshToken } = authResponse.data.data;
 
-            // Save tokens and user data
             await AuthStorageUtil.setTokens({ accessToken, refreshToken });
-            await AuthStorageUtil.setUserData({
-              id: userEmail || '',
-              email: userEmail,
-              name: fullName,
-            });
 
-            router.replace('/(tabs)');
+            try {
+              const profileResponse = await authService.getProfile();
+              
+              if (profileResponse.data.status === 200) {
+                const userProfile = profileResponse.data.data;
+
+                await AuthStorageUtil.setUserData({
+                  id: userProfile.id.toString(),
+                  email: userProfile.email,
+                  name: userProfile.fullName,
+                  fullName: userProfile.fullName,
+                  phone: userProfile.phone,
+                  avatar: userProfile.avatar,
+                  dateOfBirth: userProfile.dateOfBirth,
+                  roles: userProfile.roles,
+                  rank: userProfile.rank,
+                  totalSpending: userProfile.totalSpending,
+                });
+
+                router.replace('/(tabs)');
+              }
+            } catch (profileError: any) {
+              console.error('Get profile error:', profileError);
+              // Nếu không lấy được profile, xóa tokens và báo lỗi
+              await AuthStorageUtil.clearAll();
+              Alert.alert('Lỗi', 'Không thể lấy thông tin người dùng');
+            }
           } else {
             Alert.alert('Lỗi', 'Không thể lấy mã xác thực từ Google');
           }

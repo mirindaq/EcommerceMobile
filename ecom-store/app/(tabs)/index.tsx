@@ -37,6 +37,7 @@ import {
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView } from "react-native";
+import ChatTypeModal from "@/components/chat/ChatTypeModal";
 
 const banners = [
   {
@@ -85,6 +86,7 @@ export default function HomeScreen() {
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   const refetchWishlist = useCallback(async () => {
     const isAuthenticated = await AuthStorageUtil.isAuthenticated();
@@ -190,7 +192,7 @@ export default function HomeScreen() {
             className="mr-3"
           />
 
-          <Pressable>
+          <Pressable onPress={() => setShowChatModal(true)}>
             <MessageCircleIcon size={24} color="white" />
           </Pressable>
         </HStack>
@@ -297,6 +299,11 @@ export default function HomeScreen() {
           </ScrollView>
         </Box>
       </ScrollView>
+
+      <ChatTypeModal
+        isOpen={showChatModal}
+        onClose={() => setShowChatModal(false)}
+      />
     </SafeAreaView>
   );
 }
