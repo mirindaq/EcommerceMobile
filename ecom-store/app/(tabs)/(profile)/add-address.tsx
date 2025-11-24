@@ -2,9 +2,9 @@ import { HStack, Pressable, SafeAreaView, Text } from "@/components/ui";
 import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { addressService } from "@/services/address.service";
 import { CreateAddressRequest } from "@/types/address.type";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { ArrowLeftIcon, ChevronRightIcon } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -67,6 +67,18 @@ export default function AddAddressScreen() {
     name: string;
   } | null>(null);
 
+  useFocusEffect(
+    useCallback(() => {
+      setFullName("");
+      setPhone("");
+      setSubAddress("");
+      setIsDefault(false);
+      setSelectedWard(null);
+      setLoading(false);
+      return () => {};
+    }, [])
+  );
+
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
@@ -94,10 +106,7 @@ export default function AddAddressScreen() {
       return;
     }
     if (!selectedWard) {
-      Alert.alert(
-        "Lỗi",
-        "Vui lòng chọn Tỉnh/Thành phố, Quận/Huyện, Phường/Xã."
-      );
+      Alert.alert("Lỗi", "Vui lòng chọn Tỉnh/Thành phố, Phường/Xã.");
       return;
     }
 
@@ -160,9 +169,7 @@ export default function AddAddressScreen() {
                 selectedWard ? "text-gray-800" : "text-gray-500"
               } flex-1 pr-2`}
             >
-              {selectedWard
-                ? selectedWard.name
-                : "Tỉnh/Thành phố, Quận/Huyện, Phường/Xã"}
+              {selectedWard ? selectedWard.name : "Tỉnh/Thành phố, Phường/Xã"}
             </Text>
             <ChevronRightIcon size={20} color="#9CA3AF" />
           </TouchableOpacity>
