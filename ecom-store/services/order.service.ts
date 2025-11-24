@@ -1,8 +1,8 @@
 import axiosClient from '@/configurations/axios.config';
-import type { 
-  OrderCreationRequest, 
-  OrderListResponse, 
+import type {
   OrderApiResponse,
+  OrderCreationRequest,
+  OrderListResponse,
 } from '@/types/order.type';
 
 export const orderService = {
@@ -24,7 +24,7 @@ export const orderService = {
     });
     if (status) params.append('status', status);
 
-    const response = await axiosClient.get<OrderListResponse>(`/orders?${params.toString()}`);
+    const response = await axiosClient.get<OrderListResponse>(`/orders/my-orders?${params.toString()}`);
     return response.data;
   },
 

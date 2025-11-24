@@ -79,9 +79,9 @@ export default function ProductBox({
     if (!wishListItems || wishListItems.length === 0) return false; // Trên màn hình Home, kiểm tra trong danh sách WishListItems được truyền vào
 
     if (!productVariantId) return false;
-    return wishListItems.some(
-      (item) => item.productVariantId === productVariantId
-    );
+    // return wishListItems.some(
+    //   (item) => item.productVariantId === productVariantId
+    // );
   }, [isWishlistScreen, wishListItems, productVariantId]); // Xử lý Thêm/Xóa WishList (trên Home) hoặc Xóa (trên Wishlist Screen)
 
   const handleToggleWishlist = async (e: any) => {
