@@ -55,7 +55,6 @@ const banners = [
   },
 ];
 
-// Icon mapping cho categories
 const categoryIcons: { [key: string]: any } = {
   Laptop: LaptopIcon,
   "Điện thoại": SmartphoneIcon,
@@ -224,7 +223,6 @@ export default function HomeScreen() {
           </HStack>
         </ScrollView>
 
-        {/* Categories */}
         <Box className="px-4 mb-6">
           <Text className="text-gray-900 font-bold text-lg mb-3">
             Danh mục sản phẩm
