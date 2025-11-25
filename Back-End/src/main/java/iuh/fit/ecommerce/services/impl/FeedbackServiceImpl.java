@@ -2,11 +2,8 @@ package iuh.fit.ecommerce.services.impl;
 
 import iuh.fit.ecommerce.dtos.request.feedback.CreateFeedbackRequest;
 import iuh.fit.ecommerce.dtos.response.feedback.FeedbackResponse;
-import iuh.fit.ecommerce.entities.Customer;
-import iuh.fit.ecommerce.entities.Feedback;
-import iuh.fit.ecommerce.entities.FeedbackImage;
-import iuh.fit.ecommerce.entities.Order;
-import iuh.fit.ecommerce.entities.ProductVariant;
+import iuh.fit.ecommerce.dtos.response.feedback.RatingStatisticsResponse;
+import iuh.fit.ecommerce.entities.*;
 import iuh.fit.ecommerce.enums.OrderStatus;
 import iuh.fit.ecommerce.exceptions.custom.InvalidParamException;
 import iuh.fit.ecommerce.exceptions.custom.ResourceNotFoundException;
@@ -24,7 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -98,6 +97,9 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         feedback = feedbackRepository.save(feedback);
 
+        // Cập nhật rating của Product
+        updateProductRating(productVariant.getProduct());
+
         return feedbackMapper.toResponse(feedback);
     }
 
@@ -122,6 +124,44 @@ public class FeedbackServiceImpl implements FeedbackService {
         ).orElseThrow(() -> new ResourceNotFoundException("Feedback not found"));
 
         return feedbackMapper.toResponse(feedback);
+    }
+
+    // Customer/Public APIs
+    @Override
+    public Page<FeedbackResponse> getFeedbacksByProduct(Long productId, int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Feedback> feedbacks = feedbackRepository.findByProductId(productId, pageable);
+        return feedbacks.map(feedbackMapper::toResponse);
+    }
+
+    @Override
+    public RatingStatisticsResponse getRatingStatistics(Long productId) {
+        List<Object[]> ratingCounts = feedbackRepository.countByRatingForProduct(productId);
+        
+        Map<Integer, Long> distribution = new HashMap<>();
+        // Initialize all ratings 1-5 with 0
+        for (int i = 1; i <= 5; i++) {
+            distribution.put(i, 0L);
+        }
+        
+        // Fill actual counts
+        long totalReviews = 0;
+        double totalRating = 0.0;
+        for (Object[] row : ratingCounts) {
+            Integer rating = (Integer) row[0];
+            Long count = (Long) row[1];
+            distribution.put(rating, count);
+            totalReviews += count;
+            totalRating += rating * count;
+        }
+        
+        Double averageRating = totalReviews > 0 ? Math.round((totalRating / totalReviews) * 10.0) / 10.0 : 0.0;
+        
+        return RatingStatisticsResponse.builder()
+                .averageRating(averageRating)
+                .totalReviews((int) totalReviews)
+                .ratingDistribution(distribution)
+                .build();
     }
 
     // Admin APIs
@@ -172,9 +212,43 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional
     public void deleteFeedback(Long id) {
-        if (!feedbackRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Feedback not found");
-        }
+        Feedback feedback = feedbackRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Feedback not found"));
+        
+        Product product = feedback.getProductVariant().getProduct();
         feedbackRepository.deleteById(id);
+        
+        // Cập nhật lại rating của Product sau khi xóa
+        updateProductRating(product);
+    }
+
+    /**
+     * Cập nhật rating của Product dựa trên tất cả feedbacks
+     */
+    private void updateProductRating(Product product) {
+        // Lấy tất cả feedbacks của product (qua các product variants)
+        List<Long> variantIds = product.getProductVariants().stream()
+                .map(ProductVariant::getId)
+                .toList();
+        
+        List<Feedback> allFeedbacks = feedbackRepository.findAllByProductVariantIdInAndStatusTrue(variantIds);
+        
+        if (allFeedbacks.isEmpty()) {
+            product.setRating(0.0);
+            product.setTotalRating(0.0);
+            product.setReviewCount(0);
+        } else {
+            double totalRating = allFeedbacks.stream()
+                    .mapToInt(Feedback::getRating)
+                    .sum();
+            int reviewCount = allFeedbacks.size();
+            double averageRating = totalRating / reviewCount;
+            
+            product.setRating(Math.round(averageRating * 10.0) / 10.0); // Làm tròn 1 chữ số
+            product.setTotalRating(totalRating);
+            product.setReviewCount(reviewCount);
+        }
+        
+        productVariantRepository.save(product.getProductVariants().get(0)); // Trigger update cascade
     }
 }

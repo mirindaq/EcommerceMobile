@@ -81,18 +81,15 @@ public class ProductSearchServiceImpl implements ProductSearchService {
             Criteria criteria = new Criteria("status").is(true);
 
             if (query != null && !query.trim().isEmpty()) {
-                // 1. Xử lý chuỗi tìm kiếm: Xóa ngoặc kép để tránh lỗi cú pháp nếu user nhập
                 String searchText = query.trim().replace("\"", "");
 
-                // 2. SỬA TẠI ĐÂY: Dùng .matches() thay vì .contains()
-                // .matches() sử dụng thuật toán Full-text search (phân tích từ ngữ)
-                // Nó hiểu được dấu cách và tìm kiếm chính xác hơn
                 Criteria searchCriteria = new Criteria("name").matches(searchText)
-                        .or("description").matches(searchText)
-                        .or("searchableText").matches(searchText);
+                        .or("variantValues").matches(searchText)
+                        .or("filterValues").matches(searchText);
 
                 criteria = criteria.subCriteria(searchCriteria);
             }
+
 
             Query searchQuery = new CriteriaQuery(criteria).setPageable(pageable);
 

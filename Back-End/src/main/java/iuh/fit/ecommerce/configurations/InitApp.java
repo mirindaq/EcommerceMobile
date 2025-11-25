@@ -207,7 +207,7 @@ public class InitApp {
 //
 //            generateFakeShippers(staffRepository);
 //
-//            productSearchService.reindexAllProducts();
+            productSearchService.reindexAllProducts();
 
         };
     }

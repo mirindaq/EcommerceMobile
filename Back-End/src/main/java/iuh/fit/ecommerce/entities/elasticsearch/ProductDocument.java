@@ -79,7 +79,7 @@ public class ProductDocument {
     @Field(type = FieldType.Text)
     private List<String> variantSkus;
     
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "standard", searchAnalyzer = "standard")
     private List<String> variantValues;
     
     // Product Attributes information
@@ -90,7 +90,7 @@ public class ProductDocument {
     private List<String> attributeValues;
     
     // Product Filter Values information
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "standard", searchAnalyzer = "standard")
     private List<String> filterValues;
 }
 

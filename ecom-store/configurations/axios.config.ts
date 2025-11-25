@@ -13,12 +13,6 @@ const getTimeout = (): number => {
   return timeout ? parseInt(String(timeout), 10) : 10000;
 };
 
-// Log API_BASE_URL khi khởi tạo
-console.log('🔍 ===== AXIOS CONFIGURATION =====');
-console.log('API_BASE_URL:', API_BASE_URL);
-console.log('Timeout:', getTimeout());
-console.log('__DEV__:', __DEV__);
-console.log('===================================');
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
