@@ -1,5 +1,6 @@
 import CartIcon from "@/components/CartIcon";
 import ProductBox from "@/components/ProductBox";
+import ChatTypeModal from "@/components/chat/ChatTypeModal";
 import {
   Box,
   HStack,
@@ -37,7 +38,6 @@ import {
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView } from "react-native";
-import ChatTypeModal from "@/components/chat/ChatTypeModal";
 
 const banners = [
   {

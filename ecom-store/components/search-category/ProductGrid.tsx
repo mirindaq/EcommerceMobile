@@ -1,64 +1,51 @@
-import ProductBox from '@/components/ProductBox';
-import { Box, HStack, Pressable, Text } from '@/components/ui';
-import type { Product } from '@/types/product.type';
-import { SearchIcon } from 'lucide-react-native';
-import React from 'react';
-import { ActivityIndicator, Dimensions, FlatList } from 'react-native';
+import ProductBox from "@/components/ProductBox";
+import { Box, HStack, Text } from "@/components/ui";
+import type { Product } from "@/types/product.type";
+import { WishListResponse } from "@/types/wishList.type";
+import { SearchIcon } from "lucide-react-native";
+import React from "react";
+import { ActivityIndicator, Dimensions, FlatList, View } from "react-native";
 
 interface ProductGridProps {
   products: Product[];
   loading: boolean;
-  onProductPress: (slug: string) => void;
+  onProductPress?: (slug: string) => void; // Cho optional vì không dùng nữa
   onRefresh?: () => void;
   refreshing?: boolean;
+  // Thêm 2 props này
+  wishListItems?: WishListResponse[];
+  onWishlistChange?: () => Promise<void>;
 }
 
 export default function ProductGrid({
   products,
   loading,
-  onProductPress,
   onRefresh,
   refreshing = false,
+  wishListItems = [], // Default empty array
+  onWishlistChange,
 }: ProductGridProps) {
-  const screenWidth = Dimensions.get('window').width;
-
-  const formatPrice = (price: number) =>
-    new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price);
+  const screenWidth = Dimensions.get("window").width;
 
   const renderProductItem = ({ item }: { item: Product }) => {
-    const variant = item.variants?.[0];
-    const productBoxData = {
-      id: item.id,
-      name: item.name,
-      price: formatPrice(variant?.price || 0),
-      originalPrice: variant?.oldPrice ? formatPrice(variant.oldPrice) : undefined,
-      discount: variant?.discount ? variant.discount.toString() : undefined,
-      rating: item.rating || 0,
-      soldCount: '0',
-      image: item.thumbnail,
-      deliveryTime: '2-3 ngày',
-      location: 'Hà Nội',
-    };
-
     return (
-      <Pressable
-        style={{ width: screenWidth / 2 - 20 }}
-        className="mb-3 mx-1.5"
-        onPress={() => onProductPress(item.slug)}
-      >
-        <ProductBox product={productBoxData} />
-      </Pressable>
+      <View style={{ width: screenWidth / 2 - 20 }} className="mb-3 mx-1.5">
+        {/* Truyền props Wishlist vào ProductBox */}
+        <ProductBox
+          product={item}
+          wishListItems={wishListItems}
+          onWishlistChange={onWishlistChange}
+        />
+      </View>
     );
   };
 
   const ListHeader = () => (
     <HStack className="px-4 pt-2 pb-1 justify-between items-center">
       <Text className="text-gray-500 text-sm">
-        Tìm thấy <Text className="font-bold text-gray-900">{products.length}</Text>{' '}
-        sản phẩm
+        Tìm thấy{" "}
+        <Text className="font-bold text-gray-900">{products.length}</Text> sản
+        phẩm
       </Text>
     </HStack>
   );
@@ -88,7 +75,7 @@ export default function ProductGrid({
       renderItem={renderProductItem}
       numColumns={2}
       columnWrapperStyle={{ paddingHorizontal: 8 }}
-      contentContainerStyle={{ paddingBottom: 20, backgroundColor: '#F9FAFB' }}
+      contentContainerStyle={{ paddingBottom: 20, backgroundColor: "#F9FAFB" }}
       ListHeaderComponent={ListHeader}
       ListEmptyComponent={ListEmptyComponent}
       refreshing={refreshing}
@@ -97,4 +84,3 @@ export default function ProductGrid({
     />
   );
 }
-

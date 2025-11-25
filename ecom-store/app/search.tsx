@@ -1,18 +1,25 @@
-import ProductBox from '@/components/ProductBox';
-import SearchHeader from '@/components/search-category/SearchHeader';
+import ProductBox from "@/components/ProductBox";
+import SearchHeader from "@/components/search-category/SearchHeader";
 import {
-  Box, HStack,
+  Box,
+  HStack,
   Icon,
-  Input, InputField, InputIcon, InputSlot,
+  Input,
+  InputField,
+  InputIcon,
+  InputSlot,
   Pressable,
   SafeAreaView,
   Text,
-  VStack
-} from '@/components/ui';
-import { productService } from '@/services/product.service';
-import type { Product } from '@/types/product.type';
-import SearchHistoryUtil from '@/utils/searchHistory.util';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+  VStack,
+} from "@/components/ui";
+import { productService } from "@/services/product.service";
+import { wishListService } from "@/services/wishList.service";
+import type { Product } from "@/types/product.type";
+import { WishListResponse } from "@/types/wishList.type";
+import AuthStorageUtil from "@/utils/authStorage.util";
+import SearchHistoryUtil from "@/utils/searchHistory.util";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -20,35 +27,40 @@ import {
   ArrowUpIcon,
   CameraIcon,
   SearchIcon,
-  XIcon
-} from 'lucide-react-native';
-import React, { useEffect, useState } from 'react';
+  XIcon,
+} from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Dimensions,
   FlatList,
-  ScrollView
-} from 'react-native';
+  ScrollView,
+} from "react-native";
 
-type SortOption = 'price_asc' | 'price_desc' | 'rating_asc' | 'rating_desc' | null;
+type SortOption =
+  | "price_asc"
+  | "price_desc"
+  | "rating_asc"
+  | "rating_desc"
+  | null;
 
-const screenWidth = Dimensions.get('window').width;
+const screenWidth = Dimensions.get("window").width;
 
 // Mock data for search suggestions
 const searchSuggestions = [
-  { id: 1, text: 'LỄ HỘI SÁCH -50%', isPromo: true },
-  { id: 2, text: 'iphone 16', isPromo: false },
-  { id: 3, text: 'sách code', isPromo: false },
-  { id: 4, text: 'áo thun nam', isPromo: false },
-  { id: 5, text: 'áo khoác nam', isPromo: false },
+  { id: 1, text: "LỄ HỘI SÁCH -50%", isPromo: true },
+  { id: 2, text: "iphone 16", isPromo: false },
+  { id: 3, text: "sách code", isPromo: false },
+  { id: 4, text: "áo thun nam", isPromo: false },
+  { id: 5, text: "áo khoác nam", isPromo: false },
 ];
 
 export default function SearchScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const initialQuery = (params.q as string) || '';
-  
+  const initialQuery = (params.q as string) || "";
+
   const [searchText, setSearchText] = useState(initialQuery);
   const [isSearchFocused, setIsSearchFocused] = useState(!initialQuery);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -59,12 +71,29 @@ export default function SearchScreen() {
   const [totalItem, setTotalItem] = useState(0);
   const [sortBy, setSortBy] = useState<SortOption>(null); // Default: rating_desc
   const [refreshing, setRefreshing] = useState(false);
+  const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
 
   // Load search history khi component mount
   useEffect(() => {
     loadSearchHistory();
+    refetchWishlist();
     if (initialQuery) {
       performSearch(initialQuery, 1, sortBy);
+    }
+  }, []);
+
+  const refetchWishlist = useCallback(async () => {
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (isAuthenticated) {
+      try {
+        const wishListRes = await wishListService.getMyWishList();
+        setWishListItems(wishListRes || []);
+      } catch (error) {
+        console.error("Error loading wishlist:", error);
+        setWishListItems([]);
+      }
+    } else {
+      setWishListItems([]);
     }
   }, []);
 
@@ -73,7 +102,11 @@ export default function SearchScreen() {
     setSearchHistory(history);
   };
 
-  const performSearch = async (query: string, currentPage: number = 1, currentSortBy: SortOption = null) => {
+  const performSearch = async (
+    query: string,
+    currentPage: number = 1,
+    currentSortBy: SortOption = null
+  ) => {
     if (!query || !query.trim()) return;
 
     try {
@@ -81,7 +114,7 @@ export default function SearchScreen() {
       // Map sortBy to API supported values
       // Default (null) means rating_desc according to backend
       const apiSortBy = currentSortBy || undefined; // undefined will use default (rating_desc)
-      
+
       const response = await productService.searchProductsWithElasticsearch(
         query.trim(),
         currentPage,
@@ -96,7 +129,7 @@ export default function SearchScreen() {
       if (currentPage === 1) {
         setProducts(productsData);
       } else {
-        setProducts(prev => [...prev, ...productsData]);
+        setProducts((prev) => [...prev, ...productsData]);
       }
 
       setTotalPage(newTotalPage);
@@ -107,8 +140,11 @@ export default function SearchScreen() {
       await SearchHistoryUtil.addSearchQuery(query.trim());
       await loadSearchHistory();
     } catch (error: any) {
-      console.error('Error searching products:', error);
-      Alert.alert('Lỗi', error?.response?.data?.message || 'Không thể tìm kiếm sản phẩm');
+      console.error("Error searching products:", error);
+      Alert.alert(
+        "Lỗi",
+        error?.response?.data?.message || "Không thể tìm kiếm sản phẩm"
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -154,21 +190,21 @@ export default function SearchScreen() {
   };
 
   const handlePriceSort = () => {
-    if (sortBy === 'price_asc') {
-      handleSortChange('price_desc');
+    if (sortBy === "price_asc") {
+      handleSortChange("price_desc");
     } else {
-      handleSortChange('price_asc');
+      handleSortChange("price_asc");
     }
   };
 
   const handleRatingSort = () => {
     // Toggle between rating_asc and rating_desc
     // null (default) is treated as rating_desc
-    if (sortBy === 'rating_asc') {
-      handleSortChange('rating_desc');
+    if (sortBy === "rating_asc") {
+      handleSortChange("rating_desc");
     } else {
       // null or rating_desc -> rating_asc
-      handleSortChange('rating_asc');
+      handleSortChange("rating_asc");
     }
   };
 
@@ -182,17 +218,16 @@ export default function SearchScreen() {
     router.back();
   };
 
-
   // Render product item
   const renderProductItem = ({ item }: { item: Product }) => {
     return (
-      <Pressable
-        style={{ width: screenWidth / 2 - 20 }}
-        className="mb-3 mx-1.5"
-        onPress={() => router.push(`/product-detail?slug=${item.slug}`)}
-      >
-        <ProductBox product={item} />
-      </Pressable>
+      <Box style={{ width: screenWidth / 2 - 20 }} className="mb-3 mx-1.5">
+        <ProductBox
+          product={item}
+          wishListItems={wishListItems}
+          onWishlistChange={refetchWishlist}
+        />
+      </Box>
     );
   };
 
@@ -201,7 +236,10 @@ export default function SearchScreen() {
     const ListHeader = () => (
       <HStack className="px-4 pt-2 pb-1 justify-between items-center">
         <Text className="text-gray-500 text-sm">
-          Tìm thấy <Text className="font-bold text-gray-900">{totalItem.toLocaleString()}</Text>{' '}
+          Tìm thấy{" "}
+          <Text className="font-bold text-gray-900">
+            {totalItem.toLocaleString()}
+          </Text>{" "}
           sản phẩm
         </Text>
       </HStack>
@@ -212,14 +250,16 @@ export default function SearchScreen() {
       return (
         <Box className="items-center py-20">
           <SearchIcon size={48} color="#E5E7EB" />
-          <Text className="text-gray-500 mt-4">Không tìm thấy sản phẩm nào</Text>
+          <Text className="text-gray-500 mt-4">
+            Không tìm thấy sản phẩm nào
+          </Text>
         </Box>
       );
     };
 
     if (loading && products.length === 0) {
       return (
-        <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+        <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
           <SearchHeader
             searchText={searchText}
             placeholder="Tìm kiếm sản phẩm..."
@@ -239,7 +279,7 @@ export default function SearchScreen() {
     }
 
     return (
-      <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+      <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
         <SearchHeader
           searchText={searchText}
           placeholder="Tìm kiếm sản phẩm..."
@@ -251,7 +291,7 @@ export default function SearchScreen() {
           }}
           onBack={handleGoBack}
         />
-        
+
         {/* Custom SortBar for Search */}
         <Box className="flex-row bg-white border-b border-gray-100 px-2 py-2 items-center justify-between">
           <Pressable
@@ -260,7 +300,7 @@ export default function SearchScreen() {
           >
             <Text
               className={`text-sm font-medium ${
-                sortBy === null ? 'text-red-500' : 'text-gray-600'
+                sortBy === null ? "text-red-500" : "text-gray-600"
               }`}
             >
               Mặc định
@@ -273,14 +313,16 @@ export default function SearchScreen() {
           >
             <Text
               className={`text-sm font-medium ${
-                sortBy === 'price_asc' || sortBy === 'price_desc' ? 'text-red-500' : 'text-gray-600'
+                sortBy === "price_asc" || sortBy === "price_desc"
+                  ? "text-red-500"
+                  : "text-gray-600"
               }`}
             >
               Giá
             </Text>
-            {sortBy === 'price_asc' ? (
+            {sortBy === "price_asc" ? (
               <ArrowUpIcon size={14} color="#EF4444" />
-            ) : sortBy === 'price_desc' ? (
+            ) : sortBy === "price_desc" ? (
               <ArrowDownIcon size={14} color="#EF4444" />
             ) : (
               <ArrowUpDownIcon size={14} color="#6B7280" />
@@ -293,14 +335,18 @@ export default function SearchScreen() {
           >
             <Text
               className={`text-sm font-medium ${
-                sortBy === 'rating_asc' || sortBy === 'rating_desc' || sortBy === null ? 'text-red-500' : 'text-gray-600'
+                sortBy === "rating_asc" ||
+                sortBy === "rating_desc" ||
+                sortBy === null
+                  ? "text-red-500"
+                  : "text-gray-600"
               }`}
             >
               Đánh giá
             </Text>
-            {sortBy === 'rating_asc' ? (
+            {sortBy === "rating_asc" ? (
               <ArrowUpIcon size={14} color="#EF4444" />
-            ) : sortBy === 'rating_desc' || sortBy === null ? (
+            ) : sortBy === "rating_desc" || sortBy === null ? (
               <ArrowDownIcon size={14} color="#EF4444" />
             ) : (
               <ArrowUpDownIcon size={14} color="#6B7280" />
@@ -314,7 +360,10 @@ export default function SearchScreen() {
           renderItem={renderProductItem}
           numColumns={2}
           columnWrapperStyle={{ paddingHorizontal: 8 }}
-          contentContainerStyle={{ paddingBottom: 20, backgroundColor: '#F9FAFB' }}
+          contentContainerStyle={{
+            paddingBottom: 20,
+            backgroundColor: "#F9FAFB",
+          }}
           ListHeaderComponent={ListHeader}
           ListEmptyComponent={ListEmptyComponent}
           refreshing={refreshing}
@@ -336,14 +385,17 @@ export default function SearchScreen() {
 
   // Hiển thị màn hình tìm kiếm ban đầu
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       <Box className="bg-white px-4 py-3 border-b border-gray-200">
         <HStack className="items-center">
           <Pressable className="mr-3" onPress={handleGoBack}>
             <ArrowLeftIcon size={24} color="#374151" />
           </Pressable>
-          
-          <Input className="bg-gray-100 rounded-md flex-1 mr-3" variant="rounded">
+
+          <Input
+            className="bg-gray-100 rounded-md flex-1 mr-3"
+            variant="rounded"
+          >
             <InputSlot className="pl-4">
               <InputIcon>
                 <SearchIcon size={16} color="#6B7280" />
@@ -359,7 +411,7 @@ export default function SearchScreen() {
               placeholderTextColor="#9CA3AF"
             />
             {searchText.length > 0 && (
-              <Pressable onPress={() => setSearchText('')} className="pr-2">
+              <Pressable onPress={() => setSearchText("")} className="pr-2">
                 <XIcon size={16} color="#6B7280" />
               </Pressable>
             )}
@@ -369,8 +421,8 @@ export default function SearchScreen() {
               </InputIcon>
             </InputSlot>
           </Input>
-          
-          <Pressable 
+
+          <Pressable
             className="bg-red-500 w-10 h-10 rounded-lg items-center justify-center"
             onPress={handleSearch}
           >
@@ -379,18 +431,20 @@ export default function SearchScreen() {
         </HStack>
       </Box>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false} 
+      <ScrollView
+        showsVerticalScrollIndicator={false}
         className="flex-1"
         keyboardShouldPersistTaps="handled"
       >
         {/* Search Suggestions */}
         <Box className="px-4 py-4">
-          <Text className="text-gray-900 font-bold text-lg mb-3">Gợi ý tìm kiếm</Text>
+          <Text className="text-gray-900 font-bold text-lg mb-3">
+            Gợi ý tìm kiếm
+          </Text>
           <HStack className="flex-wrap">
             {searchSuggestions.map((suggestion) => (
-              <Pressable 
-                key={suggestion.id} 
+              <Pressable
+                key={suggestion.id}
                 className="bg-gray-100 rounded-full px-4 py-2 mr-2 mb-2"
                 onPress={() => handleSuggestionPress(suggestion.text)}
               >
@@ -398,7 +452,9 @@ export default function SearchScreen() {
                   {suggestion.isPromo && (
                     <Box className="w-4 h-4 bg-red-500 rounded-full mr-2" />
                   )}
-                  <Text className="text-gray-700 text-sm">{suggestion.text}</Text>
+                  <Text className="text-gray-700 text-sm">
+                    {suggestion.text}
+                  </Text>
                 </HStack>
               </Pressable>
             ))}
@@ -409,25 +465,33 @@ export default function SearchScreen() {
         {searchHistory.length > 0 && (
           <Box className="px-4 pb-6">
             <HStack className="items-center justify-between mb-4">
-              <Text className="text-gray-900 font-bold text-lg">Tìm kiếm gần đây</Text>
-              <Pressable onPress={async () => {
-                await SearchHistoryUtil.clearSearchHistory();
-                await loadSearchHistory();
-              }}>
+              <Text className="text-gray-900 font-bold text-lg">
+                Tìm kiếm gần đây
+              </Text>
+              <Pressable
+                onPress={async () => {
+                  await SearchHistoryUtil.clearSearchHistory();
+                  await loadSearchHistory();
+                }}
+              >
                 <Text className="text-red-500 text-sm">Xóa tất cả</Text>
               </Pressable>
             </HStack>
-            
+
             <VStack space="sm">
               {searchHistory.map((search, index) => (
-                <Pressable 
-                  key={index} 
+                <Pressable
+                  key={index}
                   className="py-3 border-b border-gray-100"
                   onPress={() => handleHistoryPress(search)}
                 >
                   <HStack className="items-center justify-between">
                     <HStack className="items-center flex-1">
-                      <Icon as={SearchIcon} size="sm" className="text-gray-400 mr-3" />
+                      <Icon
+                        as={SearchIcon}
+                        size="sm"
+                        className="text-gray-400 mr-3"
+                      />
                       <Text className="text-gray-700">{search}</Text>
                     </HStack>
                     <Pressable onPress={() => handleRemoveHistory(search)}>
