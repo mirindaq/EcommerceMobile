@@ -4,7 +4,7 @@
     "slug": "ecom-store",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "ecom-store",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,15 +14,18 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "foregroundImage": "./assets/images/logo.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "monochromeImage": "./assets/images/logo.png"
+      },
+      "notification": {
+        "icon": "./assets/images/logo.png",
+        "color": "#E6F4FE"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "usesCleartextTraffic": true,
-      "package": "com.mirindaq.ecomstore",
-      "googleServicesFile": "./google-services.json"
+      "package": "com.mirindaq.ecomstore"
     },
     "web": {
       "output": "static",

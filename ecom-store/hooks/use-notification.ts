@@ -8,23 +8,31 @@ import { Platform } from 'react-native'
 import { useRef, useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { customerService } from '@/services/customer.service';
+import AuthStorageUtil from '@/utils/authStorage.util';
 
 export interface PushNotificationState {
   notification?: Notifications.Notification;
   expoPushToken?: Notifications.ExpoPushToken;
+  updatePushTokenOnServer?: () => Promise<void>;
 }
 
 export const useNotification = (): PushNotificationState => {
   const router = useRouter();
   
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowAlert: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
+    handleNotification: async (notification) => {
+      // Hiển thị notification đẹp hơn khi có chat mới
+      const data = notification.request.content.data;
+      const isChatMessage = data && typeof data === 'object' && 'type' in data && data.type === 'chat_message';
+      
+      return {
+        shouldPlaySound: true,
+        shouldSetBadge: isChatMessage, // Hiển thị badge khi có chat mới
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      };
+    },
   });
 
   const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
@@ -32,6 +40,47 @@ export const useNotification = (): PushNotificationState => {
 
   const notificationListener = useRef<Notifications.EventSubscription>(null);
   const responseListener = useRef<Notifications.EventSubscription>(null);
+
+  // Hàm để update push token lên server (có thể gọi từ bên ngoài sau khi user đăng nhập)
+  const updatePushTokenOnServer = async () => {
+    if (!expoPushToken) {
+      console.log('No push token available');
+      return;
+    }
+
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (!isAuthenticated) {
+      console.log('User not authenticated, cannot update push token');
+      return;
+    }
+
+    // Kiểm tra token có tồn tại không
+    const accessToken = await AuthStorageUtil.getAccessToken();
+    if (!accessToken) {
+      console.log('Access token not found, cannot update push token');
+      return;
+    }
+
+    console.log('Updating push token, access token exists:', !!accessToken);
+
+    let tokenString: string;
+    if (typeof expoPushToken === 'string') {
+      tokenString = expoPushToken;
+    } else if (expoPushToken && typeof expoPushToken === 'object' && 'data' in expoPushToken) {
+      tokenString = expoPushToken.data as string;
+    } else {
+      tokenString = String(expoPushToken);
+    }
+
+    if (tokenString) {
+      try {
+        await customerService.updatePushToken(tokenString);
+        console.log('Push token updated successfully');
+      } catch (error) {
+        console.log('Failed to update push token:', error);
+      }
+    }
+  };
 
 
   async function registerForPushNotificationsAsync() {
@@ -53,10 +102,14 @@ export const useNotification = (): PushNotificationState => {
 
       if ( Platform.OS === 'android' ) {
         await Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
+          name: 'Thông báo',
+          description: 'Thông báo từ ứng dụng',
+          importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
+          lightColor: '#E6F4FE',
+          sound: 'default',
+          enableVibrate: true,
+          showBadge: true,
         });
       }
 
@@ -74,9 +127,17 @@ export const useNotification = (): PushNotificationState => {
       }
     });
 
-    registerForPushNotificationsAsync().then((expoPushToken) => {
+    registerForPushNotificationsAsync().then(async (expoPushToken) => {
       if (expoPushToken) {
         setExpoPushToken(expoPushToken);
+        
+        // Chỉ gửi push token lên server khi user đã đăng nhập
+        const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+        if (!isAuthenticated) {
+          console.log('User not authenticated, skipping push token update');
+          return;
+        }
+        
         // Gửi push token lên server
         // ExpoPushToken có thể là object với property 'data' hoặc string
         let tokenString: string;
@@ -100,7 +161,15 @@ export const useNotification = (): PushNotificationState => {
     // Listener cho notification khi app đang chạy (foreground)
     notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
       setNotification(notification);
-      // Có thể hiển thị local notification hoặc update UI
+      
+      // Hiển thị notification đẹp hơn khi có chat mới
+      const data = notification.request.content.data;
+      const isChatMessage = data && typeof data === 'object' && 'type' in data && data.type === 'chat_message';
+      
+      if (isChatMessage) {
+        // Có thể thêm logic để update UI, ví dụ: hiển thị badge số tin nhắn chưa đọc
+        console.log('New chat message received:', notification.request.content.title);
+      }
     });
 
     // Listener cho khi user tap vào notification (app đang chạy hoặc mở từ killed state)
@@ -140,5 +209,5 @@ export const useNotification = (): PushNotificationState => {
     };
   }, []);
 
-  return { notification, expoPushToken };
+  return { notification, expoPushToken, updatePushTokenOnServer };
 };
