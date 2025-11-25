@@ -1,10 +1,21 @@
 import ProductBox from "@/components/ProductBox";
-import { Box, HStack, Pressable, SafeAreaView, Text, VStack } from "@/components/ui";
+import {
+  Box,
+  HStack,
+  Pressable,
+  SafeAreaView,
+  Text,
+  VStack,
+} from "@/components/ui";
 import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { wishListService } from "@/services/wishList.service";
 import { WishListResponse } from "@/types/wishList.type";
 import { useRouter } from "expo-router";
-import { ArrowLeftIcon, HeartIcon, ShoppingCartIcon } from "lucide-react-native";
+import {
+  ArrowLeftIcon,
+  HeartIcon,
+  ShoppingCartIcon,
+} from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
@@ -75,7 +86,9 @@ export default function FavoriteProductsScreen() {
         {wishList.length > 0 && (
           <Box className="p-4 bg-white border-b border-gray-200">
             <Text className="text-gray-700 text-sm font-medium">
-              Bạn có <Text className="font-bold text-red-600">{wishList.length}</Text> sản phẩm trong danh sách yêu thích.
+              Bạn có{" "}
+              <Text className="font-bold text-red-600">{wishList.length}</Text>{" "}
+              sản phẩm trong danh sách yêu thích.
             </Text>
           </Box>
         )}
@@ -97,7 +110,9 @@ export default function FavoriteProductsScreen() {
                 className="bg-red-600 px-6 py-3 rounded-lg flex-row items-center"
               >
                 <ShoppingCartIcon size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Tiếp tục mua sắm</Text>
+                <Text className="text-white font-semibold ml-2">
+                  Tiếp tục mua sắm
+                </Text>
               </Pressable>
             </VStack>
           ) : (
