@@ -34,6 +34,7 @@ import { Alert, ScrollView } from "react-native";
 
 export default function ProfileScreen() {
   const router = useRouter();
+  // Lưu ý: Đảm bảo interface CustomerSummary của bạn đã có trường rank: { name: string }
   const [customer, setCustomer] = useState<CustomerSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showChatModal, setShowChatModal] = useState(false);
@@ -90,40 +91,72 @@ export default function ProfileScreen() {
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Header */}
-        <Box className="bg-red-500 px-4 pt-8 pb-3">
-          <HStack className="items-center justify-between mb-4">
-            <HStack className="items-center space-x-3">
-              <Avatar size="lg" className="border-2 mr-3 border-white">
-                <AvatarImage
-                  source={{
-                    uri:
-                      customer?.avatar ||
-                      "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
-                  }}
-                  alt="avatar"
-                />
-              </Avatar>
-              <VStack>
-                <Text className="text-white font-bold text-lg">
-                  {customer?.fullName || "Khách hàng"}
+        {/* Header */}
+        <Box className="bg-red-500 pt-8 pb-4">
+          <Box className="px-4">
+            {/* Info Section */}
+            <HStack className="items-center justify-between mb-4">
+              <HStack className="items-center space-x-3">
+                <Avatar size="lg" className="border-2 mr-3 border-white">
+                  <AvatarImage
+                    source={{
+                      uri:
+                        customer?.avatar ||
+                        "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
+                    }}
+                    alt="avatar"
+                  />
+                </Avatar>
+                <VStack>
+                  <Text className="text-white font-bold text-lg">
+                    {customer?.fullName || "Khách hàng"}
+                  </Text>
+                  <Box className="bg-red-600/50 self-start px-2 py-0.5 rounded-full mt-1">
+                    <Text className="text-white/90 text-xs font-medium">
+                      {customer?.rank?.name || "Thành viên"}
+                    </Text>
+                  </Box>
+                </VStack>
+              </HStack>
+              <HStack space="xl">
+                <Pressable onPress={() => router.push("/my-wishlist")}>
+                  <HeartIcon size={24} color="white" />
+                </Pressable>
+                <Pressable onPress={() => router.push("/cart")}>
+                  <ShoppingCartIcon size={24} color="white" />
+                </Pressable>
+                <Pressable onPress={() => setShowChatModal(true)}>
+                  <MessageCircleIcon size={24} color="white" />
+                </Pressable>
+              </HStack>
+            </HStack>
+
+            {/* --- BANNER STYLE SHOPEE --- */}
+            <Pressable
+              onPress={() => router.push("/my-voucher")} // Link tới trang voucher hoặc ưu đãi
+              className="bg-[#FFF8E1] rounded-lg p-2.5 flex-row items-center justify-between mt-2"
+            >
+              <HStack className="items-center flex-1 mr-2">
+                {/* Badge VIP giả lập */}
+                <Box className="bg-[#F59E0B] px-1.5 py-0.5 rounded mr-2">
+                  <Text className="text-white text-[10px] font-bold">
+                    {customer?.rank.name || "Thành viên"}
+                  </Text>
+                </Box>
+
+                {/* Text chính */}
+                <Text
+                  numberOfLines={1}
+                  className="text-gray-800 text-sm font-medium flex-1"
+                >
+                  Hàng vạn ưu đãi đang chờ bạn khám phá!
                 </Text>
-              </VStack>
-            </HStack>
-            <HStack space="xl">
-              <Pressable onPress={() => router.push("/my-wishlist")}>
-                <HeartIcon size={24} color="white" />
-              </Pressable>
-              <Pressable onPress={() => router.push("/cart")}>
-                <ShoppingCartIcon size={24} color="white" />
-              </Pressable>
-              <Pressable onPress={() => setShowChatModal(true)}>
-                <MessageCircleIcon size={24} color="white" />
-              </Pressable>
-            </HStack>
-          </HStack>
-          <Text className="text-white text-md text-center mt-3">
-            Hàng ngàn ưu đãi đang chờ bạn khám phá!
-          </Text>
+              </HStack>
+
+              {/* Mũi tên chỉ sang phải */}
+              <ChevronRightIcon size={16} color="#9CA3AF" />
+            </Pressable>
+          </Box>
         </Box>
 
         {/* Đơn mua */}
@@ -168,7 +201,7 @@ export default function ProfileScreen() {
           </HStack>
         </Box>
 
-        {/* --- TIỆN ÍCH KHÁC (ĐÃ SỬA: Bento Grid) --- */}
+        {/* Tiện ích khác */}
         <Box className="bg-white mt-3 px-4 py-3 rounded-xl">
           <Text className="font-semibold text-gray-900 mb-3">
             Tiện ích khác
@@ -190,60 +223,41 @@ export default function ProfileScreen() {
                 icon: WrenchIcon,
                 onPress: () => router.push("/guarantee-policy"),
               },
-            ].map((item, i) => {
-              // Kiểm tra xem có phải item cuối cùng (Bảo hành) không
-              const isLastItem = i === 2;
-
-              return (
-                <Pressable
-                  key={i}
-                  onPress={item.onPress}
-                  // Logic: Nếu là cuối cùng thì w-full và flex-row (ngang), còn lại w-[48%] và dọc
-                  className={`items-center justify-center bg-gray-50 rounded-xl py-3 mb-2 ${
-                    isLastItem ? "w-full flex-row space-x-2 py-6" : "w-[48%]"
-                  }`}
-                >
-                  <Icon
-                    as={item.icon}
-                    size="lg"
-                    // Nếu nằm ngang thì bỏ margin bottom (mb-0), thêm margin right (đã có space-x-2 lo)
-                    className={`text-red-500 ${isLastItem ? "mr-2" : "mb-1"}`}
-                  />
-                  <Text className="text-sm text-gray-700 text-center">
-                    {item.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
+              {
+                label: "Điều khoản sử dụng",
+                icon: ShieldCheckIcon,
+                onPress: () => router.push("/term-of-use"),
+              },
+            ].map((item, i) => (
+              <Pressable
+                key={i}
+                onPress={item.onPress}
+                className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
+              >
+                <Icon as={item.icon} size="lg" className="text-red-500 mb-1" />
+                <Text className="text-sm text-gray-700 text-center">
+                  {item.label}
+                </Text>
+              </Pressable>
+            ))}
           </HStack>
         </Box>
 
-        {/* Hỗ trợ */}
+        {/* Tài khoản */}
         <Box className="bg-white mt-3 px-4 py-3">
-          <Text className="font-semibold text-gray-900 mb-3">Hỗ trợ</Text>
-          {[
-            {
-              label: "Điều khoản sử dụng",
-              icon: ShieldCheckIcon,
-              onPress: () => router.push("/term-of-use"),
-            },
-            { label: "Đăng xuất", icon: LogOut, onPress: handleLogout },
-          ].map((item, i) => (
-            <Pressable
-              key={i}
-              onPress={item.onPress}
-              className={`flex-row items-center justify-between py-3 ${
-                i < 2 ? "border-b border-gray-100" : ""
-              }`}
-            >
-              <HStack className="items-center space-x-3">
-                <Icon as={item.icon} size="lg" className="text-gray-700" />
-                <Text className="text-gray-800 ml-3">{item.label}</Text>
-              </HStack>
-              <ChevronRightIcon size={16} color="#9CA3AF" />
-            </Pressable>
-          ))}
+          <Text className="font-semibold text-gray-900 mb-3">Tài khoản</Text>
+          <Pressable
+            onPress={handleLogout}
+            className="flex-row items-center justify-between py-2"
+          >
+            <HStack className="items-center space-x-3">
+              <Icon as={LogOut} size="lg" className="text-gray-700" />
+              <Text className="text-gray-800 ml-3 text-base">Đăng xuất</Text>
+            </HStack>
+            <ChevronRightIcon size={20} color="#9CA3AF" />
+          </Pressable>
         </Box>
+
         <Box className="h-24" />
       </ScrollView>
 
