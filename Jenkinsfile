@@ -11,7 +11,7 @@ pipeline {
     stage("Checkout from SCM") {
       steps {
         git branch: 'main', url: 'https://github.com/mirindaq/EcommerceMobile'
-        echo "✅ Checked out code successfully 123123123123123"
+        echo "✅ Checked out code successfully"
       }
     }
 
@@ -22,8 +22,8 @@ pipeline {
           
           # Copy Backend env files
           mkdir -p Back-End/env
-          cp /home/ubuntu/EcommerceMobile/env/prod.env Back-End/env/prod.env
-          cp /home/ubuntu/EcommerceMobile/env/dev.env Back-End/env/dev.env
+          sudo cp /home/ubuntu/EcommerceMobile/env/prod.env Back-End/env/prod.env
+          sudo cp /home/ubuntu/EcommerceMobile/env/dev.env Back-End/env/dev.env
           
           ls -la Back-End/env/
           
@@ -38,10 +38,10 @@ pipeline {
           echo "🚀 Starting deployment..."
           echo "🧹 Stopping and removing old containers..."
 
-          docker-compose down || true
+          sudo docker-compose down || true
 
           echo "🔧 Building and starting containers with production environment..."
-          docker-compose --env-file ./Back-End/env/prod.env up -d --build
+          sudo docker-compose --env-file ./Back-End/env/prod.env up -d --build
 
           echo "✅ Deployment completed successfully!"
         """
