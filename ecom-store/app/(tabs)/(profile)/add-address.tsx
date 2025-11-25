@@ -82,7 +82,7 @@ export default function AddAddressScreen() {
   const ICON_COLOR = "#EF4444";
 
   const handleGoBack = () => {
-    router.back();
+    router.push("/(tabs)/(profile)/my-address");
   };
 
   // Mở Modal
@@ -122,7 +122,10 @@ export default function AddAddressScreen() {
 
       await addressService.addAddress(payload);
       Alert.alert("Thành công", "Đã thêm địa chỉ mới", [
-        { text: "OK", onPress: () => router.back() },
+        {
+          text: "OK",
+          onPress: () => router.push("/(tabs)/(profile)/my-address"),
+        },
       ]);
     } catch (error) {
       console.error(error);
