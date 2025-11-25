@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
@@ -54,4 +55,36 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
             @Param("toDate") java.time.LocalDateTime toDate,
             Pageable pageable
     );
+
+    // Lấy tất cả feedbacks theo danh sách variant IDs và status = true
+    @Query("""
+        SELECT f FROM Feedback f
+        LEFT JOIN FETCH f.images
+        WHERE f.productVariant.id IN :variantIds
+        AND f.status = true
+    """)
+    List<Feedback> findAllByProductVariantIdInAndStatusTrue(@Param("variantIds") List<Long> variantIds);
+
+    // Lấy feedbacks theo productId với phân trang
+    @Query("""
+        SELECT f FROM Feedback f
+        LEFT JOIN FETCH f.customer c
+        LEFT JOIN FETCH f.productVariant pv
+        LEFT JOIN FETCH f.images
+        WHERE pv.product.id = :productId
+        AND f.status = true
+        ORDER BY f.createdAt DESC
+    """)
+    Page<Feedback> findByProductId(@Param("productId") Long productId, Pageable pageable);
+
+    // Thống kê số lượng feedback theo rating cho một product
+    @Query("""
+        SELECT f.rating as rating, COUNT(f) as count
+        FROM Feedback f
+        WHERE f.productVariant.product.id = :productId
+        AND f.status = true
+        GROUP BY f.rating
+        ORDER BY f.rating DESC
+    """)
+    List<Object[]> countByRatingForProduct(@Param("productId") Long productId);
 }

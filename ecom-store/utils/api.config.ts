@@ -34,18 +34,18 @@ const { PREVIEW_API_URL, PREVIEW_WS_URL, DEV_API_URL, DEV_WS_URL, LOCAL_IP, PORT
 const getExpoDevServerIP = (): string | null => {
   try {
     const hostUri = Constants.expoConfig?.hostUri || Constants.expoConfig?.extra?.hostUri;
-    
+
     if (hostUri) {
       const match = hostUri.match(/^(\d+\.\d+\.\d+\.\d+)/);
       if (match && match[1]) {
         return match[1];
       }
-      
+
       if (hostUri.includes('localhost') || hostUri.includes('127.0.0.1')) {
         return null;
       }
     }
-    
+
     const debuggerHost = Constants.expoConfig?.hostUri?.split(':')[0];
     if (debuggerHost && !debuggerHost.includes('localhost') && !debuggerHost.includes('127.0.0.1')) {
       return debuggerHost;
@@ -53,19 +53,19 @@ const getExpoDevServerIP = (): string | null => {
   } catch (error) {
     console.warn('Could not get IP from Expo:', error);
   }
-  
+
   return null;
 };
 
 export const getBaseURL = (): string => {
   // Luôn sử dụng https://api.mirindaq-dev.shop/api/v1 cho cả dev và preview
   // Thêm /api/v1 vì các endpoint trong services không có prefix này
-  return 'https://api.mirindaq-dev.shop/api/v1';
+  return 'https://localhost:8080/api/v1';
 };
 
 export const getWebSocketURL = (): string => {
   // Luôn sử dụng https://api.mirindaq-dev.shop/ws cho cả dev và preview
-  return 'https://api.mirindaq-dev.shop/ws';
+  return 'https://localhost:8080/ws';
 };
 
 export const API_BASE_URL = getBaseURL();
