@@ -99,22 +99,12 @@ export default function Brands() {
     setIsDialogOpen(true);
   };
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingBrand(null);
-  };
-
   const handleFormSubmit = (data: CreateBrandRequest) => {
     if (editingBrand) {
       updateBrandMutation.mutate({ id: editingBrand.id, data });
     } else {
       createBrandMutation.mutate(data);
     }
-  };
-
-  const handleDelete = async (id: number) => {
-    // TODO: Implement delete API when available
-    toast.error("Chức năng xóa chưa được hỗ trợ");
   };
 
   const handleToggleStatus = (id: number) => {
@@ -141,10 +131,7 @@ export default function Brands() {
             Quản lý các thương hiệu sản phẩm trong hệ thống
           </p>
         </div>
-        <Button
-          onClick={handleOpenAddDialog}
-          size="lg"
-        >
+        <Button onClick={handleOpenAddDialog} size="lg">
           <Plus className="mr-2 h-4 w-4" />
           Thêm thương hiệu
         </Button>
@@ -153,7 +140,6 @@ export default function Brands() {
       <BrandTable
         brands={brands}
         onEdit={handleOpenEditDialog}
-        onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}
         isLoading={isLoadingBrands}
         onSearch={handleSearch}

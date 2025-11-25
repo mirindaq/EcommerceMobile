@@ -1,2 +1,8 @@
 /Back-End/local.env
 /Back-End/uploads
+/Back-End/logs
+/Back-End/env/prod.env
+/Back-End/env/dev.env
+/Front-End/.env
+/Front-End/.env.local
+/Front-End/.env.production

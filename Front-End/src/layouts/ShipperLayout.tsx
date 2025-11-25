@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Outlet, useLocation } from "react-router";
 import { useUser } from "@/context/UserContext";
 import { AUTH_PATH } from "@/constants/path";
 import AuthStorageUtil from "@/utils/authStorage.util";
@@ -35,7 +35,6 @@ const navigation = [
 
 export default function ShipperLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
   const { logout } = useUser();
 
   const handleLogout = async () => {
