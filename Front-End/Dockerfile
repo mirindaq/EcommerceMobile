@@ -9,7 +9,10 @@ RUN npm ci
 
 COPY . .
 
-RUN npm run build -- --mode production
+ENV VITE_API_BASE_URL=https://api.mirindaq-dev.shop/api/v1
+ENV VITE_WS_BASE_URL=https://api.mirindaq-dev.shop/ws
+
+RUN npm run build
 
 FROM nginx:alpine
 
