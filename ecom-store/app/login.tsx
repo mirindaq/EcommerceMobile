@@ -12,6 +12,7 @@ import { VStack } from '@/components/ui/vstack';
 import { authService } from '@/services/auth.service';
 import AuthStorageUtil from '@/utils/authStorage.util';
 import { router } from 'expo-router';
+import { useNotification } from '@/hooks/use-notification';
 import * as WebBrowser from 'expo-web-browser';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react-native'; // Thêm Icon
 import React, { useEffect, useState } from 'react';
@@ -27,6 +28,8 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  
+  const { updatePushTokenOnServer } = useNotification();
 
   // Check if user is already logged in
   useEffect(() => {
@@ -82,6 +85,17 @@ export default function LoginScreen() {
           rank: userProfile.rank,
           totalSpending: userProfile.totalSpending,
         });
+
+        // 5. Update push token sau khi đăng nhập thành công
+        // Đợi một chút để đảm bảo token đã được set vào axios interceptor
+        // Axios interceptor sẽ tự động đọc token từ SecureStore mỗi lần request
+        setTimeout(() => {
+          if (updatePushTokenOnServer) {
+            updatePushTokenOnServer().catch((error) => {
+              console.log('Failed to update push token after login:', error);
+            });
+          }
+        }, 1000);
 
         router.replace('/(tabs)');
       }

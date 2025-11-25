@@ -31,3 +31,15 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment Variables ###
+*.env
+local.env
+.env.local
+.env.*.local
+env/prod.env
+env/dev.env
+
+### Uploads & Logs ###
+uploads/
+logs/

@@ -1,2 +1,9 @@
 /Back-End/local.env
 /Back-End/uploads
+/ecom-store/google-services.json
+/Back-End/logs
+/Back-End/env/prod.env
+/Back-End/env/dev.env
+/Front-End/.env
+/Front-End/.env.local
+/Front-End/.env.production

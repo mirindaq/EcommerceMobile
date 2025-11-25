@@ -8,7 +8,6 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import io.jsonwebtoken.JwtException;
 import iuh.fit.ecommerce.configurations.jwt.JwtUtil;
 import iuh.fit.ecommerce.dtos.request.authentication.LoginRequest;
-import iuh.fit.ecommerce.dtos.request.authentication.RefreshTokenRequest;
 import iuh.fit.ecommerce.dtos.request.authentication.RegisterRequest;
 import iuh.fit.ecommerce.dtos.response.authentication.LoginResponse;
 import iuh.fit.ecommerce.dtos.response.authentication.RefreshTokenResponse;
@@ -21,12 +20,12 @@ import iuh.fit.ecommerce.exceptions.custom.UnauthorizedException;
 import iuh.fit.ecommerce.mappers.UserMapper;
 import iuh.fit.ecommerce.repositories.*;
 import iuh.fit.ecommerce.services.AuthenticationService;
-import iuh.fit.ecommerce.utils.SecurityUtil;
+import iuh.fit.ecommerce.utils.SecurityUtils;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,12 +36,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
-
-import static iuh.fit.ecommerce.enums.TokenType.ACCESS_TOKEN;
 
 @Service
 @RequiredArgsConstructor
@@ -74,7 +70,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final SecurityUtil securityUtil;
+    private final SecurityUtils securityUtils;
     private final OAuth2ClientProperties oAuth2ClientProperties;
     private final UserMapper userMapper;
 
@@ -98,8 +94,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public UserProfileResponse getProfile() {
-        User user = securityUtil.getCurrentUser();
-        return userMapper.toUserProfileResponse(user);
+        User user = securityUtils.getCurrentUser();
+        UserProfileResponse response = userMapper.toUserProfileResponse(user);
+        if (user instanceof Customer customer) {
+            Double spending = customer.getTotalSpending();
+            response.setTotalSpending(spending != null ? spending : 0.0);
+        }
+        return response;
     }
 
     @Override
@@ -133,8 +134,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public RefreshTokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
-        String refreshToken = refreshTokenRequest.getRefreshToken();
+    public RefreshTokenResponse refreshToken(HttpServletRequest request) {
+        String refreshToken = getRefreshTokenFromCookie(request);
+
+        if (refreshToken == null) {
+           throw new BadCredentialsException("Refresh token not found in cookies");
+        }
+
         if (!jwtUtil.validateJwtToken(refreshToken, TokenType.REFRESH_TOKEN)) {
             throw new JwtException("Invalid or expired refresh token");
         }
@@ -144,7 +150,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + email));
 
         RefreshToken dbToken = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new BadCredentialsException("Refresh token not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
 
         if (!dbToken.getUser().getId().equals(user.getId())) {
             throw new BadCredentialsException("Refresh token does not belong to user");
@@ -174,10 +180,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public void logout(HttpServletRequest request) {
-        User currentUser = securityUtil.getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
+        String refreshToken = getRefreshTokenFromCookie(request);
 
-        String refreshTokenHeader = request.getHeader("Refresh-Token");
-        if (refreshTokenHeader == null || refreshTokenHeader.isBlank()) {
+        if (refreshToken == null) {
             List<RefreshToken> tokens = refreshTokenRepository.findAllByUserId(currentUser.getId());
             tokens.forEach(t -> {
                 t.setRevoked(true);
@@ -186,7 +192,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             return;
         }
 
-        refreshTokenRepository.findByToken(refreshTokenHeader)
+        refreshTokenRepository.findByToken(refreshToken)
                 .ifPresent(token -> {
                     if (!token.getUser().getId().equals(currentUser.getId())) {
                         throw new AccessDeniedException("Token does not belong to current user");
@@ -197,18 +203,38 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     }
 
+    private String getRefreshTokenFromCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        String refreshToken = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+        return refreshToken;
+    }
+
     @Override
-    public String generateAuthUrl(String loginType) {
+    public String generateAuthUrl(String loginType, String redirectUri) {
         if ("google".equalsIgnoreCase(loginType)) {
             OAuth2ClientProperties.Registration registration = oAuth2ClientProperties.getRegistration().get(loginType);
             OAuth2ClientProperties.Provider provider = oAuth2ClientProperties.getProvider().get(loginType);
+
+            // Use redirect_uri from request if provided (for mobile), otherwise use from config (for web)
+            String finalRedirectUri = (redirectUri != null && !redirectUri.isEmpty()) 
+                    ? redirectUri 
+                    : registration.getRedirectUri();
 
             String scope = "openid profile email";
             String responseType = "code";
 
             return UriComponentsBuilder.fromHttpUrl(provider.getAuthorizationUri())
                     .queryParam("client_id", registration.getClientId())
-                    .queryParam("redirect_uri", registration.getRedirectUri())
+                    .queryParam("redirect_uri", finalRedirectUri)
                     .queryParam("response_type", responseType)
                     .queryParam("scope", scope)
                     .build()
@@ -218,16 +244,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
-    public LoginResponse socialLoginCallback(String loginType, String code) throws IOException {
+    public LoginResponse socialLoginCallback(String loginType, String code, String redirectUri) throws IOException {
         String accessToken;
         if ("google".equalsIgnoreCase(loginType)) {
+            // Use redirect_uri from request if provided (for mobile), otherwise use from config (for web)
+            String finalRedirectUri = (redirectUri != null && !redirectUri.isEmpty()) 
+                    ? redirectUri 
+                    : this.redirectUri;
+            
             accessToken = new GoogleAuthorizationCodeTokenRequest(
                     new NetHttpTransport(),
                     new JacksonFactory(),
                     clientId,
                     clientSecret,
                     code,
-                    redirectUri).execute().getAccessToken();
+                    finalRedirectUri).execute().getAccessToken();
         } else {
             throw new IllegalArgumentException("Unsupported login type: " + loginType);
         }
@@ -335,6 +366,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .accessToken(accessToken)
                 .refreshToken(refreshTokenStr)
                 .roles(roles)
+                .fullName(customer.getFullName())
                 .email(customer.getEmail())
                 .build();
     }

@@ -7,7 +7,7 @@ export type Product = {
   name: string;
   slug: string;
   stock: number;
-  discount: number;
+  // discount: number;
   description: string;
   thumbnail: string;
   status: boolean;
@@ -22,8 +22,6 @@ export type Product = {
 
 export type CreateProductRequest = {
   name: string;
-  stock: number;
-  discount: number;
   description: string;
   thumbnail: string;
   status?: boolean;
@@ -33,6 +31,7 @@ export type CreateProductRequest = {
   productImages: string[];
   attributes?: ProductAttributeRequest[];
   variants?: ProductVariantRequest[];
+  filterValueIds?: number[];
 };
 
 export type ProductAttributeRequest = {
@@ -42,8 +41,6 @@ export type ProductAttributeRequest = {
 
 export type ProductVariantRequest = {
   price: number;
-  oldPrice?: number;
-  sku: string;
   stock: number;
   variantValueIds: number[];
 };
@@ -61,6 +58,7 @@ export type ProductVariantResponse = {
   oldPrice: number;
   sku: string;
   stock: number;
+  discount: number;
   productVariantValues: ProductVariantValueResponse[];
 };
 
@@ -70,5 +68,37 @@ export type ProductVariantValueResponse = {
 };
 
 
+export type ProductVariantDescription = {
+  id: number;
+  name: string;
+  price: number;
+  thumbnail: string;
+  sku: string;
+  stock: number;
+  brandName: string;
+  categoryName: string;
+};
+
+export type ProductVariantPromotionRequest = {
+  productVariantIds: number[];
+}
+
+
+export type ProductVariantPromotionResponse = {
+  productVariantId: number;
+  discount: number;
+}
+
+export type ProductFilters = {
+  keyword?: string;
+  brandId?: number | null;
+  categoryId?: number | null;
+  status?: boolean | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+}
+
 export type ProductResponse = ResponseApi<Product>;
 export type ProductListResponse = ResponseApiWithPagination<Product[]>;
+export type ProductVariantDescriptionResponse = ResponseApi<ProductVariantDescription[]>;
+export type ProductVariantPromotionResponseApi = ResponseApi<ProductVariantPromotionResponse[]>;
