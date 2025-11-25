@@ -23,7 +23,6 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   async (config) => {
-    console.log('API_BASE_URL:', API_BASE_URL);
     const token = await AuthStorageUtil.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
