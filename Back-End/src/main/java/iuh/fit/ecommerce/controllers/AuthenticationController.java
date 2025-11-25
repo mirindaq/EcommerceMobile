@@ -1,7 +1,6 @@
 package iuh.fit.ecommerce.controllers;
 
 import iuh.fit.ecommerce.dtos.request.authentication.LoginRequest;
-import iuh.fit.ecommerce.dtos.request.authentication.RefreshTokenRequest;
 import iuh.fit.ecommerce.dtos.request.authentication.RegisterRequest;
 import iuh.fit.ecommerce.dtos.response.authentication.LoginResponse;
 import iuh.fit.ecommerce.dtos.response.authentication.RefreshTokenResponse;
@@ -53,11 +52,11 @@ public class AuthenticationController {
     }
 
     @PostMapping("/refresh-token")
-    public ResponseEntity<ResponseSuccess<RefreshTokenResponse>> refresh(@RequestBody RefreshTokenRequest refreshTokenRequest) {
+    public ResponseEntity<ResponseSuccess<RefreshTokenResponse>> refresh(HttpServletRequest request) {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 HttpStatus.OK,
                 "Login Success",
-                authenticationService.refreshToken(refreshTokenRequest)
+                authenticationService.refreshToken(request)
         ));
     }
 
@@ -72,11 +71,13 @@ public class AuthenticationController {
     }
 
     @GetMapping("/social-login")
-    public ResponseEntity<ResponseSuccess<String>> socialLogin(@RequestParam("login_type") String loginType) {
+    public ResponseEntity<ResponseSuccess<String>> socialLogin(
+            @RequestParam("login_type") String loginType,
+            @RequestParam(value = "redirect_uri", required = false) String redirectUri) {
         return ResponseEntity.ok().body(
                 new ResponseSuccess<>(HttpStatus.OK,
                         "Social login successfully",
-                        authenticationService.generateAuthUrl(loginType)
+                        authenticationService.generateAuthUrl(loginType, redirectUri)
                 )
         );
     }
@@ -84,12 +85,13 @@ public class AuthenticationController {
     @GetMapping("/social-login/callback")
     public ResponseEntity<ResponseSuccess<LoginResponse>> socialLoginCallback(
             @RequestParam("login_type") String loginType,
-            @RequestParam String code) throws IOException {
+            @RequestParam String code,
+            @RequestParam(value = "redirect_uri", required = false) String redirectUri) throws IOException {
 
         return ResponseEntity.ok().body(
                 new ResponseSuccess<>(HttpStatus.OK,
                         "Social login callback successfully",
-                        authenticationService.socialLoginCallback(loginType, code)
+                        authenticationService.socialLoginCallback(loginType, code, redirectUri)
                 )
         );
     }

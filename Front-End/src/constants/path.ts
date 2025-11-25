@@ -1,6 +1,8 @@
 // Auth paths
 export const AUTH_PATH = {
   LOGIN_ADMIN: "/admin/login",
+  LOGIN_STAFF: "/staff/login",
+  LOGIN_SHIPPER: "/shipper/login",
   LOGIN_USER: "/login",
   REGISTER_USER: "/register",
   GOOGLE_CALLBACK: "/auth/google/callback",
@@ -22,7 +24,15 @@ export const ADMIN_PATH = {
   VARIANTS: "/admin/variants",
   STAFFS: "/admin/staffs",
   PROMOTIONS: "/admin/promotions",
+  PROMOTION_ADD: "/admin/promotions/add",
+  PROMOTION_EDIT: "/admin/promotions/edit/:id",
   VOUCHERS: "/admin/vouchers",
+  ARTICLES: "/admin/articles",
+  ARTICLE_ADD: "/admin/articles/add",
+  ARTICLE_CATEGORIES: "/admin/article-categories",
+  CATEGORY_BRAND_ASSIGNMENT: "/admin/category-brand-assignment",
+  FILTER_CRITERIAS: "/admin/filter-criterias",
+  CHAT: "/admin/chats",
 };
 
 // Staff paths
@@ -31,6 +41,9 @@ export const STAFF_PATH = {
   PRODUCTS: "/staff/products",
   ORDERS: "/staff/orders",
   CUSTOMERS: "/staff/customers",
+  ARTICLES: "/staff/articles",
+  CHAT: "/staff/chats",
+  ASSIGN_DELIVERY: "/staff/assign-delivery",
 };
 
 // Shipper paths
@@ -44,7 +57,7 @@ export const SHIPPER_PATH = {
 export const PUBLIC_PATH = {
   HOME: "/",
   PRODUCTS: "/products",
-  PRODUCT_DETAIL: "/products/:id", 
+  PRODUCT_DETAIL: "/products/:id",
   CART: "/cart",
   CHECKOUT: "/checkout",
   SEARCH_PAGE: "/search",
@@ -55,6 +68,7 @@ export const PUBLIC_PATH = {
   TERMS_AND_CONDITIONS: "/terms",
   DELIVERY_POLICY: "/delivery-policy",
   EXCLUSIVE: "/exclusive",
+  CHAT: "/chat",
 };
 
 // User account paths

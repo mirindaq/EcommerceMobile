@@ -2,10 +2,12 @@ package iuh.fit.ecommerce.controllers;
 
 import iuh.fit.ecommerce.dtos.request.customer.CustomerAddRequest;
 import iuh.fit.ecommerce.dtos.request.customer.CustomerProfileRequest;
+import iuh.fit.ecommerce.dtos.request.customer.UpdatePushTokenRequest;
 import iuh.fit.ecommerce.dtos.response.base.ResponseSuccess;
 import iuh.fit.ecommerce.dtos.response.base.ResponseWithPagination;
 import iuh.fit.ecommerce.dtos.response.customer.CustomerResponse;
 import iuh.fit.ecommerce.services.CustomerService;
+import iuh.fit.ecommerce.utils.SecurityUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +25,10 @@ import static org.springframework.http.HttpStatus.OK;
 @RequiredArgsConstructor
 public class CustomerController {
     private final CustomerService customerService;
+    private final SecurityUtils securityUtils;
 
     @PostMapping(value = "")
-    public ResponseEntity<ResponseSuccess<CustomerResponse>> createUser(@Valid @RequestBody CustomerAddRequest customerAddRequest){
+    public ResponseEntity<ResponseSuccess<CustomerResponse>> createUser(@Valid @RequestBody CustomerAddRequest customerAddRequest) {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 CREATED,
                 "Create Customer success",
@@ -34,7 +37,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ResponseSuccess<CustomerResponse>> getCustomerById(@PathVariable long id){
+    public ResponseEntity<ResponseSuccess<CustomerResponse>> getCustomerById(@PathVariable long id) {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 OK,
                 "Get Customer Profile success",
@@ -52,18 +55,20 @@ public class CustomerController {
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Boolean status,
             @RequestParam(required = false) LocalDate startDate,
-            @RequestParam(required = false) LocalDate endDate)
+            @RequestParam(required = false) LocalDate endDate,
+            @RequestParam(required = false) String rank)
+
     {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 OK,
                 "Get Customers success",
-                customerService.getAllCustomers(page, limit, name, phone, email, status, startDate, endDate)
+                customerService.getAllCustomers(page, limit, name, phone, email, status, startDate, endDate, rank)
         ));
     }
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<ResponseSuccess<CustomerResponse>> updateCustomer(@PathVariable long id,
-                                                                            @Valid @RequestBody CustomerProfileRequest customerProfileRequest){
+                                                                            @Valid @RequestBody CustomerProfileRequest customerProfileRequest) {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 OK,
                 "Update Customer success",
@@ -72,7 +77,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseSuccess<String>> deleteCustomer(@PathVariable long id){
+    public ResponseEntity<ResponseSuccess<String>> deleteCustomer(@PathVariable long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity.ok(new ResponseSuccess<>(
                 OK,
@@ -87,6 +92,18 @@ public class CustomerController {
         return ResponseEntity.ok(new ResponseSuccess<>(
                 OK,
                 "Change status customer success",
+                null
+        ));
+    }
+
+    @PutMapping("/update-push-token")
+    public ResponseEntity<ResponseSuccess<Void>> updatePushToken(
+            @Valid @RequestBody UpdatePushTokenRequest request) {
+        iuh.fit.ecommerce.entities.Customer customer = securityUtils.getCurrentCustomer();
+        customerService.updateExpoPushToken(customer.getId(), request.getExpoPushToken());
+        return ResponseEntity.ok(new ResponseSuccess<>(
+                OK,
+                "Update push token successfully",
                 null
         ));
     }

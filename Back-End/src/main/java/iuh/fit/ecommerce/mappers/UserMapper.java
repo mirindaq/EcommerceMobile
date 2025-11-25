@@ -1,9 +1,15 @@
 package iuh.fit.ecommerce.mappers;
 
+import iuh.fit.ecommerce.dtos.response.rank.RankResponse;
 import iuh.fit.ecommerce.dtos.response.user.UserProfileResponse;
+import iuh.fit.ecommerce.entities.Customer;
+import iuh.fit.ecommerce.entities.Ranking;
+import iuh.fit.ecommerce.entities.Staff;
 import iuh.fit.ecommerce.entities.User;
+import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
@@ -20,5 +26,27 @@ public interface UserMapper {
         return userRoles.stream()
                 .map(userRole -> userRole.getRole().getName())
                 .toList();
+    }
+
+    @AfterMapping
+    default void assignRankAfterMapping(User user, @MappingTarget UserProfileResponse response){
+        // Assign rank for Customer
+        if(user instanceof Customer customer){
+            if(customer.getRanking() != null){
+                Ranking rank = customer.getRanking();
+                var rankResponse = new RankResponse();
+                rankResponse.setId(rank.getId());
+                rankResponse.setName(rank.getName());
+                rankResponse.setDescription(rank.getDescription());
+                rankResponse.setMinSpending(rank.getMinSpending());
+                rankResponse.setMaxSpending(rank.getMaxSpending());
+                rankResponse.setDiscountRate(rank.getDiscountRate());
+                response.setRank(rankResponse);
+            }
+        }
+        
+        if(user instanceof Staff staff){
+            response.setLeader(staff.getLeader());
+        }
     }
 }
