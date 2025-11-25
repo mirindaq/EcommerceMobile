@@ -1,11 +1,11 @@
 
 import { Client, IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { API_BASE_URL } from "@/utils/api.config";
+import { WS_BASE_URL } from "@/utils/api.config";
 import type { Message, MessageRequest } from "@/types/chat.type";
 
 console.log("📦 WebSocketService module loaded");
-console.log("API_BASE_URL at module load:", API_BASE_URL);
+console.log("WS_BASE_URL at module load:", WS_BASE_URL);
 
 class WebSocketService {
   private client: Client | null = null;
@@ -16,19 +16,11 @@ class WebSocketService {
 
   private getWsUrl(): string {
     console.log("🔍 getWsUrl() called");
-    console.log("API_BASE_URL:", API_BASE_URL);
+    console.log("WS_BASE_URL:", WS_BASE_URL);
     
-    const baseUrl = API_BASE_URL.replace("/api/v1", "");
-    console.log("baseUrl after replace:", baseUrl);
-    
-    // Thử dùng endpoint /ws với SockJS như web (thay vì /ws-native)
-    // SockJS có thể tương thích tốt hơn với React Native
-    const wsUrl = baseUrl + "/ws";
-    console.log("WebSocket URL generated:", {
-      apiBaseUrl: API_BASE_URL,
-      baseUrl,
-      wsUrl,
-    });
+    // Sử dụng trực tiếp WS_BASE_URL từ config
+    const wsUrl = WS_BASE_URL;
+    console.log("WebSocket URL:", wsUrl);
     return wsUrl;
   }
 
@@ -60,7 +52,7 @@ class WebSocketService {
     const wsUrl = this.getWsUrl();
     console.log("=== WebSocket Connection ===");
     console.log("Connecting to:", wsUrl);
-    console.log("API Base URL:", API_BASE_URL);
+    console.log("WS Base URL:", WS_BASE_URL);
 
     try {
       // Dùng SockJS như web version - tương thích tốt hơn với React Native

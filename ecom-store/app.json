@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "ecom-store",
+    "name": "EcomStore",
     "slug": "ecom-store",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -65,9 +65,12 @@
         "port": "8080",
         "apiPrefix": "/api/v1",
         "timeout": 10000,
-        "previewUrl": "https://api.mirindaq-dev.shop"
+        "previewUrl": "https://api.mirindaq-dev.shop/api/v1",
+        "previewWsUrl": "https://api.mirindaq-dev.shop/ws",
+        "devApiUrl": "http://192.168.1.100:8080/api/v1",
+        "devWsUrl": "http://192.168.1.100:8080/ws"
       }
     },
-    "owner": "mirindaq"
+    "owner": "132fasdgfasdfasdfasd"
   }
 }

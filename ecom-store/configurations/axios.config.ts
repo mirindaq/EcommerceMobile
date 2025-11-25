@@ -13,6 +13,13 @@ const getTimeout = (): number => {
   return timeout ? parseInt(String(timeout), 10) : 10000;
 };
 
+// Log API_BASE_URL khi khởi tạo
+console.log('🔍 ===== AXIOS CONFIGURATION =====');
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('Timeout:', getTimeout());
+console.log('__DEV__:', __DEV__);
+console.log('===================================');
+
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -133,11 +140,19 @@ axiosClient.interceptors.response.use(
     }
     
     if (error.request) {
-      console.error('Network Error - No response received:', {
-        url: error.config?.url,
+      const fullUrl = `${error.config?.baseURL || ''}${error.config?.url || ''}`;
+      console.error('❌ Network Error - No response received:', {
         method: error.config?.method,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: fullUrl,
         message: error.message,
+        code: error.code,
       });
+      console.error('💡 Check if:');
+      console.error('  1. Server is running at:', error.config?.baseURL);
+      console.error('  2. Network connection is available');
+      console.error('  3. CORS is configured correctly');
     } else {
       console.error('Request Error:', error.message);
     }
