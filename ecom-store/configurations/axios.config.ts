@@ -4,13 +4,21 @@ import { API_BASE_URL } from '@/utils/api.config';
 import AuthStorageUtil from '@/utils/authStorage.util';
 import axios from 'axios';
 import { router } from 'expo-router';
+import Constants from 'expo-constants';
+
+// Đọc timeout từ environment variables
+const getTimeout = (): number => {
+  const apiConfig = Constants.expoConfig?.extra?.apiConfig || {};
+  const timeout = apiConfig.timeout || process.env.EXPO_PUBLIC_API_TIMEOUT;
+  return timeout ? parseInt(String(timeout), 10) : 10000;
+};
 
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  timeout: getTimeout(),
 });
 
 axiosClient.interceptors.request.use(

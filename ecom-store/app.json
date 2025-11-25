@@ -22,6 +22,7 @@
         "icon": "./assets/images/logo.png",
         "color": "#E6F4FE"
       },
+      "softwareKeyboardLayoutMode": "pan",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "usesCleartextTraffic": true,
@@ -54,6 +55,17 @@
       "router": {},
       "eas": {
         "projectId": "6fb1cac4-5ed0-4048-9f1b-3c6f941388ff"
+      },
+      "googleOAuth": {
+        "clientId": "1016910487500-nnlhg4vsei85rkvj6r4qs4bel9tqcsoo.apps.googleusercontent.com",
+        "projectId": "ecomstore-27a0c"
+      },
+      "apiConfig": {
+        "localIp": "192.168.1.100",
+        "port": "8080",
+        "apiPrefix": "/api/v1",
+        "timeout": 10000,
+        "previewUrl": "https://api.mirindaq-dev.shop"
       }
     },
     "owner": "mirindaq"
