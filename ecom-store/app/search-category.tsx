@@ -1,18 +1,21 @@
-import BrandSelection from '@/components/search-category/BrandSelection';
-import FilterModal from '@/components/search-category/FilterModal';
-import ProductGrid from '@/components/search-category/ProductGrid';
-import SearchHeader from '@/components/search-category/SearchHeader';
-import SortBar from '@/components/search-category/SortBar';
-import { Box, SafeAreaView } from '@/components/ui';
-import { categoryBrandService } from '@/services/categoryBrand.service';
-import { filterCriteriaService } from '@/services/filterCriteria.service';
-import { productService } from '@/services/product.service';
-import type { Brand } from '@/types/brand.type';
-import type { FilterCriteria } from '@/types/filterCriteria.type';
-import type { Product } from '@/types/product.type';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator } from 'react-native';
+import BrandSelection from "@/components/search-category/BrandSelection";
+import FilterModal from "@/components/search-category/FilterModal";
+import ProductGrid from "@/components/search-category/ProductGrid";
+import SearchHeader from "@/components/search-category/SearchHeader";
+import SortBar from "@/components/search-category/SortBar";
+import { Box, SafeAreaView } from "@/components/ui";
+import { categoryBrandService } from "@/services/categoryBrand.service";
+import { filterCriteriaService } from "@/services/filterCriteria.service";
+import { productService } from "@/services/product.service";
+import { wishListService } from "@/services/wishList.service"; // <--- MỚI
+import type { Brand } from "@/types/brand.type";
+import type { FilterCriteria } from "@/types/filterCriteria.type";
+import type { Product } from "@/types/product.type";
+import { WishListResponse } from "@/types/wishList.type"; // <--- MỚI
+import AuthStorageUtil from "@/utils/authStorage.util"; // <--- MỚI
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { ActivityIndicator } from "react-native";
 
 // --- Types & Interfaces ---
 interface SearchFilters {
@@ -23,7 +26,12 @@ interface SearchFilters {
   filterValues?: number[];
 }
 
-type SortType = 'popular' | 'newest' | 'best_selling' | 'price_asc' | 'price_desc';
+type SortType =
+  | "popular"
+  | "newest"
+  | "best_selling"
+  | "price_asc"
+  | "price_desc";
 
 // --- Main Component ---
 export default function SearchCategoryScreen() {
@@ -32,10 +40,10 @@ export default function SearchCategoryScreen() {
   const slug = params.slug as string | undefined;
 
   // UI States
-  const [searchText, setSearchText] = useState('');
-  const [categoryName, setCategoryName] = useState<string>('');
+  const [searchText, setSearchText] = useState("");
+  const [categoryName, setCategoryName] = useState<string>("");
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [sortBy, setSortBy] = useState<SortType>('popular');
+  const [sortBy, setSortBy] = useState<SortType>("popular");
 
   // Data States
   const [loading, setLoading] = useState(true);
@@ -44,6 +52,25 @@ export default function SearchCategoryScreen() {
   const [filterCriterias, setFilterCriterias] = useState<FilterCriteria[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [filters, setFilters] = useState<SearchFilters>({});
+
+  // --- MỚI: Wishlist State ---
+  const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
+
+  // --- MỚI: Fetch Wishlist Logic ---
+  const refetchWishlist = useCallback(async () => {
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (isAuthenticated) {
+      try {
+        const wishListRes = await wishListService.getMyWishList();
+        setWishListItems(wishListRes || []);
+      } catch (error) {
+        console.error("Error loading wishlist:", error);
+        setWishListItems([]);
+      }
+    } else {
+      setWishListItems([]);
+    }
+  }, []);
 
   // --- Logic Handlers ---
   const loadInitialData = async () => {
@@ -57,7 +84,7 @@ export default function SearchCategoryScreen() {
       setBrands(brandsRes.data || []);
       setFilterCriterias(filterCriteriaRes.data || []);
     } catch (error) {
-      console.error('Init Error:', error);
+      console.error("Init Error:", error);
     } finally {
       setLoading(false);
     }
@@ -65,34 +92,39 @@ export default function SearchCategoryScreen() {
 
   const loadProducts = useCallback(async () => {
     if (!slug) return;
-    
+
     try {
       setProductsLoading(true);
       const searchParams: Record<string, string> = {};
-      
+
       // Map Filters
       if (filters.brands?.length) {
         const brandSlugs = brands
           .filter((b) => filters.brands?.includes(b.id))
           .map((b) => b.slug);
-        if (brandSlugs.length) searchParams.brands = brandSlugs.join(',');
+        if (brandSlugs.length) searchParams.brands = brandSlugs.join(",");
       }
-      if (filters.inStock) searchParams.inStock = 'true';
+      if (filters.inStock) searchParams.inStock = "true";
       if (filters.priceMin) searchParams.priceMin = filters.priceMin.toString();
       if (filters.priceMax) searchParams.priceMax = filters.priceMax.toString();
-      
+
       // Map Filter Values
       if (filters.filterValues && filters.filterValues.length > 0) {
-        searchParams.filterValues = filters.filterValues.join(',');
+        searchParams.filterValues = filters.filterValues.join(",");
       }
 
       // Add sort param to API call (always send sortBy)
       searchParams.sortBy = sortBy;
 
-      const response = await productService.searchProducts(slug, 1, 20, searchParams);
+      const response = await productService.searchProducts(
+        slug,
+        1,
+        20,
+        searchParams
+      );
       setProducts(response.data?.data || []);
     } catch (error) {
-      console.error('Search Error:', error);
+      console.error("Search Error:", error);
     } finally {
       setProductsLoading(false);
     }
@@ -101,11 +133,16 @@ export default function SearchCategoryScreen() {
   // --- Effects ---
   useEffect(() => {
     if (slug) {
-      const name = slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      const name = slug
+        .split("-")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ");
       setCategoryName(name);
       loadInitialData();
     }
-  }, [slug]);
+    // MỚI: Gọi lấy wishlist mỗi khi vào trang (hoặc đổi slug)
+    refetchWishlist();
+  }, [slug, refetchWishlist]);
 
   useEffect(() => {
     if (slug) loadProducts();
@@ -139,6 +176,7 @@ export default function SearchCategoryScreen() {
     setFilters({});
   }, []);
 
+  // Note: ProductBox tự xử lý onPress, nhưng giữ hàm này nếu muốn ProductGrid dùng fallback
   const handleProductPress = useCallback(
     (productSlug: string) => {
       router.push(`/product-detail?slug=${productSlug}`);
@@ -155,11 +193,11 @@ export default function SearchCategoryScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* --- Top Header --- */}
       <SearchHeader
         searchText={searchText}
-        placeholder={categoryName || 'Tìm kiếm...'}
+        placeholder={categoryName || "Tìm kiếm..."}
         onSearchChange={setSearchText}
         onBack={() => router.back()}
       />
@@ -179,12 +217,16 @@ export default function SearchCategoryScreen() {
           selectedBrandIds={filters.brands || []}
           onBrandToggle={handleBrandToggle}
         />
+
+        {/* MỚI: Truyền Wishlist Items và hàm Refresh vào ProductGrid */}
         <ProductGrid
           products={products}
           loading={productsLoading}
-          onProductPress={handleProductPress}
+          // onProductPress={handleProductPress} // ProductBox đã tự lo
           onRefresh={loadProducts}
           refreshing={productsLoading}
+          wishListItems={wishListItems} // <---
+          onWishlistChange={refetchWishlist} // <---
         />
       </Box>
 
