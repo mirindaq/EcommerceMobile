@@ -181,8 +181,9 @@ services:
     image: quay.io/prometheus/mysqld-exporter:latest
     container_name: ecommerce-mysqld-exporter
     restart: unless-stopped
-    environment:
-      - DATA_SOURCE_NAME=root:springstudent@(mysql:3306)/
+    command:
+      - "--mysqld.username=springstudent:springstudent"
+      - "--mysqld.address=mysql:3306"
     ports:
       - "9104:9104"
     depends_on:
