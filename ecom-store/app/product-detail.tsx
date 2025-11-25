@@ -5,6 +5,7 @@ import {
   ProductImages,
   ProductInfo,
   ProductQuestions,
+  ProductReviews,
   VariantSelector,
 } from "@/components/product-detail";
 import {
@@ -19,9 +20,11 @@ import {
   Text,
 } from "@/components/ui";
 import { cartService } from "@/services/cart.service";
+import { feedbackService } from "@/services/feedback.service";
 import { productService } from "@/services/product.service";
 import { productQuestionService } from "@/services/productQuestion.service";
 import { wishListService } from "@/services/wishList.service";
+import type { FeedbackResponse, RatingStatistics } from "@/types/feedback.type";
 import type { Product, ProductVariantResponse } from "@/types/product.type";
 import type { ProductQuestion } from "@/types/productQuestion.type";
 import { WishListResponse } from "@/types/wishList.type";
@@ -68,6 +71,13 @@ export default function ProductDetailScreen() {
   const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
+  // Review states
+  const [ratingStats, setRatingStats] = useState<RatingStatistics | null>(null);
+  const [reviews, setReviews] = useState<FeedbackResponse[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [hasMoreReviews, setHasMoreReviews] = useState(true);
+
   const pageSize = 5;
 
   const [showChatModal, setShowChatModal] = useState(false);
@@ -103,6 +113,12 @@ export default function ProductDetailScreen() {
 
         // Load wishlist
         await loadWishlist();
+
+        // Load reviews
+        if (productData.id) {
+          loadRatingStatistics(productData.id);
+          loadReviews(productData.id, 1);
+        }
       } catch (error: any) {
         console.error("Error loading product:", error);
         Alert.alert(
@@ -195,6 +211,45 @@ export default function ProductDetailScreen() {
       );
     } finally {
       setIsWishlistLoading(false);
+    }
+  };
+
+  // Load rating statistics
+  const loadRatingStatistics = async (productId: number) => {
+    try {
+      const response = await feedbackService.getRatingStatistics(productId);
+      setRatingStats(response.data);
+    } catch (error) {
+      console.error("Error loading rating statistics:", error);
+    }
+  };
+
+  // Load reviews
+  const loadReviews = async (productId: number, page: number) => {
+    try {
+      setReviewsLoading(true);
+      const response = await feedbackService.getFeedbacksByProduct(
+        productId,
+        page,
+        10
+      );
+
+      const newReviews = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
+      if (page === 1) {
+        setReviews(newReviews);
+      } else {
+        setReviews((prev) => [...prev, ...newReviews]);
+      }
+
+      setHasMoreReviews(page < response.data.totalPage);
+      setReviewsPage(page);
+    } catch (error) {
+      console.error("Error loading reviews:", error);
+      setReviews([]);
+    } finally {
+      setReviewsLoading(false);
     }
   };
 
@@ -526,6 +581,13 @@ export default function ProductDetailScreen() {
 
         {/* Product Description */}
         <ProductDescription description={product.description} />
+
+        {/* Product Reviews */}
+        <ProductReviews
+          ratings={ratingStats || undefined}
+          reviews={reviews}
+          loading={reviewsLoading && reviewsPage === 1}
+        />
 
         {/* Product Questions */}
         <ProductQuestions

@@ -19,6 +19,7 @@ public class ProductResponse {
     private String thumbnail;
     private boolean status;
     private Double rating;
+    private Integer reviewCount;
     private String spu;
     private Long brandId;
     private Long categoryId;

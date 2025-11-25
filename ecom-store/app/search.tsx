@@ -234,8 +234,8 @@ export default function SearchScreen() {
   // Hiển thị kết quả tìm kiếm
   if (!isSearchFocused && searchText.trim()) {
     const ListHeader = () => (
-      <HStack className="px-4 pt-2 pb-1 justify-between items-center">
-        <Text className="text-gray-500 text-sm">
+      <HStack className="px-4 pt-2 pb-1 justify-between items-center py-3">
+        <Text className="text-gray-500 text-sm py-1">
           Tìm thấy{" "}
           <Text className="font-bold text-gray-900">
             {totalItem.toLocaleString()}
@@ -397,9 +397,7 @@ export default function SearchScreen() {
             variant="rounded"
           >
             <InputSlot className="pl-4">
-              <InputIcon>
-                <SearchIcon size={16} color="#6B7280" />
-              </InputIcon>
+              <InputIcon as={SearchIcon} size="sm" className="text-gray-500" />
             </InputSlot>
             <InputField
               placeholder="Tìm kiếm sản phẩm..."
@@ -416,9 +414,7 @@ export default function SearchScreen() {
               </Pressable>
             )}
             <InputSlot className="pr-4">
-              <InputIcon>
-                <CameraIcon size={16} color="#6B7280" />
-              </InputIcon>
+              <InputIcon as={CameraIcon} size="sm" className="text-gray-500" />
             </InputSlot>
           </Input>
 

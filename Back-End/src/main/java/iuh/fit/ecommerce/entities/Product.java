@@ -38,7 +38,15 @@ public class Product extends BaseEntity {
     private Boolean status;
 
     @Column
-    private Double rating;
+    private Double rating; // Số sao trung bình
+
+    @Column(name = "total_rating")
+    @Builder.Default
+    private Double totalRating = 0.0; // Tổng số sao (để tính trung bình)
+
+    @Column(name = "review_count")
+    @Builder.Default
+    private Integer reviewCount = 0; // Số lượt đánh giá
 
     @Column
     private String slug;

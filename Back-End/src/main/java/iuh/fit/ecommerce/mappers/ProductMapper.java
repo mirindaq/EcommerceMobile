@@ -36,6 +36,7 @@ public interface ProductMapper {
     @Mapping(source = "productVariants", target = "variants")
     @Mapping(source = "brand.id", target = "brandId")
     @Mapping(source = "category.id", target = "categoryId")
+    @Mapping(source = "reviewCount", target = "reviewCount")
     ProductResponse toResponse(Product product);
 
     @AfterMapping
