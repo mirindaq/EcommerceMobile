@@ -96,6 +96,9 @@ export default function VariantTable({
                 Tên variant
               </TableHead>
               <TableHead className="font-semibold text-gray-700">
+                Danh mục
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
                 Giá trị variant
               </TableHead>
               <TableHead className="font-semibold text-gray-700">
@@ -158,6 +161,9 @@ export default function VariantTable({
                   <TableCell className="font-semibold text-gray-900">
                     {variant.name}
                   </TableCell>
+                  <TableCell className="font-semibold text-gray-900">
+                    {variant.category.name}
+                  </TableCell>
                   <TableCell
                     className="text-gray-600 max-w-xs"
                     title={formatVariantValues(variant.variantValues)}
@@ -191,11 +197,10 @@ export default function VariantTable({
                         variant="outline"
                         size="sm"
                         onClick={() => onToggleStatus(variant.id)}
-                        className={`${
-                          variant.status
+                        className={`${variant.status
                             ? "border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-300"
                             : "border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300"
-                        }`}
+                          }`}
                         disabled={isLoading}
                       >
                         {variant.status ? (

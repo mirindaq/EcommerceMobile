@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadService } from "@/services/upload.service";
-import { brandService } from "@/services/brand.service";
+import { categoryBrandService } from "@/services/categoryBrand.service";
 import { categoryService } from "@/services/category.service";
 import { variantService } from "@/services/variant.service";
 import { filterCriteriaService } from "@/services/filterCriteria.service";
@@ -39,7 +39,8 @@ import ImagePreviewGrid from "@/components/ui/ImagePreviewGrid";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import Quill from "quill";
 import type { Product, CreateProductRequest } from "@/types/product.type";
-import type { BrandListResponse } from "@/types/brand.type";
+import type { BrandListByCategoryResponse } from "@/types/category-brand.type";
+import type { Brand } from "@/types/brand.type";
 import type { CategoryListResponse } from "@/types/category.type";
 import type { Attribute } from "@/types/attribute.type";
 import type { Variant } from "@/types/variant.type";
@@ -112,9 +113,13 @@ export default function ProductForm({
 
   // --- Queries ---
   const { data: brandsData, isLoading: isLoadingBrands } =
-    useQuery<BrandListResponse>(() => brandService.getBrands(1, 100, ""), {
-      queryKey: ["brands", "all"],
-    });
+    useQuery<BrandListByCategoryResponse>(
+      () => categoryBrandService.getBrandsByCategoryId(formData.categoryId),
+      {
+        queryKey: ["brands", "by-category", formData.categoryId.toString()],
+        enabled: !!formData.categoryId,
+      }
+    );
 
   const { data: categoriesData, isLoading: isLoadingCategories } =
     useQuery<CategoryListResponse>(
@@ -150,7 +155,7 @@ export default function ProductForm({
     }
   );
 
-  const brands = brandsData?.data?.data || [];
+  const brands = brandsData?.data || [];
   const categories = categoriesData?.data?.data || [];
 
   // --- Effects for Data Syncing ---
@@ -266,6 +271,7 @@ export default function ProductForm({
     setFormData((prev) => ({
       ...prev,
       categoryId: newCategoryId,
+      brandId: 0, // Reset brand khi category thay đổi
       attributes: newAttributes.map((attr) => ({
         attributeId: attr.id,
         value: "",
@@ -1009,13 +1015,23 @@ export default function ProductForm({
                   onValueChange={(v) =>
                     setFormData({ ...formData, brandId: Number(v) })
                   }
-                  disabled={isLoadingBrands}
+                  disabled={!formData.categoryId || isLoadingBrands}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn thương hiệu" />
+                    <SelectValue 
+                      placeholder={
+                        !formData.categoryId 
+                          ? "Vui lòng chọn danh mục trước" 
+                          : isLoadingBrands 
+                          ? "Đang tải thương hiệu..." 
+                          : brands.length === 0
+                          ? "Không có thương hiệu nào"
+                          : "Chọn thương hiệu"
+                      } 
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    {brands.map((b) => (
+                    {brands.map((b: Brand) => (
                       <SelectItem key={b.id} value={b.id.toString()}>
                         {b.name}
                       </SelectItem>
