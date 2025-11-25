@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "1016910487500",
+    "project_id": "ecomstore-27a0c",
+    "storage_bucket": "ecomstore-27a0c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1016910487500:android:2a6e9369d15d5fcb944769",
+        "android_client_info": {
+          "package_name": "com.mirindaq.ecomstore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOorOrDnNBgMngmztnMq6o1K0d78BlitQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+
