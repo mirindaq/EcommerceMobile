@@ -1,3 +1,4 @@
+import ChatTypeModal from "@/components/chat/ChatTypeModal";
 import {
   Avatar,
   AvatarImage,
@@ -10,7 +11,6 @@ import {
   Text,
   VStack,
 } from "@/components/ui";
-import ChatTypeModal from "@/components/chat/ChatTypeModal";
 import { authService } from "@/services/auth.service";
 import { CustomerSummary } from "@/types/customer.type";
 import AuthStorageUtil from "@/utils/authStorage.util";
@@ -256,7 +256,7 @@ export default function ProfileScreen() {
               onPress: () => router.push("/term-of-use"),
             },
             {
-              label: "Trò chuyện với nhân viên tư vấn",
+              label: "Trò chuyện tư vấn",
               icon: MessageCircleIcon,
               onPress: () => setShowChatModal(true),
             },
@@ -269,7 +269,7 @@ export default function ProfileScreen() {
             >
               <HStack className="items-center space-x-3">
                 <Icon as={item.icon} size="lg" className="text-gray-700" />
-                <Text className="text-gray-800">{item.label}</Text>
+                <Text className="text-gray-800 ml-3">{item.label}</Text>
               </HStack>
               <ChevronRightIcon size={16} color="#9CA3AF" />
             </Pressable>

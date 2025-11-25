@@ -41,9 +41,7 @@ export default function ProductBox({
 
   const firstVariant = product?.variants?.[0];
   const productName =
-    (isWishlistScreen && wishItem?.productName) ||
-    product?.name ||
-    "Sản phẩm";
+    (isWishlistScreen && wishItem?.productName) || product?.name || "Sản phẩm";
   const productPrice =
     (isWishlistScreen && wishItem?.price) || firstVariant?.price || 0;
   const productVariantId =
@@ -51,8 +49,10 @@ export default function ProductBox({
     firstVariant?.id ||
     null;
   // Backend uses productId, not productVariantId
-  const productId = (isWishlistScreen && wishItem?.productId) || product?.id || null;
-  const productSlug = (isWishlistScreen && wishItem?.productSlug) || product?.slug;
+  const productId =
+    (isWishlistScreen && wishItem?.productId) || product?.id || null;
+  const productSlug =
+    (isWishlistScreen && wishItem?.productSlug) || product?.slug;
   const productImage =
     (isWishlistScreen && wishItem?.productImage) ||
     product?.thumbnail ||
@@ -76,10 +76,11 @@ export default function ProductBox({
 
   const handleProductPress = () => {
     // Nếu là wishlist screen, dùng productSlug từ wishItem
-    const slug = isWishlistScreen && wishItem?.productSlug 
-      ? wishItem.productSlug 
-      : productSlug;
-    
+    const slug =
+      isWishlistScreen && wishItem?.productSlug
+        ? wishItem.productSlug
+        : productSlug;
+
     if (slug) {
       router.push(`/product-detail?slug=${slug}`);
     }
@@ -120,9 +121,8 @@ export default function ProductBox({
 
     // Backend uses productId, not productVariantId
     // Nếu là wishlist screen, lấy productId từ wishItem
-    const targetProductId = isWishlistScreen && wishItem?.productId 
-      ? wishItem.productId 
-      : productId;
+    const targetProductId =
+      isWishlistScreen && wishItem?.productId ? wishItem.productId : productId;
 
     if (!targetProductId) {
       return;
@@ -159,13 +159,14 @@ export default function ProductBox({
 
   return (
     <Pressable
-      className="bg-white rounded-xl overflow-hidden border border-gray-100 flex-1 m-1"
+      className="bg-white rounded-xl overflow-hidden border border-gray-100"
       style={{
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 8,
         elevation: 2,
+        width: "100%",
       }}
       onPress={handleProductPress}
     >
@@ -186,7 +187,7 @@ export default function ProductBox({
 
         <Animated.View
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 8,
             right: 8,
             transform: [{ scale: heartScale }],
@@ -213,7 +214,7 @@ export default function ProductBox({
         </Animated.View>
       </Box>
 
-      <VStack className="p-3 justify-between flex-1 gap-1">
+      <VStack className="p-3 gap-1">
         <Text
           className="text-gray-800 font-medium text-sm leading-5"
           numberOfLines={2}
