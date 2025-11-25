@@ -37,7 +37,7 @@ import {
   WatchIcon,
 } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView } from "react-native";
+import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView } from "react-native";
 
 const banners = [
   {
@@ -78,6 +78,8 @@ const categoryColors = [
   "#F7DC6F",
 ];
 
+const screenWidth = Dimensions.get("window").width;
+
 export default function HomeScreen() {
   const router = useRouter();
   const [searchText, setSearchText] = useState("Áo Khoác Nam");
@@ -87,6 +89,10 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
   const [showChatModal, setShowChatModal] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPage, setTotalPage] = useState(0);
+  const [totalItem, setTotalItem] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const refetchWishlist = useCallback(async () => {
     const isAuthenticated = await AuthStorageUtil.isAuthenticated();
@@ -108,43 +114,166 @@ export default function HomeScreen() {
     refetchWishlist();
   }, [refetchWishlist]);
 
-  const loadData = async () => {
+  const loadData = async (currentPage: number = 1) => {
     try {
-      setLoading(true);
+      if (currentPage === 1) {
+        setLoading(true);
+        // Chỉ load categories và cart khi load trang đầu tiên
+        const categoriesRes = await categoryService.getAllCategoriesSimple();
+        setCategories(categoriesRes.data?.data || []);
 
-      const categoriesRes = await categoryService.getAllCategoriesSimple();
-      setCategories(categoriesRes.data?.data || []);
-
-      const productsRes = await productService.getProducts(1, 10, "");
-      setProducts(productsRes.data?.data || []);
-
-      const isAuthenticated = await AuthStorageUtil.isAuthenticated();
-      if (isAuthenticated) {
-        try {
-          const cartRes = await cartService.getCart();
-          const itemCount =
-            cartRes.data?.items?.reduce(
-              (sum: number, item: any) => sum + item.quantity,
-              0
-            ) || 0;
-          setCartCount(itemCount);
-        } catch (error) {
+        const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+        if (isAuthenticated) {
+          try {
+            const cartRes = await cartService.getCart();
+            const itemCount =
+              cartRes.data?.items?.reduce(
+                (sum: number, item: any) => sum + item.quantity,
+                0
+              ) || 0;
+            setCartCount(itemCount);
+          } catch (error) {
+            setCartCount(0);
+          }
+        } else {
           setCartCount(0);
+          setWishListItems([]);
         }
       } else {
-        setCartCount(0);
-        setWishListItems([]);
+        setLoadingMore(true);
       }
+
+      const productsRes = await productService.getProducts(currentPage, 12, "");
+      const productsData = productsRes.data?.data || [];
+      const newTotalPage = productsRes.data?.totalPage || 0;
+      const newTotalItem = productsRes.data?.totalItem || 0;
+
+      if (currentPage === 1) {
+        setProducts(productsData);
+      } else {
+        setProducts((prev) => [...prev, ...productsData]);
+      }
+
+      setTotalPage(newTotalPage);
+      setTotalItem(newTotalItem);
+      setPage(currentPage);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && !loading && page < totalPage) {
+      loadData(page + 1);
     }
   };
 
   const handleSearchPress = () => {
     router.push("/search");
   };
+
+  const renderProductItem = ({ item }: { item: Product }) => {
+    return (
+      <Box style={{ width: screenWidth / 2 - 20 }} className="mb-3 mx-1.5">
+        <ProductBox
+          product={item}
+          wishListItems={wishListItems}
+          onWishlistChange={refetchWishlist}
+        />
+      </Box>
+    );
+  };
+
+  const ListHeaderComponent = () => (
+    <>
+      <ScrollView
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        className="py-4"
+      >
+        <HStack>
+          {banners.map((b) => (
+            <Box key={b.id} className="mx-2 w-80">
+              <Pressable className="rounded-2xl overflow-hidden box-shadow-soft-1">
+                <Image
+                  source={{ uri: b.image }}
+                  className="w-full h-40 rounded-2xl"
+                />
+                <Box className="absolute bottom-3 left-3">
+                  <Text className="text-white font-bold text-lg">
+                    {b.title}
+                  </Text>
+                  <Text className="text-white text-xs">{b.subtitle}</Text>
+                </Box>
+              </Pressable>
+            </Box>
+          ))}
+        </HStack>
+      </ScrollView>
+
+      <Box className="px-4 mb-6">
+        <Text className="text-gray-900 font-bold text-lg mb-3">
+          Danh mục sản phẩm
+        </Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <HStack space="md" className="px-1">
+            {categories.slice(0, 8).map((category, index) => {
+              const IconComponent = categoryIcons[category.name] || HomeIcon;
+              const color = categoryColors[index % categoryColors.length];
+
+              const handleCategoryPress = () => {
+                if (category.slug) {
+                  router.push(`/search-category?slug=${category.slug}`);
+                }
+              };
+
+              return (
+                <Pressable
+                  key={category.id}
+                  className="items-center min-w-[80px]"
+                  onPress={handleCategoryPress}
+                >
+                  <Box
+                    className="w-16 h-16 rounded-xl items-center justify-center mb-2 box-shadow-soft-1"
+                    style={{ backgroundColor: color + "20" }}
+                  >
+                    <Icon
+                      as={IconComponent}
+                      size="lg"
+                      style={{ color: color }}
+                    />
+                  </Box>
+                  <Text className="text-gray-700 text-xs text-center font-medium">
+                    {category.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </HStack>
+        </ScrollView>
+      </Box>
+
+      <Box className="px-4 mb-6">
+        <HStack className="items-center justify-between mb-3">
+          <Text className="text-gray-900 font-bold text-lg">Sản phẩm</Text>
+          <Pressable className="flex-row items-center">
+            <Text className="text-shopee text-sm text-orange-500">
+              Xem tất cả
+            </Text>
+            <Icon
+              as={ChevronRightIcon}
+              size="sm"
+              className="text-orange-500"
+            />
+          </Pressable>
+        </HStack>
+      </Box>
+    </>
+  );
 
   if (loading) {
     return (
@@ -194,107 +323,29 @@ export default function HomeScreen() {
         </HStack>
       </Box>
 
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          className="py-4"
-        >
-          <HStack>
-            {banners.map((b) => (
-              <Box key={b.id} className="mx-2 w-80">
-                <Pressable className="rounded-2xl overflow-hidden box-shadow-soft-1">
-                  <Image
-                    source={{ uri: b.image }}
-                    className="w-full h-40 rounded-2xl"
-                  />
-                  <Box className="absolute bottom-3 left-3">
-                    <Text className="text-white font-bold text-lg">
-                      {b.title}
-                    </Text>
-                    <Text className="text-white text-xs">{b.subtitle}</Text>
-                  </Box>
-                </Pressable>
-              </Box>
-            ))}
-          </HStack>
-        </ScrollView>
-
-        <Box className="px-4 mb-6">
-          <Text className="text-gray-900 font-bold text-lg mb-3">
-            Danh mục sản phẩm
-          </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <HStack space="md" className="px-1">
-              {categories.slice(0, 8).map((category, index) => {
-                const IconComponent = categoryIcons[category.name] || HomeIcon;
-                const color = categoryColors[index % categoryColors.length];
-
-                const handleCategoryPress = () => {
-                  if (category.slug) {
-                    router.push(`/search-category?slug=${category.slug}`);
-                  }
-                };
-
-                return (
-                  <Pressable
-                    key={category.id}
-                    className="items-center min-w-[80px]"
-                    onPress={handleCategoryPress}
-                  >
-                    <Box
-                      className="w-16 h-16 rounded-xl items-center justify-center mb-2 box-shadow-soft-1"
-                      style={{ backgroundColor: color + "20" }}
-                    >
-                      <Icon
-                        as={IconComponent}
-                        size="lg"
-                        style={{ color: color }}
-                      />
-                    </Box>
-                    <Text className="text-gray-700 text-xs text-center font-medium">
-                      {category.name}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </HStack>
-          </ScrollView>
-        </Box>
-
-        <Box className="px-4 mb-6">
-          <HStack className="items-center justify-between mb-3">
-            <Text className="text-gray-900 font-bold text-lg">Sản phẩm</Text>
-            <Pressable className="flex-row items-center">
-              <Text className="text-shopee text-sm text-orange-500">
-                Xem tất cả
-              </Text>
-              <Icon
-                as={ChevronRightIcon}
-                size="sm"
-                className="text-orange-500"
-              />
-            </Pressable>
-          </HStack>
-
-          <ScrollView>
-            <HStack space="md" className="flex-wrap">
-              {products.map((product) => {
-                return (
-                  <Box key={product.id} style={{ width: "48%" }}>
-                    <ProductBox
-                      product={product}
-                      wishListItems={wishListItems}
-                      onWishlistChange={refetchWishlist}
-                    />
-                  </Box>
-                );
-              })}
-            </HStack>
-          </ScrollView>
-        </Box>
-      </ScrollView>
+      <FlatList
+        data={products}
+        keyExtractor={(item: Product) => item.id.toString()}
+        renderItem={renderProductItem}
+        numColumns={2}
+        columnWrapperStyle={{ paddingHorizontal: 8 }}
+        contentContainerStyle={{
+          paddingBottom: 20,
+          backgroundColor: "#F9FAFB",
+        }}
+        ListHeaderComponent={ListHeaderComponent}
+        showsVerticalScrollIndicator={false}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <Box className="items-center py-4">
+              <ActivityIndicator size="small" color="#EF4444" />
+            </Box>
+          ) : null
+        }
+        style={{ flex: 1 }}
+      />
 
       <ChatTypeModal
         isOpen={showChatModal}
