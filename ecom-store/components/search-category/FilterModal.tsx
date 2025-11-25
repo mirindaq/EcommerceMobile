@@ -1,11 +1,8 @@
-import { Box, HStack, Pressable, Text, VStack } from '@/components/ui';
-import type { FilterCriteria } from '@/types/filterCriteria.type';
-import {
-  CheckIcon,
-  XIcon,
-} from 'lucide-react-native';
-import React from 'react';
-import { FlatList, Modal, TouchableOpacity, View } from 'react-native';
+import { Box, HStack, Pressable, Text, VStack } from "@/components/ui";
+import type { FilterCriteria } from "@/types/filterCriteria.type";
+import { CheckIcon, XIcon } from "lucide-react-native";
+import React from "react";
+import { FlatList, Modal, TouchableOpacity, View } from "react-native";
 
 interface SearchFilters {
   brands?: number[];
@@ -61,7 +58,9 @@ export default function FilterModal({
         <Box className="bg-white rounded-t-3xl h-[85%] w-full overflow-hidden">
           {/* Modal Header */}
           <HStack className="p-4 border-b border-gray-100 justify-between items-center bg-white">
-            <Text className="text-lg font-bold text-gray-900">Bộ lọc tìm kiếm</Text>
+            <Text className="text-lg font-bold text-gray-900">
+              Bộ lọc tìm kiếm
+            </Text>
             <TouchableOpacity
               onPress={onClose}
               className="p-1 bg-gray-100 rounded-full"
@@ -85,33 +84,34 @@ export default function FilterModal({
                         {criteria.name}
                       </Text>
 
-                      {criteria.filterValues && criteria.filterValues.length > 0 && (
-                        <Box className="flex-row flex-wrap">
-                          {criteria.filterValues.map((val) => {
-                            const active =
-                              filters.filterValues?.includes(val.id) || false;
-                            return (
-                              <Pressable
-                                key={val.id}
-                                onPress={() => toggleFilterValue(val.id)}
-                                className={`px-4 py-2.5 rounded-lg border mr-2 mb-2 ${
-                                  active
-                                    ? 'bg-red-50 border-red-500'
-                                    : 'bg-white border-gray-200'
-                                }`}
-                              >
-                                <Text
-                                  className={`text-sm font-medium ${
-                                    active ? 'text-red-600' : 'text-gray-700'
+                      {criteria.filterValues &&
+                        criteria.filterValues.length > 0 && (
+                          <Box className="flex-row flex-wrap">
+                            {criteria.filterValues.map((val) => {
+                              const active =
+                                filters.filterValues?.includes(val.id) || false;
+                              return (
+                                <Pressable
+                                  key={val.id}
+                                  onPress={() => toggleFilterValue(val.id)}
+                                  className={`px-4 py-2.5 rounded-lg border mr-2 mb-2 ${
+                                    active
+                                      ? "bg-red-50 border-red-500"
+                                      : "bg-white border-gray-200"
                                   }`}
                                 >
-                                  {val.value}
-                                </Text>
-                              </Pressable>
-                            );
-                          })}
-                        </Box>
-                      )}
+                                  <Text
+                                    className={`text-sm font-medium ${
+                                      active ? "text-red-600" : "text-gray-700"
+                                    }`}
+                                  >
+                                    {val.value}
+                                  </Text>
+                                </Pressable>
+                              );
+                            })}
+                          </Box>
+                        )}
                     </VStack>
                   );
                 })}
@@ -137,8 +137,8 @@ export default function FilterModal({
                   <Box
                     className={`w-7 h-7 rounded-lg border-2 items-center justify-center ${
                       filters.inStock
-                        ? 'bg-red-500 border-red-500'
-                        : 'bg-white border-gray-300'
+                        ? "bg-red-500 border-red-500"
+                        : "bg-white border-gray-300"
                     }`}
                   >
                     {filters.inStock && <CheckIcon size={18} color="white" />}
@@ -149,7 +149,7 @@ export default function FilterModal({
           />
 
           {/* Sticky Footer Buttons */}
-          <Box className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex-row space-x-3 shadow-lg">
+          <Box className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex-row space-x-3 shadow-lg gap-3">
             <Pressable
               onPress={onReset}
               className="flex-1 py-3 rounded-xl border border-gray-300 items-center justify-center bg-white"
@@ -170,4 +170,3 @@ export default function FilterModal({
     </Modal>
   );
 }
-

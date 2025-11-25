@@ -46,8 +46,8 @@ services:
         condition: service_healthy
     restart: always
     volumes:
-      - ./Back-End/uploads:/app/uploads
-      - ./Back-End/logs:/app/logs
+      - /home/ubuntu/EcommerceMobile/uploads:/app/uploads
+      - /home/ubuntu/EcommerceMobile/logs:/app/logs
     networks:
       - ecommerce-network
 

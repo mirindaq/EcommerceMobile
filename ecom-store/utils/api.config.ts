@@ -1,9 +1,20 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
-const LOCAL_IP = '192.168.1.100';
-const PORT = '8080';
-const API_PREFIX = '/api/v1';
+// Đọc cấu hình từ environment variables (app.json extra)
+const getEnvConfig = () => {
+  const apiConfig = Constants.expoConfig?.extra?.apiConfig || {};
+  return {
+    // Preview URL (cho preview build)
+    PREVIEW_URL: apiConfig.previewUrl || process.env.EXPO_PUBLIC_PREVIEW_API_BASE_URL || null,
+    // Development config
+    LOCAL_IP: apiConfig.localIp || process.env.EXPO_PUBLIC_LOCAL_IP || '192.168.1.100',
+    PORT: apiConfig.port || process.env.EXPO_PUBLIC_PORT || '8080',
+    API_PREFIX: apiConfig.apiPrefix || process.env.EXPO_PUBLIC_API_PREFIX || '/api/v1',
+  };
+};
+
+const { PREVIEW_URL, LOCAL_IP, PORT, API_PREFIX } = getEnvConfig();
 const getExpoDevServerIP = (): string | null => {
   try {
     const hostUri = Constants.expoConfig?.hostUri || Constants.expoConfig?.extra?.hostUri;
@@ -31,6 +42,12 @@ const getExpoDevServerIP = (): string | null => {
 };
 
 export const getBaseURL = (): string => {
+  // Preview URL (cho preview build)
+  if (PREVIEW_URL) {
+    return PREVIEW_URL;
+  }
+
+  // Development mode
   if (__DEV__) {
     if (Platform.OS === 'android') {
       const expoIP = getExpoDevServerIP();
@@ -47,6 +64,7 @@ export const getBaseURL = (): string => {
     }
   }
 
+  // Fallback (nếu không có previewUrl)
   const expoIP = getExpoDevServerIP();
   return `http://${expoIP || LOCAL_IP}:${PORT}${API_PREFIX}`;
 };

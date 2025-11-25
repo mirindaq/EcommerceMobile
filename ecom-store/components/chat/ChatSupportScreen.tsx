@@ -6,12 +6,14 @@ import AuthStorageUtil from "@/utils/authStorage.util";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Loader2, MessageCircle } from "lucide-react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatInput from "./ChatInput";
 import ChatMessages from "./ChatMessages";
 
 export default function ChatSupportScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -370,11 +372,39 @@ export default function ChatSupportScreen() {
         </Box>
 
         {/* 3. KeyboardAvoidingView bao bọc nội dung và ChatInput */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1"
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
+        {Platform.OS === "ios" ? (
+          <KeyboardAvoidingView
+            behavior="padding"
+            className="flex-1"
+            keyboardVerticalOffset={0}
+          >
+            <Box className="flex-1 bg-gray-50 min-h-0">
+              {loading ? (
+                <Box className="flex-1 items-center justify-center">
+                  <Loader2 size={32} color="#EF4444" className="animate-spin" />
+                  <Text className="text-gray-600 mt-4">Đang tải...</Text>
+                </Box>
+              ) : (
+                <>
+                  <ChatMessages
+                    messages={messages}
+                    formatTime={formatTime}
+                    scrollRef={scrollRef}
+                    currentUserName={currentUserName}
+                  />
+                  <ChatInput
+                    onSendMessage={handleSendMessage}
+                    isConnected={isConnected}
+                    isSending={sending}
+                    showStaffWarning={!chat?.staffId && messages.length === 0}
+                    hasChat={!!chat}
+                    allowImage={true}
+                  />
+                </>
+              )}
+            </Box>
+          </KeyboardAvoidingView>
+        ) : (
           <Box className="flex-1 bg-gray-50 min-h-0">
             {loading ? (
               <Box className="flex-1 items-center justify-center">
@@ -400,7 +430,7 @@ export default function ChatSupportScreen() {
               </>
             )}
           </Box>
-        </KeyboardAvoidingView>
+        )}
       </SafeAreaView>
     </Box>
   );

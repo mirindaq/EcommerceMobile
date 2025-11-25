@@ -25,6 +25,8 @@ export default function ChatMessages({
       onContentSizeChange={() => {
         scrollRef.current?.scrollToEnd({ animated: true });
       }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="interactive"
     >
       <VStack space="md" className="pb-4">
         {messages.map((msg) => {
