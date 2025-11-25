@@ -44,6 +44,7 @@ const getExpoDevServerIP = (): string | null => {
 export const getBaseURL = (): string => {
   // Preview URL (cho preview build)
   if (PREVIEW_URL) {
+    console.log('Preview URL:', PREVIEW_URL);
     return PREVIEW_URL;
   }
 
