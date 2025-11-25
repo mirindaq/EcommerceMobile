@@ -38,10 +38,10 @@ pipeline {
           echo "🚀 Starting deployment..."
           echo "🧹 Stopping and removing old containers..."
 
-          sudo docker-compose down || true
+          sudo docker compose down || true
 
           echo "🔧 Building and starting containers with production environment..."
-          sudo docker-compose --env-file ./Back-End/env/prod.env up -d --build
+          sudo docker compose --env-file ./Back-End/env/prod.env up -d --build
 
           echo "✅ Deployment completed successfully!"
         """
