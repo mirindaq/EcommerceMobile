@@ -215,7 +215,7 @@ export default function ProductBox({
 
       <VStack className="p-3 gap-1">
         <Text
-          className="text-gray-800 font-medium text-sm leading-5"
+          className="text-gray-800 font-medium text-sm leading-5 h-10"
           numberOfLines={2}
           ellipsizeMode="tail"
         >

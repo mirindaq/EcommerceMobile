@@ -1,8 +1,8 @@
-import React from 'react';
-import { Modal, View, TouchableOpacity, ScrollView, Image } from 'react-native';
-import { Box, HStack, VStack, Text, Pressable, Icon } from '@/components/ui';
-import { XIcon, MinusIcon, PlusIcon } from 'lucide-react-native';
-import type { Product, ProductVariantResponse } from '@/types/product.type';
+import { Box, HStack, Icon, Pressable, Text, VStack } from "@/components/ui";
+import type { Product, ProductVariantResponse } from "@/types/product.type";
+import { MinusIcon, PlusIcon, XIcon } from "lucide-react-native";
+import React from "react";
+import { Image, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 
 interface VariantSelectorProps {
   visible: boolean;
@@ -13,7 +13,7 @@ interface VariantSelectorProps {
   quantity: number;
   onClose: () => void;
   onVariantSelect: (variantName: string, value: string) => void;
-  onQuantityChange: (type: 'increase' | 'decrease') => void;
+  onQuantityChange: (type: "increase" | "decrease") => void;
   onAddToCart: () => void;
   onBuyNow: () => void;
   formatPrice: (price: number) => string;
@@ -40,25 +40,29 @@ export default function VariantSelector({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}>
-        <TouchableOpacity 
-          style={{ flex: 1 }} 
-          activeOpacity={1} 
+      <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <TouchableOpacity
+          style={{ flex: 1 }}
+          activeOpacity={1}
           onPress={onClose}
         />
-        <View style={{
-          backgroundColor: 'white',
-          borderTopLeftRadius: 24,
-          borderTopRightRadius: 24,
-          height: '70%',
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-        }}>
+        <View
+          style={{
+            backgroundColor: "white",
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            height: "70%",
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+          }}
+        >
           {/* Header */}
           <HStack className="items-center justify-between p-4 border-b border-gray-200">
-            <Text className="text-gray-900 font-bold text-lg">Chọn cấu hình</Text>
+            <Text className="text-gray-900 font-bold text-lg">
+              Chọn cấu hình
+            </Text>
             <TouchableOpacity onPress={onClose}>
               <Icon as={XIcon} size="sm" className="text-gray-400" />
             </TouchableOpacity>
@@ -77,21 +81,27 @@ export default function VariantSelector({
               </VStack>
               <VStack className="flex-1">
                 <Text className="text-red-500 font-bold text-xl">
-                  {selectedVariant ? formatPrice(selectedVariant.price) : formatPrice(0)}
+                  {selectedVariant
+                    ? formatPrice(selectedVariant.price)
+                    : formatPrice(0)}
                 </Text>
                 {selectedVariant && selectedVariant.oldPrice > 0 && (
                   <Text className="text-gray-400 text-sm line-through">
                     {formatPrice(selectedVariant.oldPrice)}
                   </Text>
                 )}
-                <Text className="text-gray-500 text-sm">Kho: {selectedVariant?.stock || 0}</Text>
+                <Text className="text-gray-500 text-sm">
+                  Kho: {selectedVariant?.stock || 0}
+                </Text>
               </VStack>
             </HStack>
 
             {/* Variant Selection */}
             {Object.keys(availableVariants).map((variantName) => (
               <Box key={variantName} className="mb-6">
-                <Text className="text-gray-900 font-bold text-lg mb-3">{variantName}</Text>
+                <Text className="text-gray-900 font-bold text-lg mb-3">
+                  {variantName}
+                </Text>
                 <HStack className="flex-wrap">
                   {availableVariants[variantName].map((value) => (
                     <Pressable
@@ -99,13 +109,17 @@ export default function VariantSelector({
                       onPress={() => onVariantSelect(variantName, value)}
                       className={`mr-2 mb-2 p-3 rounded-lg border ${
                         selectedVariants[variantName] === value
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-gray-200 bg-white'
+                          ? "border-red-500 bg-red-50"
+                          : "border-gray-200 bg-white"
                       }`}
                     >
-                      <Text className={`text-sm font-medium ${
-                        selectedVariants[variantName] === value ? 'text-red-700' : 'text-gray-700'
-                      }`}>
+                      <Text
+                        className={`text-sm font-medium ${
+                          selectedVariants[variantName] === value
+                            ? "text-red-700"
+                            : "text-gray-700"
+                        }`}
+                      >
                         {value}
                       </Text>
                     </Pressable>
@@ -116,17 +130,21 @@ export default function VariantSelector({
 
             {/* Quantity Selection */}
             <Box className="mb-6">
-              <Text className="text-gray-900 font-bold text-lg mb-3">Số lượng</Text>
+              <Text className="text-gray-900 font-bold text-lg mb-3">
+                Số lượng
+              </Text>
               <HStack className="items-center">
                 <Pressable
-                  onPress={() => onQuantityChange('decrease')}
+                  onPress={() => onQuantityChange("decrease")}
                   className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
                 >
                   <Icon as={MinusIcon} size="sm" className="text-gray-600" />
                 </Pressable>
-                <Text className="text-gray-900 font-bold text-lg mx-4">{quantity}</Text>
+                <Text className="text-gray-900 font-bold text-lg mx-4">
+                  {quantity}
+                </Text>
                 <Pressable
-                  onPress={() => onQuantityChange('increase')}
+                  onPress={() => onQuantityChange("increase")}
                   className="w-10 h-10 bg-gray-100 rounded-lg items-center justify-center"
                 >
                   <Icon as={PlusIcon} size="sm" className="text-gray-600" />
@@ -137,18 +155,22 @@ export default function VariantSelector({
 
           {/* Footer */}
           <View className="p-4 border-t border-gray-200">
-            <HStack className="space-x-3">
+            <HStack className="space-x-3 gap-3">
               <Pressable
                 className="bg-gray-200 rounded-lg px-4 py-4 flex-1"
                 onPress={onAddToCart}
               >
-                <Text className="text-gray-900 font-bold text-base text-center">Thêm vào giỏ</Text>
+                <Text className="text-gray-900 font-bold text-base text-center">
+                  Thêm vào giỏ
+                </Text>
               </Pressable>
               <Pressable
                 className="bg-red-500 rounded-lg px-6 py-4 flex-1"
                 onPress={onBuyNow}
               >
-                <Text className="text-white font-bold text-lg text-center">Mua ngay</Text>
+                <Text className="text-white font-bold text-lg text-center">
+                  Mua ngay
+                </Text>
               </Pressable>
             </HStack>
           </View>
@@ -157,4 +179,3 @@ export default function VariantSelector({
     </Modal>
   );
 }
-
