@@ -1,25 +1,24 @@
 // Dòng 1: Import các giá trị (values)
-import React, { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react";
 // Dòng 2: Import các kiểu (types) bằng "import type"
-import type { ChangeEvent, FormEvent } from "react"
-import type { Category } from "@/types/category.type"
-import type { Brand } from "@/types/brand.type"
-import type { BrandCategoryRequest } from "@/types/category-brand.type"
+import type { ChangeEvent, FormEvent } from "react";
+import type { Category } from "@/types/category.type";
+import type { Brand } from "@/types/brand.type";
 
 // --- Import 3 file Service ---
 // 1. Service cho các liên kết
-import categoryBrandService from "@/services/categoryBrand.service"
+import { categoryBrandService } from "@/services/categoryBrand.service";
 // 2. Service để lấy TẤT CẢ categories cho dropdown
-import { categoryService } from "@/services/category.service"
+import { categoryService } from "@/services/category.service";
 // 3. Service để lấy TẤT CẢ brands cho dropdown
-import { brandService } from "@/services/brand.service"
+import { brandService } from "@/services/brand.service";
 
 // Kiểu dữ liệu cho State Phân trang của bảng
 interface PaginationState {
-  page: number
-  size: number
-  totalPage: number
-  totalItem: number
+  page: number;
+  size: number;
+  totalPage: number;
+  totalItem: number;
 }
 
 // === COMPONENT CHÍNH ===
@@ -27,193 +26,198 @@ export default function CategoryBrandManager() {
   // === State ===
 
   // State cho dữ liệu dropdown (tải 1 lần)
-  const [allCategories, setAllCategories] = useState<Category[]>([])
-  const [allBrands, setAllBrands] = useState<Brand[]>([])
+  const [allCategories, setAllCategories] = useState<Category[]>([]);
+  const [allBrands, setAllBrands] = useState<Brand[]>([]);
 
   // State cho lựa chọn của người dùng
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null,
-  )
-  const [brandToAssignId, setBrandToAssignId] = useState<number | null>(null)
+    null
+  );
+  const [brandToAssignId, setBrandToAssignId] = useState<number | null>(null);
 
   // State cho bảng kết quả (các brand đã liên kết)
-  const [linkedBrands, setLinkedBrands] = useState<Brand[]>([])
+  const [linkedBrands, setLinkedBrands] = useState<Brand[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     page: 1,
     size: 10, // Số brand liên kết hiển thị mỗi trang
     totalPage: 1,
     totalItem: 0,
-  })
+  });
 
   // State cho UI (loading, error)
-  const [loading, setLoading] = useState(false) // Loading cho các hành động (gán, xóa, đổi trang)
-  const [loadingInitial, setLoadingInitial] = useState(true) // Loading khi tải component
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false); // Loading cho các hành động (gán, xóa, đổi trang)
+  const [loadingInitial, setLoadingInitial] = useState(true); // Loading khi tải component
+  const [error, setError] = useState<string | null>(null);
 
   // === Data Fetching ===
 
   // 1. Fetch dữ liệu ban đầu (Tất cả Categories và Brands cho dropdown)
   useEffect(() => {
     const fetchInitialData = async () => {
-      setLoadingInitial(true)
-      setError(null)
+      setLoadingInitial(true);
+      setError(null);
       try {
         // Gọi 2 hàm "getAll...Simple" (không phân trang)
         const [categoriesRes, brandsRes] = await Promise.all([
           categoryService.getAllCategoriesSimple(),
           brandService.getAllBrandsSimple(),
-        ])
+        ]);
 
         // --- 🔥 SỬA LỖI Ở ĐÂY ---
         // Lỗi của bạn cho thấy `categoriesRes.data` là một object { data, page, ... }
         // vì vậy chúng ta cần lấy mảng `data` bên trong nó.
-        setAllCategories(categoriesRes.data.data) // Sửa từ .data -> .data.data
-        setAllBrands(brandsRes.data.data)       // Sửa từ .data -> .data.data
+        setAllCategories(categoriesRes.data.data); // Sửa từ .data -> .data.data
+        setAllBrands(brandsRes.data.data); // Sửa từ .data -> .data.data
       } catch (err) {
         setError(
-          "Không thể tải dữ liệu ban đầu (Categories/Brands). Hãy đảm bảo bạn đã thêm hàm getAllCategoriesSimple và getAllBrandsSimple vào file service.",
-        )
-        console.error("Lỗi fetchInitialData:", err)
+          "Không thể tải dữ liệu ban đầu (Categories/Brands). Hãy đảm bảo bạn đã thêm hàm getAllCategoriesSimple và getAllBrandsSimple vào file service."
+        );
+        console.error("Lỗi fetchInitialData:", err);
       } finally {
-        setLoadingInitial(false)
+        setLoadingInitial(false);
       }
-    }
-    fetchInitialData()
-  }, []) // Chỉ chạy 1 lần khi component mount
+    };
+    fetchInitialData();
+  }, []); // Chỉ chạy 1 lần khi component mount
 
   // 2. Hàm fetch danh sách brand đã liên kết (có phân trang)
-  const fetchLinkedBrands = async (categoryId: number, page: number) => {
-    setLoading(true)
-    setError(null)
+  const fetchLinkedBrands = async (categoryId: number) => {
+    setLoading(true);
+    setError(null);
     try {
       // Hàm này từ categoryBrand.service.ts
       const res = await categoryBrandService.getBrandsByCategoryId(
         categoryId,
-        page,
-        pagination.size,
-      )
-      // Dữ liệu trả về từ service có dạng { data: { data, totalPage, ... } }
-      setLinkedBrands(res.data.data)
+        ""
+      );
+      // Dữ liệu trả về từ service có dạng { data: [...] }
+      setLinkedBrands(res.data);
       setPagination((prev) => ({
         ...prev,
-        page: res.data.page,
-        totalPage: res.data.totalPage,
-        totalItem: res.data.totalItem,
-      }))
+        page: 1,
+        totalPage: 1,
+        totalItem: res.data.length,
+      }));
     } catch (err) {
-      setError("Không thể tải danh sách brand đã liên kết.")
-      console.error("Lỗi fetchLinkedBrands:", err)
+      setError("Không thể tải danh sách brand đã liên kết.");
+      console.error("Lỗi fetchLinkedBrands:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // 3. Chạy lại fetchLinkedBrands KHI `selectedCategoryId` hoặc `pagination.page` thay đổi
   useEffect(() => {
     if (!selectedCategoryId) {
-      setLinkedBrands([]) // Reset danh sách nếu không chọn category
-      return
+      setLinkedBrands([]); // Reset danh sách nếu không chọn category
+      return;
     }
 
     // Tự động gọi khi user chọn category hoặc đổi trang
-    fetchLinkedBrands(selectedCategoryId, pagination.page)
+    fetchLinkedBrands(selectedCategoryId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategoryId, pagination.page])
+  }, [selectedCategoryId, pagination.page]);
 
   // === Handlers ===
 
   // Khi chọn một category từ dropdown chính
   const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const id = Number(e.target.value)
-    setSelectedCategoryId(id || null)
-    setBrandToAssignId(null) // Reset form gán
-    setPagination((prev) => ({ ...prev, page: 1 })) // Reset về trang 1
-  }
+    const id = Number(e.target.value);
+    setSelectedCategoryId(id || null);
+    setBrandToAssignId(null); // Reset form gán
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset về trang 1
+  };
 
   // Khi nhấn nút "Gán"
   const handleAssignSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!selectedCategoryId || !brandToAssignId) {
-      alert("Vui lòng chọn category và brand để gán.")
-      return
+      alert("Vui lòng chọn category và brand để gán.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const requestData: BrandCategoryRequest = {
+      const requestData = {
         categoryId: selectedCategoryId,
-        brandId: brandToAssignId,
-      }
-      await categoryBrandService.assignBrandToCategory(requestData)
+        brandIds: [brandToAssignId],
+      };
+      await categoryBrandService.setBrandsForCategory(requestData);
 
       // Tải lại danh sách brand đã liên kết
       if (pagination.page !== 1) {
-        setPagination((prev) => ({ ...prev, page: 1 })) // Về trang 1
+        setPagination((prev) => ({ ...prev, page: 1 })); // Về trang 1
       } else {
-        fetchLinkedBrands(selectedCategoryId, 1) // Trigger fetch lại trang 1
+        fetchLinkedBrands(selectedCategoryId); // Trigger fetch lại trang 1
       }
 
-      setBrandToAssignId(null) // Reset form
-      alert("Gán thành công!")
+      setBrandToAssignId(null); // Reset form
+      alert("Gán thành công!");
     } catch (err: any) {
-      setError(`Gán brand thất bại: ${err?.response?.data?.message || err.message}`)
-      console.error("Lỗi handleAssignSubmit:", err)
+      setError(
+        `Gán brand thất bại: ${err?.response?.data?.message || err.message}`
+      );
+      console.error("Lỗi handleAssignSubmit:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Khi nhấn nút "Xóa" (Hủy gán)
-  const handleUnassignClick = async (brandIdToRemove: number) => {
+  const handleUnassignClick = async () => {
     if (
       !selectedCategoryId ||
       !window.confirm("Bạn có chắc muốn hủy gán brand này?")
     ) {
-      return
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const requestData: BrandCategoryRequest = {
+      // TODO: Implement unassign functionality when API is available
+      alert("Chức năng hủy gán chưa được hỗ trợ");
+      /*
+      const requestData = {
         categoryId: selectedCategoryId,
         brandId: brandIdToRemove,
       }
       await categoryBrandService.unassignBrandFromCategory(requestData)
+      */
 
       // Tải lại danh sách
       // Kiểm tra xem trang hiện tại có bị trống sau khi xóa không
       if (linkedBrands.length === 1 && pagination.page > 1) {
         // Nếu đây là item cuối cùng của trang > 1, lùi về trang trước
-        setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
+        setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
       } else {
         // Ngược lại, chỉ cần fetch lại trang hiện tại
-        fetchLinkedBrands(selectedCategoryId, pagination.page)
+        fetchLinkedBrands(selectedCategoryId);
       }
 
-      alert("Hủy gán thành công!")
+      alert("Hủy gán thành công!");
     } catch (err: any) {
-      setError(`Hủy gán thất bại: ${err?.response?.data?.message || err.message}`)
-      console.error("Lỗi handleUnassignClick:", err)
+      setError(
+        `Hủy gán thất bại: ${err?.response?.data?.message || err.message}`
+      );
+      console.error("Lỗi handleUnassignClick:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // === Logic phụ ===
 
   // Tính toán danh sách brand "chưa được gán" để hiển thị trong form "Gán"
   const availableBrandsToAssign = useMemo(() => {
-    if (loadingInitial) return []
-    const linkedBrandIds = new Set(linkedBrands.map((brand) => brand.id))
-    return allBrands.filter((brand) => !linkedBrandIds.has(brand.id))
-  }, [allBrands, linkedBrands, loadingInitial])
+    if (loadingInitial) return [];
+    const linkedBrandIds = new Set(linkedBrands.map((brand) => brand.id));
+    return allBrands.filter((brand) => !linkedBrandIds.has(brand.id));
+  }, [allBrands, linkedBrands, loadingInitial]);
 
   // === Render ===
 
   if (loadingInitial) {
-    return (
-      <div style={{ padding: "20px" }}>Đang tải dữ liệu ban đầu...</div>
-    )
+    return <div style={{ padding: "20px" }}>Đang tải dữ liệu ban đầu...</div>;
   }
 
   return (
@@ -311,7 +315,7 @@ export default function CategoryBrandManager() {
                     <td>{brand.name}</td>
                     <td style={{ textAlign: "center" }}>
                       <button
-                        onClick={() => handleUnassignClick(brand.id)}
+                        onClick={() => handleUnassignClick()}
                         disabled={loading}
                         style={{ color: "red", cursor: "pointer" }}
                       >
@@ -359,5 +363,5 @@ export default function CategoryBrandManager() {
         </div>
       )}
     </div>
-  )
+  );
 }

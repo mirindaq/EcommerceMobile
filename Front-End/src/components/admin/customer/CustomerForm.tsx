@@ -3,9 +3,19 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Calendar as CalendarIcon, Camera, Loader2, ArrowLeft, Plus } from "lucide-react";
+import {
+  Calendar as CalendarIcon,
+  Camera,
+  Loader2,
+  ArrowLeft,
+  Plus,
+} from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import type {
@@ -52,7 +62,11 @@ const getInitialFormData = (customer: CustomerSummary | null) => {
   };
 };
 
-const getNewAddress = (index: number, name: string, phone: string): AddressFormData => ({
+const getNewAddress = (
+  index: number,
+  name: string,
+  phone: string
+): AddressFormData => ({
   id: index,
   subAddress: "",
   wardCode: "",
@@ -64,18 +78,35 @@ const getNewAddress = (index: number, name: string, phone: string): AddressFormD
 });
 
 // --- Sửa chỗ map: giữ id thực từ backend (rawAddr.id) nếu có
-const mapAddressResponseToFormData = (addr: AddressResponse, index: number): AddressFormData => {
+const mapAddressResponseToFormData = (
+  addr: AddressResponse,
+  index: number
+): AddressFormData => {
   const rawAddr = addr as any;
   // lấy id thật từ raw nếu backend trả id, fallback về addr.id (nếu có), cuối cùng là index
   const realId = rawAddr.id ?? (addr as any).id ?? index;
-  const customerId = rawAddr.customerId ?? rawAddr.customer_id ?? rawAddr.customer?.id ?? undefined;
+  const customerId =
+    rawAddr.customerId ??
+    rawAddr.customer_id ??
+    rawAddr.customer?.id ??
+    undefined;
 
   return {
     id: realId,
     subAddress: addr.subAddress || "",
     // preserve codes/names; try common fields
-    wardCode: (addr as any).ward?.code || rawAddr.wardCode || rawAddr.ward_code || rawAddr.wardName || "",
-    provinceCode: (addr as any).province?.code || rawAddr.provinceCode || rawAddr.province_code || rawAddr.provinceName || "",
+    wardCode:
+      (addr as any).ward?.code ||
+      rawAddr.wardCode ||
+      rawAddr.ward_code ||
+      rawAddr.wardName ||
+      "",
+    provinceCode:
+      (addr as any).province?.code ||
+      rawAddr.provinceCode ||
+      rawAddr.province_code ||
+      rawAddr.provinceName ||
+      "",
     fullName: addr.fullName || "",
     phone: addr.phone || "",
     isDefault: (addr as any).isDefault || false,
@@ -86,7 +117,9 @@ const mapAddressResponseToFormData = (addr: AddressResponse, index: number): Add
 
 interface CustomerFormProps {
   customer: CustomerSummary | null;
-  onSubmit: (data: CreateCustomerRequest | UpdateCustomerProfileRequest) => Promise<void>;
+  onSubmit: (
+    data: CreateCustomerRequest | UpdateCustomerProfileRequest
+  ) => Promise<void>;
   onFinished: () => void;
   onCancel: () => void;
   isLoading: boolean;
@@ -94,7 +127,6 @@ interface CustomerFormProps {
 
 export default function CustomerForm({
   customer,
-  onSubmit,
   onFinished,
   onCancel,
   isLoading,
@@ -104,9 +136,10 @@ export default function CustomerForm({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [step, setStep] = useState(1);
-  const [createdCustomer, setCreatedCustomer] = useState<CustomerSummary | null>(customer);
-// 🧩 Lưu danh sách ID địa chỉ bị xoá (chờ đến khi cập nhật mới xoá DB)
-const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
+  const [createdCustomer, setCreatedCustomer] =
+    useState<CustomerSummary | null>(customer);
+  // 🧩 Lưu danh sách ID địa chỉ bị xoá (chờ đến khi cập nhật mới xoá DB)
+  const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
 
   // keep addresses initial mapped from customer.addresses if any
   const [addresses, setAddresses] = useState<AddressFormData[]>(() => {
@@ -124,8 +157,9 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
   });
 
   const [provinces, setProvinces] = useState<any[]>([]);
-  const [wardsByProvince, setWardsByProvince] = useState<Record<string, any[]>>({});
-  const [isAddressLoading, setIsAddressLoading] = useState(false);
+  const [wardsByProvince, setWardsByProvince] = useState<Record<string, any[]>>(
+    {}
+  );
 
   const nextAddressId = useMemo(
     () => (addresses.length ? addresses[addresses.length - 1].id + 1 : 0),
@@ -133,20 +167,23 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
   );
 
   const normalize = (s?: string) =>
-    (!s ? "" : s.normalize?.("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim());
+    !s
+      ? ""
+      : s
+          .normalize?.("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase()
+          .trim();
 
   useEffect(() => {
     if (step === 2 || customer) {
       const fetchProvinces = async () => {
         try {
-          setIsAddressLoading(true);
           const data = await provinceService.getAllProvinces();
           setProvinces(data || []);
         } catch (err) {
           console.error("fetchProvinces error:", err);
           toast.error("Không tải được danh sách tỉnh/thành");
-        } finally {
-          setIsAddressLoading(false);
         }
       };
       fetchProvinces();
@@ -163,26 +200,45 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       let provinceCode = addr.provinceCode || "";
       let wardCode = addr.wardCode || "";
 
-      const candidateProvince = raw.province?.code || raw.provinceCode || raw.province_code || raw.provinceName || raw.province_name || "";
-      const candidateWard = raw.ward?.code || raw.wardCode || raw.ward_code || raw.wardName || raw.ward_name || "";
+      const candidateProvince =
+        raw.province?.code ||
+        raw.provinceCode ||
+        raw.province_code ||
+        raw.provinceName ||
+        raw.province_name ||
+        "";
+      const candidateWard =
+        raw.ward?.code ||
+        raw.wardCode ||
+        raw.ward_code ||
+        raw.wardName ||
+        raw.ward_name ||
+        "";
 
       if (candidateProvince) {
         const byCode = provinces.find((p) => p.code === candidateProvince);
         if (byCode) {
           provinceCode = byCode.code;
         } else {
-          const byName = provinces.find((p) => normalize(p.name) === normalize(candidateProvince) || normalize(p.name) === normalize(raw.provinceName));
+          const byName = provinces.find(
+            (p) =>
+              normalize(p.name) === normalize(candidateProvince) ||
+              normalize(p.name) === normalize(raw.provinceName)
+          );
           if (byName) provinceCode = byName.code;
         }
       }
 
       if (!provinceCode && raw.provinceName) {
-        const byName = provinces.find((p) => normalize(p.name) === normalize(raw.provinceName));
+        const byName = provinces.find(
+          (p) => normalize(p.name) === normalize(raw.provinceName)
+        );
         if (byName) provinceCode = byName.code;
       }
 
       if (candidateWard) {
-        wardCode = (candidateWard && candidateWard.length > 0) ? candidateWard : "";
+        wardCode =
+          candidateWard && candidateWard.length > 0 ? candidateWard : "";
       }
 
       return {
@@ -208,7 +264,7 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       const newWardsMap: Record<string, any[]> = {};
       for (const code of codesToFetch) {
         try {
-          const w = await provinceService.getWardsByProvince(code);
+          const w = await provinceService.getWardsByProvince(Number(code));
           newWardsMap[code] = w || [];
         } catch (err) {
           console.error("fetch ward error", err);
@@ -221,21 +277,32 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       setAddresses((prevAddrs) =>
         prevAddrs.map((addr, idx) => {
           if (addr.wardCode) {
-            const list = newWardsMap[addr.provinceCode] || wardsByProvince[addr.provinceCode] || [];
+            const list =
+              newWardsMap[addr.provinceCode] ||
+              wardsByProvince[addr.provinceCode] ||
+              [];
             const foundByCode = list.find((w: any) => w.code === addr.wardCode);
             if (foundByCode) return addr;
           }
           const raw = rawAddrs[idx] || {};
-          const wardNameCandidate = raw.wardName || raw.ward_name || raw.ward?.name || "";
-          const list = newWardsMap[addr.provinceCode] || wardsByProvince[addr.provinceCode] || [];
+          const wardNameCandidate =
+            raw.wardName || raw.ward_name || raw.ward?.name || "";
+          const list =
+            newWardsMap[addr.provinceCode] ||
+            wardsByProvince[addr.provinceCode] ||
+            [];
           if (wardNameCandidate) {
-            const found = list.find((w: any) => normalize(w.name) === normalize(wardNameCandidate));
+            const found = list.find(
+              (w: any) => normalize(w.name) === normalize(wardNameCandidate)
+            );
             if (found) {
               return { ...addr, wardCode: found.code || "" };
             }
           }
           if (addr.wardCode) {
-            const found2 = list.find((w: any) => normalize(w.name) === normalize(addr.wardCode));
+            const found2 = list.find(
+              (w: any) => normalize(w.name) === normalize(addr.wardCode)
+            );
             if (found2) return { ...addr, wardCode: found2.code || "" };
           }
           return addr;
@@ -249,7 +316,11 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
   const handleValueChange = (field: string, value: any) =>
     setFormData((prev) => ({ ...prev, [field]: value }));
 
-  const handleAddressChange = (index: number, field: keyof AddressFormData, value: any) => {
+  const handleAddressChange = (
+    index: number,
+    field: keyof AddressFormData,
+    value: any
+  ) => {
     setAddresses((prev) =>
       prev.map((addr, i) => {
         if (field === "isDefault" && value) {
@@ -262,7 +333,6 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       })
     );
   };
-  
 
   const handleProvinceChange = async (index: number, provinceCode: string) => {
     handleAddressChange(index, "provinceCode", provinceCode);
@@ -270,26 +340,23 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
 
     if (provinceCode && !wardsByProvince[provinceCode]) {
       try {
-        setIsAddressLoading(true);
-        const data = await provinceService.getWardsByProvince(provinceCode);
+        const data = await provinceService.getWardsByProvince(
+          Number(provinceCode)
+        );
         setWardsByProvince((prev) => ({ ...prev, [provinceCode]: data }));
       } catch {
         toast.error("Không tải được danh sách phường/xã");
-      } finally {
-        setIsAddressLoading(false);
       }
     }
   };
   const handleRemoveAddress = (index: number) => {
     const addrToRemove = addresses[index];
     if (addrToRemove.id && addrToRemove.customerId) {
-      setDeletedAddressIds(prev => [...prev, addrToRemove.id]);
+      setDeletedAddressIds((prev) => [...prev, addrToRemove.id]);
     }
-    setAddresses(prev => prev.filter((_, i) => i !== index));
+    setAddresses((prev) => prev.filter((_, i) => i !== index));
   };
-  
-  
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -374,7 +441,9 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
         await new Promise((r) => setTimeout(r, 500));
         toast.success("Upload avatar thành công (mô phỏng)");
       }
-      const dob = formData.dateOfBirth ? format(formData.dateOfBirth, "yyyy-MM-dd") : null;
+      const dob = formData.dateOfBirth
+        ? format(formData.dateOfBirth, "yyyy-MM-dd")
+        : null;
       const payload: CreateCustomerRequest = {
         fullName: formData.fullName,
         email: formData.email,
@@ -395,7 +464,7 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       setIsUploading(false);
     }
   };
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customer && step === 1) return handleStep1Submit();
@@ -403,18 +472,18 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
     // Kiểm tra step 1 và step 2
     if (!validateStep(1)) return;
     if (!validateStep(2)) return;
-  
+
     setIsUploading(true);
     try {
       const targetCustomer = customer || createdCustomer;
-  
+
       if (!targetCustomer) throw new Error("Customer chưa được tạo");
-  
+
       // 1. Xoá địa chỉ
       for (const id of deletedAddressIds) {
         await customerService.deleteAddressForCustomer(targetCustomer.id, id);
       }
-  
+
       // 2. Duyệt địa chỉ: phân biệt mới/cũ
       for (const addr of addresses) {
         const req: AddressRequest = {
@@ -426,16 +495,19 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
           isDefault: addr.isDefault,
           addressName: addr.addressName,
         };
-  
+
         if (addr.id && addr.customerId) {
           // Cập nhật địa chỉ cũ
           await customerService.updateAddress(targetCustomer.id, addr.id, req);
         } else {
           // Tạo mới
-          await customerService.createAddressForCustomer(targetCustomer.id, req);
+          await customerService.createAddressForCustomer(
+            targetCustomer.id,
+            req
+          );
         }
       }
-  
+
       toast.success("Cập nhật địa chỉ thành công");
       onFinished();
     } catch (err) {
@@ -445,13 +517,12 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       setIsUploading(false);
     }
   };
-  
+
   const handleAddAddress = () =>
     setAddresses((prev) => [
       ...prev,
       getNewAddress(nextAddressId, formData.fullName, formData.phone),
     ]);
-  
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -459,31 +530,58 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
         <div className="space-y-6">
           <div className="flex justify-center">
             <div className="relative">
-              <img src={preview || "/assets/avatar.jpg"} alt="avatar" className="h-28 w-28 rounded-full object-cover border" />
-              <label htmlFor="avatar-upload" className="absolute bottom-0 right-0 bg-gray-800 p-2 rounded-full cursor-pointer hover:bg-gray-700">
+              <img
+                src={preview || "/assets/avatar.jpg"}
+                alt="avatar"
+                className="h-28 w-28 rounded-full object-cover border"
+              />
+              <label
+                htmlFor="avatar-upload"
+                className="absolute bottom-0 right-0 bg-gray-800 p-2 rounded-full cursor-pointer hover:bg-gray-700"
+              >
                 <Camera className="h-4 w-4 text-white" />
               </label>
-              <input id="avatar-upload" type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>Họ và tên *</Label>
-              <Input value={formData.fullName} onChange={(e) => handleValueChange("fullName", e.target.value)} />
+              <Input
+                value={formData.fullName}
+                onChange={(e) => handleValueChange("fullName", e.target.value)}
+              />
             </div>
             <div>
               <Label>SĐT *</Label>
-              <Input value={formData.phone} onChange={(e) => handleValueChange("phone", e.target.value)} />
+              <Input
+                value={formData.phone}
+                onChange={(e) => handleValueChange("phone", e.target.value)}
+              />
             </div>
             {!customer && (
               <>
                 <div>
                   <Label>Email *</Label>
-                  <Input value={formData.email} onChange={(e) => handleValueChange("email", e.target.value)} />
+                  <Input
+                    value={formData.email}
+                    onChange={(e) => handleValueChange("email", e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label>Mật khẩu *</Label>
-                  <Input type="password" onChange={(e) => handleValueChange("password", e.target.value)} />
+                  <Input
+                    type="password"
+                    onChange={(e) =>
+                      handleValueChange("password", e.target.value)
+                    }
+                  />
                 </div>
               </>
             )}
@@ -493,11 +591,17 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {formData.dateOfBirth ? format(formData.dateOfBirth, "dd/MM/yyyy") : "Chọn ngày"}
+                    {formData.dateOfBirth
+                      ? format(formData.dateOfBirth, "dd/MM/yyyy")
+                      : "Chọn ngày"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={formData.dateOfBirth || undefined} onSelect={(date) => handleValueChange("dateOfBirth", date)} />
+                  <Calendar
+                    mode="single"
+                    selected={formData.dateOfBirth || undefined}
+                    onSelect={(date) => handleValueChange("dateOfBirth", date)}
+                  />
                 </PopoverContent>
               </Popover>
             </div>
@@ -506,30 +610,30 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
       )}
 
       {(step === 2 || customer) && (
-   <div className="max-h-[500px] overflow-y-auto pr-2 space-y-4 custom-scroll">
-   <div className={`space-y-6 ${customer ? "border-t pt-6 mt-6" : ""}`}>
-     <h3 className="text-lg font-semibold">Quản lý địa chỉ</h3>
-     <div className="flex flex-col gap-4">
-       {addresses.map((addr, idx) => (
-         <AddressFields
-           key={addr.id}
-           address={addr}
-           index={idx}
-           provinces={provinces}
-           wards={wardsByProvince[addr.provinceCode] || []}
-           onProvinceChange={(code) => handleProvinceChange(idx, code)}
-           onAddressChange={handleAddressChange}
-           onRemove={handleRemoveAddress}
-           isRemovable={addresses.length > 1}
-           isNewCustomer={!customer}
-         />
-       ))}
-     </div>
-     <Button type="button" onClick={handleAddAddress} variant="outline">
-       <Plus className="h-4 w-4 mr-2" /> Thêm địa chỉ
-     </Button>
-   </div>
- </div>
+        <div className="max-h-[500px] overflow-y-auto pr-2 space-y-4 custom-scroll">
+          <div className={`space-y-6 ${customer ? "border-t pt-6 mt-6" : ""}`}>
+            <h3 className="text-lg font-semibold">Quản lý địa chỉ</h3>
+            <div className="flex flex-col gap-4">
+              {addresses.map((addr, idx) => (
+                <AddressFields
+                  key={addr.id}
+                  address={addr}
+                  index={idx}
+                  provinces={provinces}
+                  wards={wardsByProvince[addr.provinceCode] || []}
+                  onProvinceChange={(code) => handleProvinceChange(idx, code)}
+                  onAddressChange={handleAddressChange}
+                  onRemove={handleRemoveAddress}
+                  isRemovable={addresses.length > 1}
+                  isNewCustomer={!customer}
+                />
+              ))}
+            </div>
+            <Button type="button" onClick={handleAddAddress} variant="outline">
+              <Plus className="h-4 w-4 mr-2" /> Thêm địa chỉ
+            </Button>
+          </div>
+        </div>
       )}
 
       <div className="flex justify-between pt-4 border-t">
@@ -545,7 +649,11 @@ const [deletedAddressIds, setDeletedAddressIds] = useState<number[]>([]);
           </Button>
           <Button type="submit" disabled={isUploading || isLoading}>
             {isUploading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-            {customer ? "Cập nhật" : step === 2 ? "Hoàn tất & Thêm địa chỉ" : "Tiếp theo"}
+            {customer
+              ? "Cập nhật"
+              : step === 2
+              ? "Hoàn tất & Thêm địa chỉ"
+              : "Tiếp theo"}
           </Button>
         </div>
       </div>

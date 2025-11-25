@@ -1,87 +1,95 @@
-
-import { useState, useEffect } from 'react'
-import { productService } from '@/services/product.service'
-import ProductCard from '@/components/user/ProductCard'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Search, Loader2 } from 'lucide-react'
-import type { Product } from '@/types/product.type'
-import type { Article } from '@/types/article.type'
-import { articleService } from '@/services/article.service'
-import ArticleCard from '@/components/user/ArticleCard'
+import { useState, useEffect } from "react";
+import { productService } from "@/services/product.service";
+import ProductCard from "@/components/user/ProductCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Loader2 } from "lucide-react";
+import type { Product } from "@/types/product.type";
+import type { Article } from "@/types/article.type";
+import { articleService } from "@/services/article.service";
+import ArticleCard from "@/components/user/ArticleCard";
 
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([])
-  const [articles, setArticles] = useState<Article[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingArticles, setLoadingArticles] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingArticles, setLoadingArticles] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
 
-  const loadProducts = async (page: number = 1, search: string = '', append: boolean = false) => {
+  const loadProducts = async (
+    page: number = 1,
+    search: string = "",
+    append: boolean = false
+  ) => {
     try {
-      setLoading(true)
-      const response = await productService.getProducts(page, 12, search)
+      setLoading(true);
+      const response = await productService.getProducts(page, 12, {
+        keyword: search,
+      });
 
       if (append) {
-        setProducts(prev => [...prev, ...response.data.data])
+        setProducts((prev) => [...prev, ...response.data.data]);
       } else {
-        setProducts(response.data.data)
+        setProducts(response.data.data);
       }
 
-      setHasMore(page < response.data.totalPage)
+      setHasMore(page < response.data.totalPage);
     } catch (error) {
-      console.error('Lỗi khi tải sản phẩm:', error)
+      console.error("Lỗi khi tải sản phẩm:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // === LOAD ARTICLES ===
   const loadArticles = async () => {
     try {
-      setLoadingArticles(true)
+      setLoadingArticles(true);
       // 👉 Lấy số lượng lớn hơn một chút để đảm bảo có dữ liệu
-      const response = await articleService.getArticles(1, 100)
+      const response = await articleService.getArticles(1, 100);
 
       // 🔽 Sắp xếp tất cả bài viết theo ngày đăng mới nhất
       const sortedArticles = response.data.data.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
       // 🔽 Giới hạn hiển thị 5 bài đầu tiên
-      setArticles(sortedArticles.slice(0, 5))
+      setArticles(sortedArticles.slice(0, 5));
     } catch (error) {
-      console.error('Lỗi khi tải bài viết:', error)
+      console.error("Lỗi khi tải bài viết:", error);
     } finally {
-      setLoadingArticles(false)
+      setLoadingArticles(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadProducts(1, searchTerm)
-    loadArticles()
-  }, [])
+    loadProducts(1, searchTerm);
+    loadArticles();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentPage(1)
-    loadProducts(1, searchTerm)
-  }
+    e.preventDefault();
+    setCurrentPage(1);
+    loadProducts(1, searchTerm);
+  };
 
   const loadMore = () => {
     if (hasMore && !loading) {
-      const nextPage = currentPage + 1
-      setCurrentPage(nextPage)
-      loadProducts(nextPage, searchTerm, true)
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      loadProducts(nextPage, searchTerm, true);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-6 text-center">Trang chủ Ecommerce</h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">
+          Trang chủ Ecommerce
+        </h1>
 
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="max-w-md mx-auto mb-8">
@@ -125,7 +133,7 @@ export default function Home() {
                     Đang tải...
                   </>
                 ) : (
-                  'Xem thêm sản phẩm'
+                  "Xem thêm sản phẩm"
                 )}
               </Button>
             </div>
@@ -133,7 +141,9 @@ export default function Home() {
 
           {products.length === 0 && !loading && (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">Không tìm thấy sản phẩm nào</p>
+              <p className="text-gray-500 text-lg">
+                Không tìm thấy sản phẩm nào
+              </p>
             </div>
           )}
         </>
@@ -165,6 +175,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-
-  )
+  );
 }
