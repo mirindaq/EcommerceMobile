@@ -8,9 +8,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WishListResponse {
-    private Long productVariantId;
+    private Long id;
+    private Long productId;
     private String productName;
+    private String productSlug;
     private String productImage;
     private Double price;
-    private String sku;
 }

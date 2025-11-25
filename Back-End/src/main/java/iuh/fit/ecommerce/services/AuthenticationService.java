@@ -1,7 +1,6 @@
 package iuh.fit.ecommerce.services;
 
 import iuh.fit.ecommerce.dtos.request.authentication.LoginRequest;
-import iuh.fit.ecommerce.dtos.request.authentication.RefreshTokenRequest;
 import iuh.fit.ecommerce.dtos.request.authentication.RegisterRequest;
 import iuh.fit.ecommerce.dtos.response.authentication.LoginResponse;
 import iuh.fit.ecommerce.dtos.response.authentication.RefreshTokenResponse;
@@ -14,13 +13,13 @@ import java.io.IOException;
 public interface AuthenticationService {
     LoginResponse staffLogin(LoginRequest loginRequest);
 
-    RefreshTokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest);
+    RefreshTokenResponse refreshToken(HttpServletRequest request);
 
     void logout(HttpServletRequest request);
 
-    String generateAuthUrl(String loginType);
+    String generateAuthUrl(String loginType, String redirectUri);
 
-    LoginResponse socialLoginCallback(String loginType, String code) throws IOException;
+    LoginResponse socialLoginCallback(String loginType, String code, String redirectUri) throws IOException;
 
     LoginResponse userLogin(LoginRequest loginRequest);
 

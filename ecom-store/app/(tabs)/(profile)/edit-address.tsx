@@ -99,7 +99,7 @@ export default function EditAddressScreen() {
         }
       } catch (error) {
         Alert.alert("Lỗi", "Không tìm thấy thông tin địa chỉ.");
-        router.back();
+        router.push("/(tabs)/(profile)/my-address");
       } finally {
         setLoading(false);
       }
@@ -109,7 +109,7 @@ export default function EditAddressScreen() {
   }, [addressId]);
 
   const handleGoBack = () => {
-    router.back();
+    router.push("/(tabs)/(profile)/my-address");
   };
 
   // Mở Modal
@@ -144,7 +144,10 @@ export default function EditAddressScreen() {
 
       await addressService.updateAddress(addressId, payload);
       Alert.alert("Thành công", "Cập nhật địa chỉ thành công", [
-        { text: "OK", onPress: () => router.back() },
+        {
+          text: "OK",
+          onPress: () => router.push("/(tabs)/(profile)/my-address"),
+        },
       ]);
     } catch (error) {
       console.error(error);
@@ -166,7 +169,7 @@ export default function EditAddressScreen() {
             try {
               setSubmitting(true);
               await addressService.deleteAddress(addressId);
-              router.back();
+              router.push("/(tabs)/(profile)/my-address");
             } catch (error) {
               Alert.alert("Lỗi", "Không thể xóa địa chỉ.");
               setSubmitting(false);

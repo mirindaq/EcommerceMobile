@@ -46,9 +46,6 @@ public class Product extends BaseEntity {
     @Column
     private String spu;
 
-    @OneToMany( mappedBy = "product", fetch = FetchType.LAZY)
-    private List<Feedback> feedbacks;
-
     @ManyToOne
     @JoinColumn(name = "brand_id")
     private Brand brand;
@@ -68,4 +65,7 @@ public class Product extends BaseEntity {
 
     @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL ,orphanRemoval = true)
     private List<ProductVariant> productVariants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductFilterValue> productFilterValues = new ArrayList<>();
 }
