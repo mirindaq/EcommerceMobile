@@ -30,27 +30,7 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   async (config) => {
-    // Đảm bảo baseURL không kết thúc bằng / và url luôn bắt đầu bằng /
-    const baseURL = config.baseURL?.endsWith('/') 
-      ? config.baseURL.slice(0, -1) 
-      : config.baseURL;
-    const url = config.url?.startsWith('/') 
-      ? config.url 
-      : `/${config.url || ''}`;
-    
-    // Log full URL trước khi gửi request
-    const fullUrl = `${baseURL}${url}`;
-    console.log('📤 Request:', {
-      method: config.method?.toUpperCase(),
-      url: url,
-      baseURL: baseURL,
-      fullURL: fullUrl,
-    });
-    
-    // Cập nhật lại config với URL đã sửa
-    config.baseURL = baseURL;
-    config.url = url;
-    
+    console.log('API_BASE_URL:', API_BASE_URL);
     const token = await AuthStorageUtil.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
