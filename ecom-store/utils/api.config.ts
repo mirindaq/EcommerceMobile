@@ -60,12 +60,12 @@ const getExpoDevServerIP = (): string | null => {
 export const getBaseURL = (): string => {
   // Luôn sử dụng https://api.mirindaq-dev.shop/api/v1 cho cả dev và preview
   // Thêm /api/v1 vì các endpoint trong services không có prefix này
-  return 'https://localhost:8080/api/v1';
+  return 'https://api.mirindaq-dev.shop/api/v1';
 };
 
 export const getWebSocketURL = (): string => {
   // Luôn sử dụng https://api.mirindaq-dev.shop/ws cho cả dev và preview
-  return 'https://localhost:8080/ws';
+  return 'https://api.mirindaq-dev.shop/ws';
 };
 
 export const API_BASE_URL = getBaseURL();
