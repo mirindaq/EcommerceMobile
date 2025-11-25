@@ -9,11 +9,8 @@ import iuh.fit.ecommerce.exceptions.custom.InvalidParamException;
 import iuh.fit.ecommerce.exceptions.custom.ResourceNotFoundException;
 import iuh.fit.ecommerce.mappers.OrderMapper;
 import iuh.fit.ecommerce.repositories.*;
-import iuh.fit.ecommerce.services.OrderService;
-import iuh.fit.ecommerce.services.PaymentService;
-import iuh.fit.ecommerce.services.PromotionService;
+import iuh.fit.ecommerce.services.*;
 import iuh.fit.ecommerce.utils.DateUtils;
-import iuh.fit.ecommerce.services.RankingService;
 import iuh.fit.ecommerce.specifications.OrderSpecification;
 import iuh.fit.ecommerce.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
@@ -47,6 +44,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final PaymentService paymentService;
     private final RankingService rankingService;
+    private final PushNotificationService pushNotificationService;
 
     @Override
     @Transactional
@@ -339,6 +337,9 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(PROCESSING);
         orderRepository.save(order);
 
+        sendOrderStatusNotification(order, PROCESSING, "Đơn hàng đã được tiếp nhận",
+                String.format("Đơn hàng #%d của bạn đã được tiếp nhận và đang được xử lý.", order.getId()));
+
         return orderMapper.toResponse(order);
     }
 
@@ -360,6 +361,9 @@ public class OrderServiceImpl implements OrderService {
 
         order.setStatus(CANCELED);
         orderRepository.save(order);
+
+        sendOrderStatusNotification(order, CANCELED, "Đơn hàng đã bị hủy",
+                String.format("Đơn hàng #%d của bạn đã bị hủy.", order.getId()));
 
         return orderMapper.toResponse(order);
     }
@@ -395,6 +399,14 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(newStatus);
         orderRepository.save(order);
 
+        if (READY_FOR_PICKUP.equals(newStatus)) {
+            sendOrderStatusNotification(order, READY_FOR_PICKUP, "Đơn hàng sẵn sàng nhận",
+                    String.format("Đơn hàng #%d của bạn đã sẵn sàng để nhận. Vui lòng đến cửa hàng để nhận hàng.", order.getId()));
+        } else {
+            sendOrderStatusNotification(order, SHIPPED, "Đơn hàng đang được giao",
+                    String.format("Đơn hàng #%d của bạn đang được giao đến địa chỉ của bạn.", order.getId()));
+        }
+
         return orderMapper.toResponse(order);
     }
 
@@ -414,6 +426,9 @@ public class OrderServiceImpl implements OrderService {
 
         rankingService.updateCustomerRanking(order);
 
+        sendOrderStatusNotification(order, COMPLETED, "Đơn hàng đã được nhận",
+                String.format("Đơn hàng #%d của bạn đã được hoàn thành. Cảm ơn bạn đã mua sắm!", order.getId()));
+
         return orderMapper.toResponse(order);
     }
 
@@ -428,5 +443,27 @@ public class OrderServiceImpl implements OrderService {
         );
 
         return ResponseWithPagination.fromPage(orderPage, orderMapper::toResponse);
+    }
+
+    private void sendOrderStatusNotification(Order order, OrderStatus status, String title, String body) {
+        Customer customer = order.getCustomer();
+        if (customer == null) return;
+
+        String expoPushToken = customer.getExpoPushToken();
+        if (expoPushToken == null || expoPushToken.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("orderId", order.getId());
+        notificationData.put("type", "order_status");
+        notificationData.put("status", status.name());
+
+        pushNotificationService.sendPushNotification(
+                expoPushToken,
+                title,
+                body,
+                notificationData
+        );
     }
 }
