@@ -23,7 +23,6 @@ import {
   Package,
   Users,
   ShoppingCart,
-  BarChart3,
   Settings,
   LogOut,
   Store,
