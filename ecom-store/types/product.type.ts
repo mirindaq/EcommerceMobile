@@ -11,6 +11,7 @@ export type Product = {
   thumbnail: string;
   status: boolean;
   rating: number;
+  reviewCount: number;
   spu: string;
   brandId: number;
   categoryId: number;

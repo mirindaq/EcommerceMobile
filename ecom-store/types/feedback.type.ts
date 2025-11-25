@@ -19,3 +19,11 @@ export interface FeedbackResponse {
   imageUrls: string[];
   createdAt: string;
 }
+
+export interface RatingStatistics {
+  averageRating: number;
+  totalReviews: number;
+  ratingDistribution: {
+    [key: number]: number; // key: 1-5, value: count
+  };
+}
