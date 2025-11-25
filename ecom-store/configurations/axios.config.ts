@@ -13,6 +13,13 @@ const getTimeout = (): number => {
   return timeout ? parseInt(String(timeout), 10) : 10000;
 };
 
+// Log API_BASE_URL khi khởi tạo
+console.log('🔍 ===== AXIOS CONFIGURATION =====');
+console.log('API_BASE_URL:', API_BASE_URL);
+console.log('Timeout:', getTimeout());
+console.log('__DEV__:', __DEV__);
+console.log('===================================');
+
 const axiosClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -23,6 +30,27 @@ const axiosClient = axios.create({
 
 axiosClient.interceptors.request.use(
   async (config) => {
+    // Đảm bảo baseURL không kết thúc bằng / và url luôn bắt đầu bằng /
+    const baseURL = config.baseURL?.endsWith('/') 
+      ? config.baseURL.slice(0, -1) 
+      : config.baseURL;
+    const url = config.url?.startsWith('/') 
+      ? config.url 
+      : `/${config.url || ''}`;
+    
+    // Log full URL trước khi gửi request
+    const fullUrl = `${baseURL}${url}`;
+    console.log('📤 Request:', {
+      method: config.method?.toUpperCase(),
+      url: url,
+      baseURL: baseURL,
+      fullURL: fullUrl,
+    });
+    
+    // Cập nhật lại config với URL đã sửa
+    config.baseURL = baseURL;
+    config.url = url;
+    
     const token = await AuthStorageUtil.getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -132,11 +160,19 @@ axiosClient.interceptors.response.use(
     }
     
     if (error.request) {
-      console.error('Network Error - No response received:', {
-        url: error.config?.url,
+      const fullUrl = `${error.config?.baseURL || ''}${error.config?.url || ''}`;
+      console.error('❌ Network Error - No response received:', {
         method: error.config?.method,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: fullUrl,
         message: error.message,
+        code: error.code,
       });
+      console.error('💡 Check if:');
+      console.error('  1. Server is running at:', error.config?.baseURL);
+      console.error('  2. Network connection is available');
+      console.error('  3. CORS is configured correctly');
     } else {
       console.error('Request Error:', error.message);
     }

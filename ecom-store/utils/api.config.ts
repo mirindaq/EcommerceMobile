@@ -2,19 +2,31 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 
 // Đọc cấu hình từ environment variables (app.json extra)
+// Giá trị mặc định từ app.json
+const DEFAULT_CONFIG = {
+  localIp: '192.168.1.100',
+  port: '8080',
+  apiPrefix: '/api/v1',
+  timeout: 10000,
+  previewUrl: 'https://api.mirindaq-dev.shop/api/v1',
+  previewWsUrl: 'https://api.mirindaq-dev.shop/ws',
+  devApiUrl: 'http://192.168.1.100:8080/api/v1',
+  devWsUrl: 'http://192.168.1.100:8080/ws',
+};
+
 const getEnvConfig = () => {
   const apiConfig = Constants.expoConfig?.extra?.apiConfig || {};
   return {
-    // Preview URLs (cho preview build)
-    PREVIEW_API_URL: apiConfig.previewUrl || process.env.EXPO_PUBLIC_PREVIEW_API_BASE_URL || null,
-    PREVIEW_WS_URL: apiConfig.previewWsUrl || process.env.EXPO_PUBLIC_PREVIEW_WS_BASE_URL || null,
-    // Development URLs
-    DEV_API_URL: apiConfig.devApiUrl || process.env.EXPO_PUBLIC_DEV_API_BASE_URL || null,
-    DEV_WS_URL: apiConfig.devWsUrl || process.env.EXPO_PUBLIC_DEV_WS_BASE_URL || null,
-    // Development config (fallback)
-    LOCAL_IP: apiConfig.localIp || process.env.EXPO_PUBLIC_LOCAL_IP || '192.168.1.100',
-    PORT: apiConfig.port || process.env.EXPO_PUBLIC_PORT || '8080',
-    API_PREFIX: apiConfig.apiPrefix || process.env.EXPO_PUBLIC_API_PREFIX || '/api/v1',
+    // Preview URLs (cho preview build) - ưu tiên: app.json > env > default
+    PREVIEW_API_URL: apiConfig.previewUrl || process.env.EXPO_PUBLIC_PREVIEW_API_BASE_URL || DEFAULT_CONFIG.previewUrl,
+    PREVIEW_WS_URL: apiConfig.previewWsUrl || process.env.EXPO_PUBLIC_PREVIEW_WS_BASE_URL || DEFAULT_CONFIG.previewWsUrl,
+    // Development URLs - ưu tiên: app.json > env > default
+    DEV_API_URL: apiConfig.devApiUrl || process.env.EXPO_PUBLIC_DEV_API_BASE_URL || DEFAULT_CONFIG.devApiUrl,
+    DEV_WS_URL: apiConfig.devWsUrl || process.env.EXPO_PUBLIC_DEV_WS_BASE_URL || DEFAULT_CONFIG.devWsUrl,
+    // Development config - ưu tiên: app.json > env > default
+    LOCAL_IP: apiConfig.localIp || process.env.EXPO_PUBLIC_LOCAL_IP || DEFAULT_CONFIG.localIp,
+    PORT: apiConfig.port || process.env.EXPO_PUBLIC_PORT || DEFAULT_CONFIG.port,
+    API_PREFIX: apiConfig.apiPrefix || process.env.EXPO_PUBLIC_API_PREFIX || DEFAULT_CONFIG.apiPrefix,
   };
 };
 
@@ -46,69 +58,14 @@ const getExpoDevServerIP = (): string | null => {
 };
 
 export const getBaseURL = (): string => {
-  // Preview API URL (cho preview build)
-  if (PREVIEW_API_URL) {
-    return PREVIEW_API_URL;
-  }
-
-  // Development API URL
-  if (DEV_API_URL) {
-    return DEV_API_URL;
-  }
-
-  // Development mode (fallback)
-  if (__DEV__) {
-    if (Platform.OS === 'android') {
-      const expoIP = getExpoDevServerIP();
-      if (expoIP) {
-        return `http://${expoIP}:${PORT}${API_PREFIX}`;
-      }
-      return `http://10.0.2.2:${PORT}${API_PREFIX}`;
-    } else if (Platform.OS === 'ios') {
-      const expoIP = getExpoDevServerIP();
-      if (expoIP) {
-        return `http://${expoIP}:${PORT}${API_PREFIX}`;
-      }
-      return `http://localhost:${PORT}${API_PREFIX}`;
-    }
-  }
-
-  // Fallback
-  const expoIP = getExpoDevServerIP();
-  return `http://${expoIP || LOCAL_IP}:${PORT}${API_PREFIX}`;
+  // Luôn sử dụng https://api.mirindaq-dev.shop/api/v1 cho cả dev và preview
+  // Thêm /api/v1 vì các endpoint trong services không có prefix này
+  return 'https://api.mirindaq-dev.shop/api/v1';
 };
 
 export const getWebSocketURL = (): string => {
-  // Preview WS URL (cho preview build)
-  if (PREVIEW_WS_URL) {
-    return PREVIEW_WS_URL;
-  }
-
-  // Development WS URL
-  if (DEV_WS_URL) {
-    return DEV_WS_URL;
-  }
-
-  // Development mode (fallback)
-  if (__DEV__) {
-    if (Platform.OS === 'android') {
-      const expoIP = getExpoDevServerIP();
-      if (expoIP) {
-        return `http://${expoIP}:${PORT}/ws`;
-      }
-      return `http://10.0.2.2:${PORT}/ws`;
-    } else if (Platform.OS === 'ios') {
-      const expoIP = getExpoDevServerIP();
-      if (expoIP) {
-        return `http://${expoIP}:${PORT}/ws`;
-      }
-      return `http://localhost:${PORT}/ws`;
-    }
-  }
-
-  // Fallback
-  const expoIP = getExpoDevServerIP();
-  return `http://${expoIP || LOCAL_IP}:${PORT}/ws`;
+  // Luôn sử dụng https://api.mirindaq-dev.shop/ws cho cả dev và preview
+  return 'https://api.mirindaq-dev.shop/ws';
 };
 
 export const API_BASE_URL = getBaseURL();
