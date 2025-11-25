@@ -125,6 +125,8 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.listen-address=:7070
       - --storage.tsdb.retention.time=15d
+      - --web.enable-cors
+      - --web.external-url=https://prometheus.mirindaq-dev.shop
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -140,11 +142,13 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=adminecommerce
-      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_SERVER_ROOT_URL=https://grafana.mirindaq-dev.shop
+      - GF_SERVER_DOMAIN=grafana.mirindaq-dev.shop
       - GF_AUTH_DISABLE_LOGIN_FORM=false
       - GF_AUTH_ANONYMOUS_ENABLED=false
       - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=lax
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SECURE=true
       - GF_CORS_ENABLED=true
       - GF_CORS_ALLOW_CREDENTIALS=true
     ports:
