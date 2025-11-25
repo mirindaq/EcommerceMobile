@@ -20,4 +20,14 @@ export const customerService = {
     const response = await axiosClient.put<CustomerResponse>(`/customers/${id}`, data);
     return response.data;
   },
+
+  /**
+   * Cập nhật Expo push token cho customer
+   */
+  updatePushToken: async (expoPushToken: string) => {
+    const response = await axiosClient.put('/customers/update-push-token', {
+      expoPushToken
+    });
+    return response.data;
+  },
 };
