@@ -104,3 +104,19 @@ app:
 
 domain:
   frontend: ${DOMAIN_FRONTEND}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      base-path: ${HEALTH_CHECK_BASE_PATH:/api/v1/actuator}
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}

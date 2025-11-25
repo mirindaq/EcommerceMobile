@@ -157,11 +157,11 @@ const navigation = [
     icon: Star,
     href: "/admin/feedbacks",
   },
-  {
-    title: "Báo cáo & Thống kê",
-    icon: BarChart3,
-    href: "/admin/analytics",
-  },
+  // {
+  //   title: "Báo cáo & Thống kê",
+  //   icon: BarChart3,
+  //   href: "/admin/analytics",
+  // },
 ];
 
 export default function AdminLayout() {

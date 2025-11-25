@@ -116,6 +116,95 @@ services:
     networks:
       - ecommerce-network
 
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ecommerce-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.listen-address=:7070
+      - --storage.tsdb.retention.time=15d
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "7070:7070"
+    networks:
+      - ecommerce-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ecommerce-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=adminecommerce
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - ecommerce-network
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: ecommerce-loki
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki.yaml:/etc/loki/loki.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki.yaml
+    networks:
+      - ecommerce-network
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: ecommerce-promtail
+    restart: unless-stopped
+    volumes:
+      - /home/ubuntu/EcommerceMobile/logs:/var/log/ecommerce:ro
+      - ./promtail.yaml:/etc/promtail/promtail.yaml:ro
+    command: -config.file=/etc/promtail/promtail.yaml
+    depends_on:
+      - loki
+    networks:
+      - ecommerce-network
+
+  mysqld-exporter:
+    image: quay.io/prometheus/mysqld-exporter:latest
+    container_name: ecommerce-mysqld-exporter
+    restart: unless-stopped
+    environment:
+      - DATA_SOURCE_NAME=root:springstudent@(mysql:3306)/
+    ports:
+      - "9104:9104"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+
+  elasticsearch-exporter:
+    image: quay.io/prometheuscommunity/elasticsearch-exporter:latest
+    container_name: ecommerce-elasticsearch-exporter
+    restart: unless-stopped
+    command:
+      - "--es.uri=http://elasticsearch:9200"
+    ports:
+      - "9114:9114"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+
 networks:
   ecommerce-network:
     driver: bridge
@@ -128,3 +217,9 @@ volumes:
     name: ecommerce-elasticsearch-data
   qdrant_data:
     name: ecommerce-qdrant-data
+  prometheus_data:
+    name: ecommerce-prometheus-data
+  grafana_data:
+    name: ecommerce-grafana-data
+  loki_data:
+    name: ecommerce-loki-data
