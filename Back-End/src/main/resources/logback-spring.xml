@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <!-- Appender ghi log ra file và quay vòng theo ngày -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOGS_PATH}/app.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Tạo file mới mỗi ngày -->
+            <fileNamePattern>${LOGS_PATH}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Giữ tối đa 7 ngày log -->
+            <maxHistory>7</maxHistory>
+            <!-- Tổng dung lượng tối đa của tất cả log giữ lại -->
+            <totalSizeCap>100MB</totalSizeCap>
+            <!-- Xóa log cũ khi app khởi động lại -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Chỉ log tầng service -->
+    <logger name="iuh.fit.ecommerce.services" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <!-- Tắt log Prometheus khi scrape -->
+    <logger name="io.micrometer.prometheus" level="OFF"/>
+    <logger name="org.springframework.boot.actuate.endpoint.web.servlet" level="OFF"/>
+
+    <!-- Root: chỉ log INFO trở lên -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

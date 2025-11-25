@@ -1,0 +1,37 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["prometheus:7070"]
+        labels:
+          application: "Prometheus"
+
+  - job_name: "ecommerce-backend"
+    metrics_path: "/api/v1/actuator/prometheus"
+    static_configs:
+      - targets: ["backend:8080"]
+        labels:
+          application: "ECommerce Backend"
+
+  - job_name: "mysql"
+    static_configs:
+      - targets: ["mysqld-exporter:9104"]
+        labels:
+          application: "MySQL Database"
+
+  - job_name: "elasticsearch"
+    static_configs:
+      - targets: ["elasticsearch-exporter:9114"]
+        labels:
+          application: "Elasticsearch"
+
+  - job_name: "jenkins"
+    metrics_path: "/prometheus"
+    scheme: https
+    static_configs:
+      - targets: ["jenkins.mirindaq-dev.shop"]
+        labels:
+          application: "Jenkins"
