@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,8 +50,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
     ) {
         try {
             page = Math.max(page - 1, 0);
-            
-            // Xử lý sort
+
             Sort sort;
             if (sortBy != null && !sortBy.trim().isEmpty()) {
                 switch (sortBy.toLowerCase()) {
@@ -67,40 +67,38 @@ public class ProductSearchServiceImpl implements ProductSearchService {
                         sort = Sort.by("rating").descending().and(Sort.by("productId").descending());
                         break;
                     default:
-                        // Mặc định: rating desc, productId desc
                         sort = Sort.by("rating").descending().and(Sort.by("productId").descending());
                         break;
                 }
             } else {
-                // Mặc định: rating desc, productId desc
                 sort = Sort.by("rating").descending().and(Sort.by("productId").descending());
             }
-            
+
             Pageable pageable = PageRequest.of(page, size, sort);
 
             Criteria criteria = new Criteria("status").is(true);
 
             if (query != null && !query.trim().isEmpty()) {
-                String searchText = query.trim().replace("\"", "");
+                String[] keywords = query.trim().split("\\s+");
 
-                Criteria searchCriteria = new Criteria("name").matches(searchText)
-                        .or("variantValues").matches(searchText)
-                        .or("filterValues").matches(searchText);
+                for (String keyword : keywords) {
+                    Criteria keywordCriteria = new Criteria("name").contains(keyword)
+                            .or("variantValues").contains(keyword)
+                            .or("filterValues").contains(keyword);
 
-                criteria = criteria.subCriteria(searchCriteria);
+                    criteria = criteria.subCriteria(keywordCriteria);
+                }
             }
-
 
             Query searchQuery = new CriteriaQuery(criteria).setPageable(pageable);
 
             logger.debug("Executing Elasticsearch query: {}", criteria.toString());
             SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(searchQuery, ProductDocument.class);
 
-            // Copy lại phần return cũ:
             List<Long> productIds = searchHits.getSearchHits().stream()
                     .map(SearchHit::getContent)
                     .map(ProductDocument::getProductId)
-                    .filter(id -> id != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             if (productIds.isEmpty()) {
@@ -114,6 +112,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
             }
 
             List<Product> products = productRepository.findAllById(productIds);
+
             List<Product> orderedProducts = new ArrayList<>();
             for (Long id : productIds) {
                 products.stream()
