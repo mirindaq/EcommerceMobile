@@ -62,13 +62,13 @@ export default function ProductBox({
 
   const discountPercent =
     firstVariant &&
-    firstVariant.oldPrice > 0 &&
-    firstVariant.price < firstVariant.oldPrice
+      firstVariant.oldPrice > 0 &&
+      firstVariant.price < firstVariant.oldPrice
       ? Math.round(
-          ((firstVariant.oldPrice - firstVariant.price) /
-            firstVariant.oldPrice) *
-            100
-        )
+        ((firstVariant.oldPrice - firstVariant.price) /
+          firstVariant.oldPrice) *
+        100
+      )
       : firstVariant?.discount || 0;
 
   const displayRating =
@@ -194,9 +194,8 @@ export default function ProductBox({
           }}
         >
           <Pressable
-            className={`rounded-full p-2 shadow-lg ${
-              isFavorite ? "bg-red-50" : "bg-white"
-            }`}
+            className={`rounded-full p-2 shadow-lg ${isFavorite ? "bg-red-50" : "bg-white"
+              }`}
             onPress={handleToggleWishlist}
             style={{
               borderWidth: 1,
@@ -251,8 +250,8 @@ export default function ProductBox({
               {isWishlistScreen && wishItem?.price
                 ? formatPrice(wishItem.price)
                 : firstVariant
-                ? formatPrice(firstVariant.price)
-                : "Liên hệ"}
+                  ? formatPrice(firstVariant.price)
+                  : "Liên hệ"}
             </Text>
           </HStack>
 

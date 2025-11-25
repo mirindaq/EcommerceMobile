@@ -234,16 +234,17 @@ export default function ProductDetailScreen() {
         10
       );
 
-      const newReviews = Array.isArray(response.data.data)
-        ? response.data.data
+      const newReviews = Array.isArray(response.data.content)
+        ? response.data.content
         : [];
+
       if (page === 1) {
         setReviews(newReviews);
       } else {
         setReviews((prev) => [...prev, ...newReviews]);
       }
 
-      setHasMoreReviews(page < response.data.totalPage);
+      setHasMoreReviews(page < response.data.totalPages);
       setReviewsPage(page);
     } catch (error) {
       console.error("Error loading reviews:", error);
