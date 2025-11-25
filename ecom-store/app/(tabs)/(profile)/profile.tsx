@@ -16,9 +16,7 @@ import { CustomerSummary } from "@/types/customer.type";
 import AuthStorageUtil from "@/utils/authStorage.util";
 import { useFocusEffect, useRouter } from "expo-router";
 import {
-  CheckCircleIcon,
   ChevronRightIcon,
-  GiftIcon,
   HeartIcon,
   LogOut,
   MapPinIcon,
@@ -28,7 +26,6 @@ import {
   ShieldCheckIcon,
   ShoppingCartIcon,
   TicketIcon,
-  TruckIcon,
   WalletIcon,
   WrenchIcon,
 } from "lucide-react-native";
@@ -41,40 +38,27 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true);
   const [showChatModal, setShowChatModal] = useState(false);
 
-  // ProfileScreen.tsx - Cập nhật hàm fetchProfile
-
   const fetchProfile = async () => {
     try {
       setLoading(true);
-
-      // 1. Chỉ cần check Auth (có token chưa)
       const isAuthenticated = await AuthStorageUtil.isAuthenticated();
       if (!isAuthenticated) {
         router.replace("/login");
         return;
       }
-
-      // 2. Gọi API getProfile bằng Token (không cần truyền ID)
-      // API này backend sẽ tự biết ai đang gọi dựa vào Token
       const res = await authService.getProfile();
-
-      // Lưu ý: Kiểm tra cấu trúc response của authService.getProfile
-      // Thường là res.data.data hoặc res.data tùy backend của bạn
       if (res.data && res.data.data) {
         setCustomer(res.data.data as unknown as CustomerSummary);
       } else if (res.data) {
-        // Fallback nếu cấu trúc khác
         setCustomer(res.data as unknown as CustomerSummary);
       }
     } catch (error) {
       console.error("Lỗi lấy profile:", error);
-      // Nếu token hết hạn (lỗi 401), authService thường có interceptor xử lý hoặc ta tự logout
     } finally {
       setLoading(false);
     }
   };
 
-  // Gọi mỗi khi màn hình được focus
   useFocusEffect(
     useCallback(() => {
       fetchProfile();
@@ -87,7 +71,7 @@ export default function ProfileScreen() {
       {
         text: "Đồng ý",
         onPress: async () => {
-          await AuthStorageUtil.clearAll(); // Dùng hàm clearAll như trong file util
+          await AuthStorageUtil.clearAll();
           router.replace("/login");
         },
       },
@@ -112,7 +96,6 @@ export default function ProfileScreen() {
               <Avatar size="lg" className="border-2 mr-3 border-white">
                 <AvatarImage
                   source={{
-                    // Ưu tiên avatar từ API, nếu không có thì dùng ảnh mặc định
                     uri:
                       customer?.avatar ||
                       "https://aic.com.vn/wp-content/uploads/2024/10/avatar-fb-mac-dinh-1.jpg",
@@ -143,42 +126,21 @@ export default function ProfileScreen() {
           </Text>
         </Box>
 
+        {/* Đơn mua */}
         <Box className="bg-white mt-3 px-4 py-3">
-          <HStack className="items-center justify-between mb-3">
-            <Text className="font-semibold text-gray-900">Đơn mua</Text>
-            <Pressable
-              className="flex-row items-center"
-              onPress={() => router.push("/order-history")}
-            >
-              <Text className="text-red-500 text-sm">Xem lịch sử mua hàng</Text>
-              <ChevronRightIcon size={16} color="#EF4444" />
-            </Pressable>
-          </HStack>
-          <HStack className="justify-between">
-            {[
-              { label: "Chờ xác nhận", icon: CheckCircleIcon },
-              { label: "Chờ lấy hàng", icon: PackageIcon },
-              { label: "Chờ giao hàng", icon: TruckIcon },
-            ].map((item, i) => (
-              <Pressable
-                key={i}
-                onPress={() => {
-                  if (item.label === "Chờ xác nhận")
-                    router.push("/pending-confirm");
-                  if (item.label === "Chờ lấy hàng")
-                    router.push("/pending-pickup");
-                  if (item.label === "Chờ giao hàng")
-                    router.push("/pending-delivery");
-                }}
-                className="items-center flex-1"
-              >
-                <Icon as={item.icon} size="lg" className="text-gray-700 mb-1" />
-                <Text className="text-xs text-gray-700 text-center">
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
-          </HStack>
+          <Text className="font-semibold text-gray-900 mb-3">Đơn mua</Text>
+          <Pressable
+            onPress={() => router.push("/order-history")}
+            className="flex-row items-center justify-between py-2"
+          >
+            <HStack className="items-center space-x-3">
+              <Icon as={PackageIcon} size="lg" className="text-red-500" />
+              <Text className="text-gray-800 ml-3 text-base">
+                Lịch sử mua hàng
+              </Text>
+            </HStack>
+            <ChevronRightIcon size={20} color="#9CA3AF" />
+          </Pressable>
         </Box>
 
         {/* Tiện ích của tôi */}
@@ -206,6 +168,7 @@ export default function ProfileScreen() {
           </HStack>
         </Box>
 
+        {/* --- TIỆN ÍCH KHÁC (ĐÃ SỬA: Bento Grid) --- */}
         <Box className="bg-white mt-3 px-4 py-3 rounded-xl">
           <Text className="font-semibold text-gray-900 mb-3">
             Tiện ích khác
@@ -227,26 +190,35 @@ export default function ProfileScreen() {
                 icon: WrenchIcon,
                 onPress: () => router.push("/guarantee-policy"),
               },
-              {
-                label: "Ưu đãi giảm giá",
-                icon: GiftIcon,
-                onPress: () => router.push("/view-promotion"),
-              },
-            ].map((item, i) => (
-              <Pressable
-                key={i}
-                onPress={item.onPress}
-                className="items-center justify-center w-[48%] bg-gray-50 rounded-xl py-3 mb-2"
-              >
-                <Icon as={item.icon} size="lg" className="text-red-500 mb-1" />
-                <Text className="text-sm text-gray-700 text-center">
-                  {item.label}
-                </Text>
-              </Pressable>
-            ))}
+            ].map((item, i) => {
+              // Kiểm tra xem có phải item cuối cùng (Bảo hành) không
+              const isLastItem = i === 2;
+
+              return (
+                <Pressable
+                  key={i}
+                  onPress={item.onPress}
+                  // Logic: Nếu là cuối cùng thì w-full và flex-row (ngang), còn lại w-[48%] và dọc
+                  className={`items-center justify-center bg-gray-50 rounded-xl py-3 mb-2 ${
+                    isLastItem ? "w-full flex-row space-x-2 py-6" : "w-[48%]"
+                  }`}
+                >
+                  <Icon
+                    as={item.icon}
+                    size="lg"
+                    // Nếu nằm ngang thì bỏ margin bottom (mb-0), thêm margin right (đã có space-x-2 lo)
+                    className={`text-red-500 ${isLastItem ? "mr-2" : "mb-1"}`}
+                  />
+                  <Text className="text-sm text-gray-700 text-center">
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </HStack>
         </Box>
 
+        {/* Hỗ trợ */}
         <Box className="bg-white mt-3 px-4 py-3">
           <Text className="font-semibold text-gray-900 mb-3">Hỗ trợ</Text>
           {[
@@ -255,17 +227,14 @@ export default function ProfileScreen() {
               icon: ShieldCheckIcon,
               onPress: () => router.push("/term-of-use"),
             },
-            {
-              label: "Trò chuyện tư vấn",
-              icon: MessageCircleIcon,
-              onPress: () => setShowChatModal(true),
-            },
             { label: "Đăng xuất", icon: LogOut, onPress: handleLogout },
           ].map((item, i) => (
             <Pressable
               key={i}
               onPress={item.onPress}
-              className="flex-row items-center justify-between py-3 border-b border-gray-100"
+              className={`flex-row items-center justify-between py-3 ${
+                i < 2 ? "border-b border-gray-100" : ""
+              }`}
             >
               <HStack className="items-center space-x-3">
                 <Icon as={item.icon} size="lg" className="text-gray-700" />
