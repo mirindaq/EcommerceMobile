@@ -81,74 +81,40 @@ services:
       retries: 3
       start_period: 10s
 
-  # Optional: Elasticsearch cho tìm kiếm nâng cao
-  # elasticsearch:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-  #   container_name: ecommerce-elasticsearch
-  #   restart: always
-  #   environment:
-  #     - discovery.type=single-node
-  #     - xpack.security.enabled=false
-  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   volumes:
-  #     - elasticsearch_data:/usr/share/elasticsearch/data
-  #   networks:
-  #     - ecommerce-network
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 60s
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: ecommerce-elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test:
+        ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
-  # Optional: Qdrant cho vector search (AI)
-  # qdrant:
-  #   image: qdrant/qdrant:latest
-  #   container_name: ecommerce-qdrant
-  #   restart: always
-  #   ports:
-  #     - "6333:6333"
-  #     - "6334:6334"
-  #   volumes:
-  #     - qdrant_data:/qdrant/storage
-  #   networks:
-  #     - ecommerce-network
-
-  # Optional: Monitoring với Prometheus
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   container_name: ecommerce-prometheus
-  #   restart: unless-stopped
-  #   command:
-  #     - --config.file=/etc/prometheus/prometheus.yml
-  #     - --web.listen-address=:9090
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus_data:/prometheus
-  #   ports:
-  #     - "9090:9090"
-  #   networks:
-  #     - ecommerce-network
-
-  # Optional: Monitoring với Grafana
-  # grafana:
-  #   image: grafana/grafana:latest
-  #   container_name: ecommerce-grafana
-  #   restart: unless-stopped
-  #   environment:
-  #     - GF_SECURITY_ADMIN_USER=admin
-  #     - GF_SECURITY_ADMIN_PASSWORD=ecommerce123
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
-  #   networks:
-  #     - ecommerce-network
-  #   depends_on:
-  #     - prometheus
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ecommerce-qdrant
+    restart: always
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - ecommerce-network
 
 networks:
   ecommerce-network:
@@ -158,11 +124,7 @@ networks:
 volumes:
   mysql_data:
     name: ecommerce-mysql-data
-  # elasticsearch_data:
-  #   name: ecommerce-elasticsearch-data
-  # qdrant_data:
-  #   name: ecommerce-qdrant-data
-  # prometheus_data:
-  #   name: ecommerce-prometheus-data
-  # grafana_data:
-  #   name: ecommerce-grafana-data
+  elasticsearch_data:
+    name: ecommerce-elasticsearch-data
+  qdrant_data:
+    name: ecommerce-qdrant-data
