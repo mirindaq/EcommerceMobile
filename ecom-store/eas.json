@@ -11,16 +11,11 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "apk"
+      },
+      "ios": {
+        "buildConfiguration": "Release"
       }
     }
-  },
-  "submit": {
-    "production": {}
   }
 }
 

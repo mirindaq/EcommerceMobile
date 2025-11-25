@@ -13,7 +13,8 @@ import AuthStorageUtil from "@/utils/authStorage.util";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Bot, Sparkles } from "lucide-react-native";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ChatInput from "./ChatInput";
 
 interface AIMessage {
@@ -25,6 +26,7 @@ interface AIMessage {
 
 export default function AIChatScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [userName, setUserName] = useState("");
@@ -143,23 +145,23 @@ export default function AIChatScreen() {
         </Box>
 
         {/* 3. KeyboardAvoidingView bao bọc phần nội dung và input */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : undefined}
-          className="flex-1"
-          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-        >
-          <Box className="flex-1 bg-gray-50">
-            <ScrollView
-              ref={scrollRef}
-              className="flex-1 px-4 py-4"
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
-              showsVerticalScrollIndicator={false}
-              onContentSizeChange={() => {
-                scrollRef.current?.scrollToEnd({ animated: true });
-              }}
-              // Quan trọng: giúp chạm vào list để ẩn bàn phím nếu cần (hoặc dùng 'handled')
-              keyboardShouldPersistTaps="handled"
-            >
+        {Platform.OS === "ios" ? (
+          <KeyboardAvoidingView
+            behavior="padding"
+            className="flex-1"
+            keyboardVerticalOffset={0}
+          >
+            <Box className="flex-1 bg-gray-50">
+              <ScrollView
+                ref={scrollRef}
+                className="flex-1 px-4 py-4"
+                contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+                showsVerticalScrollIndicator={false}
+                onContentSizeChange={() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }}
+                keyboardShouldPersistTaps="handled"
+              >
               {messages.length === 0 ? (
                 <Box className="items-center py-8">
                   <Box className="bg-purple-100 w-16 h-16 rounded-full items-center justify-center mb-4">
@@ -270,6 +272,127 @@ export default function AIChatScreen() {
             />
           </Box>
         </KeyboardAvoidingView>
+        ) : (
+          <Box className="flex-1 bg-gray-50">
+            <ScrollView
+              ref={scrollRef}
+              className="flex-1 px-4 py-4"
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
+              showsVerticalScrollIndicator={false}
+              onContentSizeChange={() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+              }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {messages.length === 0 ? (
+                <Box className="items-center py-8">
+                  <Box className="bg-purple-100 w-16 h-16 rounded-full items-center justify-center mb-4">
+                    <Bot size={32} color="#9333EA" />
+                  </Box>
+                  <Text className="font-medium text-gray-700 text-base mb-2">
+                    Xin chào! Tôi là trợ lý AI
+                  </Text>
+                  <Text className="text-sm text-gray-600 mb-2">
+                    Hãy đặt câu hỏi về:
+                  </Text>
+                  <VStack className="items-start gap-1 mt-2">
+                    <Text className="text-sm text-gray-600">
+                      • Tư vấn sản phẩm phù hợp
+                    </Text>
+                    <Text className="text-sm text-gray-600">
+                      • Trạng thái đơn hàng
+                    </Text>
+                    <Text className="text-sm text-gray-600">
+                      • Hướng dẫn sử dụng, bảo hành
+                    </Text>
+                  </VStack>
+                </Box>
+              ) : (
+                <VStack space="md" className="pb-4">
+                  {messages.map((msg) => (
+                    <HStack
+                      key={msg.id}
+                      className={msg.isAI ? "justify-start" : "justify-end"}
+                    >
+                      {msg.isAI && (
+                        <Box className="h-8 w-8 mr-2 border-2 border-purple-200 bg-purple-600 rounded-full items-center justify-center">
+                          <Bot size={16} color="white" />
+                        </Box>
+                      )}
+
+                      <VStack className="max-w-[75%]" space="xs">
+                        <Box
+                          className={`rounded-2xl px-4 py-2.5 ${
+                            msg.isAI
+                              ? "bg-gray-100 border border-gray-200"
+                              : "bg-purple-600"
+                          }`}
+                        >
+                          {msg.isAI && (
+                            <HStack className="items-center gap-1 mb-1">
+                              <Sparkles size={12} color="#9333EA" />
+                              <Text className="text-xs font-medium text-purple-600">
+                                Trợ lý AI
+                                {msg.id === "thinking" && (
+                                  <Text className="text-purple-500 ml-1">
+                                    {" "}
+                                    đang suy nghĩ...
+                                  </Text>
+                                )}
+                              </Text>
+                            </HStack>
+                          )}
+                          {msg.id === "thinking" ? (
+                            <HStack className="items-center gap-1">
+                              <Box className="w-2 h-2 bg-purple-400 rounded-full" />
+                              <Box className="w-2 h-2 bg-purple-400 rounded-full" />
+                              <Box className="w-2 h-2 bg-purple-400 rounded-full" />
+                            </HStack>
+                          ) : (
+                            <Text
+                              className={`text-sm ${
+                                msg.isAI ? "text-gray-800" : "text-white"
+                              }`}
+                            >
+                              {msg.content}
+                            </Text>
+                          )}
+                        </Box>
+                        {msg.id !== "thinking" && (
+                          <Text className="text-xs text-gray-500 px-2">
+                            {new Date(msg.createdAt).toLocaleTimeString(
+                              "vi-VN",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </Text>
+                        )}
+                      </VStack>
+
+                      {!msg.isAI && (
+                        <Avatar className="h-8 w-8 ml-2 border-2 border-purple-200 bg-purple-600">
+                          <AvatarFallbackText className="text-white text-xs font-semibold">
+                            {userName ? userName.charAt(0).toUpperCase() : "K"}
+                          </AvatarFallbackText>
+                        </Avatar>
+                      )}
+                    </HStack>
+                  ))}
+                </VStack>
+              )}
+            </ScrollView>
+
+            <ChatInput
+              onSendMessage={handleSendMessage}
+              isConnected={true}
+              isSending={sending}
+              allowImage={false}
+              buttonColor="bg-purple-600"
+            />
+          </Box>
+        )}
       </SafeAreaView>
     </Box>
   );
