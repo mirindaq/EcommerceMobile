@@ -90,6 +90,7 @@ public class ProductSearchServiceImpl implements ProductSearchService {
                 }
             }
 
+
             Query searchQuery = new CriteriaQuery(criteria).setPageable(pageable);
 
             logger.debug("Executing Elasticsearch query: {}", criteria.toString());

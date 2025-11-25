@@ -42,7 +42,13 @@ export const feedbackService = {
    * Lấy danh sách đánh giá của sản phẩm (cho product detail page)
    */
   getFeedbacksByProduct: async (productId: number, page = 1, size = 10) => {
-    const response = await axiosClient.get<ResponseApiWithPagination<FeedbackResponse>>(
+    const response = await axiosClient.get<ResponseApi<{
+      content: FeedbackResponse[];
+      totalPages: number;
+      totalElements: number;
+      number: number;
+      size: number;
+    }>>(
       `/feedbacks/product/${productId}?page=${page}&size=${size}`
     );
     return response.data;
