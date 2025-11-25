@@ -246,17 +246,19 @@ export default function RankingScreen() {
 
           {/* Các chỉ số thống kê */}
           <HStack className="justify-between mb-8">
+            {/* Cột bên trái: Thay bằng % Giảm giá của hạng */}
             <VStack className="items-center flex-1 border-r border-gray-100">
               <Image
                 source={{
-                  uri: "https://rtkvn.vn/wp-content/uploads/2022/08/icon-voucher.png",
+                  uri: "https://cdn-icons-png.flaticon.com/512/726/726476.png", // Icon % giảm giá
                 }}
                 style={{ width: 40, height: 40, marginBottom: 8 }}
                 resizeMode="contain"
               />
-              <Text className="text-gray-500 text-xs">Đơn hàng thành công</Text>
+              <Text className="text-gray-500 text-xs">Quyền lợi giảm giá</Text>
               <Text className="font-bold text-gray-900 text-lg">
-                {customer?.totalOrders || 0}
+                {/* Lấy % giảm giá từ Rank, nếu chưa có thì hiện 0% */}
+                {customer?.rank?.discountRate || 0}%
               </Text>
             </VStack>
 

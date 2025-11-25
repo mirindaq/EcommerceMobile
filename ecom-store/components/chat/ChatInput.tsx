@@ -1,12 +1,25 @@
-import { Box, Button, HStack, Pressable, Text, Textarea, TextareaInput, Image } from "@/components/ui";
-import { Send, Loader2, Image as ImageIcon } from "lucide-react-native";
-import React, { useState, useRef } from "react";
-import { Keyboard, Alert } from "react-native";
-import * as ImagePicker from "expo-image-picker";
+import {
+  Box,
+  Button,
+  HStack,
+  Image,
+  Pressable,
+  Text,
+  Textarea,
+  TextareaInput,
+} from "@/components/ui";
 import { uploadService } from "@/services/upload.service";
+import * as ImagePicker from "expo-image-picker";
+import { Image as ImageIcon, Loader2, Send } from "lucide-react-native";
+import React, { useRef, useState } from "react";
+import { Alert, Keyboard } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface ChatInputProps {
-  onSendMessage: (message: string, messageType?: "TEXT" | "IMAGE") => Promise<boolean>;
+  onSendMessage: (
+    message: string,
+    messageType?: "TEXT" | "IMAGE"
+  ) => Promise<boolean>;
   isConnected: boolean;
   isSending: boolean;
   showStaffWarning?: boolean;
@@ -25,9 +38,12 @@ export default function ChatInput({
   buttonColor = "bg-red-500",
 }: ChatInputProps) {
   const [input, setInput] = useState("");
-  const [selectedImage, setSelectedImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [selectedImage, setSelectedImage] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [uploading, setUploading] = useState(false);
   const textareaRef = useRef<any>(null);
+
+  const insets = useSafeAreaInsets();
 
   const handleSend = async () => {
     if (isSending || uploading || !isConnected) return;
@@ -39,7 +55,7 @@ export default function ChatInput({
         const response = await uploadService.uploadImage({
           uri: selectedImage.uri,
           fileName: selectedImage.fileName || `image_${Date.now()}.jpg`,
-          mimeType: selectedImage.mimeType || 'image/jpeg',
+          mimeType: selectedImage.mimeType || "image/jpeg",
         });
 
         if (response.data && response.data.length > 0) {
@@ -72,7 +88,8 @@ export default function ChatInput({
     if (!allowImage || uploading) return;
 
     try {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert(
           "Quyền truy cập",
@@ -98,7 +115,13 @@ export default function ChatInput({
   };
 
   return (
-    <Box className="px-3 py-2 border-t border-gray-200 bg-white">
+    <Box
+      className="px-3 py-2 border-t border-gray-200 bg-white"
+      style={{
+        paddingBottom: Math.max(insets.bottom, 12), // Tối thiểu 12px, nếu có tai thỏ thì dùng insets
+        paddingTop: 8,
+      }}
+    >
       {showStaffWarning && !hasChat && (
         <Box className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-2">
           <Text className="text-xs text-yellow-800 text-center">
@@ -145,21 +168,29 @@ export default function ChatInput({
           >
             <ImageIcon
               size={18}
-              color={isSending || uploading || !isConnected || !!selectedImage ? "#9CA3AF" : "#6B7280"}
+              color={
+                isSending || uploading || !isConnected || !!selectedImage
+                  ? "#9CA3AF"
+                  : "#6B7280"
+              }
             />
           </Pressable>
         )}
         <Box className="flex-1">
           <Textarea
-            className="min-h-[36px] max-h-[80px]"
+            className="min-h-[36px] max-h-[36px]"
             size="sm"
-            isDisabled={isSending || uploading || !isConnected || !!selectedImage}
+            isDisabled={
+              isSending || uploading || !isConnected || !!selectedImage
+            }
           >
             <TextareaInput
               ref={textareaRef}
               value={input}
               onChangeText={setInput}
-              placeholder={selectedImage ? "Nhấn gửi để upload ảnh..." : "Nhập tin nhắn..."}
+              placeholder={
+                selectedImage ? "Nhấn gửi để upload ảnh..." : "Nhập tin nhắn..."
+              }
               multiline
               className="text-sm py-2"
               onSubmitEditing={handleSend}
@@ -169,7 +200,12 @@ export default function ChatInput({
         </Box>
         <Button
           onPress={handleSend}
-          isDisabled={(selectedImage ? false : !input.trim()) || isSending || uploading || !isConnected}
+          isDisabled={
+            (selectedImage ? false : !input.trim()) ||
+            isSending ||
+            uploading ||
+            !isConnected
+          }
           className={`${buttonColor} h-[36px] px-3`}
         >
           {isSending || uploading ? (
