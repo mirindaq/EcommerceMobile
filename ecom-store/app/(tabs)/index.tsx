@@ -45,14 +45,14 @@ const banners = [
     title: "Siêu Sale 10.10",
     subtitle: "Giảm đến 50% toàn sàn!",
     image:
-      "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&h=200&fit=crop",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:1036:450/q:90/plain/https://dashboard.cellphones.com.vn/storage/home_Nubia_Neo-3-Series-1125.jpg",
   },
   {
     id: 2,
     title: "Flash Sale 12h mỗi ngày",
     subtitle: "Nhanh tay kẻo hết!",
     image:
-      "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop",
+      "https://cdn2.cellphones.com.vn/insecure/rs:fill:1036:450/q:90/plain/https://dashboard.cellphones.com.vn/storage/coros-pace4_home.png",
   },
 ];
 
@@ -167,9 +167,7 @@ export default function HomeScreen() {
               pointerEvents="none"
             >
               <InputSlot className="pl-4">
-                <InputIcon>
-                  <SearchIcon size={16} color="#6B7280" />
-                </InputIcon>
+                <InputIcon as={SearchIcon} size="sm" className="text-gray-500" />
               </InputSlot>
               <InputField
                 placeholder="Áo Khoác Nam"
@@ -179,9 +177,7 @@ export default function HomeScreen() {
                 editable={false}
               />
               <InputSlot className="pr-4">
-                <InputIcon>
-                  <CameraIcon size={16} color="#6B7280" />
-                </InputIcon>
+                <InputIcon as={CameraIcon} size="sm" className="text-gray-500" />
               </InputSlot>
             </Input>
           </Pressable>
