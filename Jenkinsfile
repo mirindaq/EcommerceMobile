@@ -11,6 +11,7 @@ pipeline {
     stage("Checkout from SCM") {
       steps {
         git branch: 'main', url: 'https://github.com/mirindaq/EcommerceMobile'
+        echo "✅ Checked out code successfully123"
         echo "✅ Checked out code successfully 123123123123123"
       }
     }
