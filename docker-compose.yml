@@ -125,6 +125,8 @@ services:
       - --config.file=/etc/prometheus/prometheus.yml
       - --web.listen-address=:7070
       - --storage.tsdb.retention.time=15d
+      - --web.enable-cors
+      - --web.external-url=https://prometheus.mirindaq-dev.shop
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
