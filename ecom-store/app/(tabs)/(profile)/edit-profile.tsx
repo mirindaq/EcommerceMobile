@@ -154,7 +154,7 @@ export default function EditProfileScreen() {
 
       await customerService.updateCustomer(userId, payload);
       Alert.alert("Thành công", "Cập nhật thông tin thành công", [
-        { text: "OK", onPress: () => router.back() },
+        { text: "OK", onPress: () => router.push("/(tabs)/(profile)/profile") },
       ]);
     } catch (error: any) {
       console.error(error);
@@ -179,7 +179,7 @@ export default function EditProfileScreen() {
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* Header */}
       <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.push("/(tabs)/(profile)/profile")}>
           <ArrowLeftIcon size={24} color="#000" />
         </Pressable>
         <Text className="text-lg font-semibold">Thông tin cá nhân</Text>
@@ -264,11 +264,11 @@ export default function EditProfileScreen() {
           />
           <Divider />
 
-          <ProfileInput
+          {/* <ProfileInput
             label="Tài khoản liên kết"
             value="Google"
             editable={false}
-          />
+          /> */}
         </Box>
       </ScrollView>
     </SafeAreaView>
