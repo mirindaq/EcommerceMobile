@@ -16,12 +16,16 @@ import {
 import { cartService } from '@/services/cart.service';
 import { productService } from '@/services/product.service';
 import { productQuestionService } from '@/services/productQuestion.service';
+import { wishListService } from '@/services/wishList.service';
 import type { Product, ProductVariantResponse } from '@/types/product.type';
 import type { ProductQuestion } from '@/types/productQuestion.type';
+import { WishListResponse } from '@/types/wishList.type';
+import AuthStorageUtil from '@/utils/authStorage.util';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   ArrowLeftIcon,
   CameraIcon,
+  HeartIcon,
   MessageCircleIcon,
   SearchIcon,
 } from 'lucide-react-native';
@@ -53,6 +57,10 @@ export default function ProductDetailScreen() {
   const [totalItems, setTotalItems] = useState(0);
   const [isSubmittingQuestion, setIsSubmittingQuestion] = useState(false);
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+  
+  // Wishlist states
+  const [wishListItems, setWishListItems] = useState<WishListResponse[]>([]);
+  const [isWishlistLoading, setIsWishlistLoading] = useState(false);
 
   const pageSize = 5;
 
@@ -85,6 +93,9 @@ export default function ProductDetailScreen() {
         if (productData.slug) {
           loadQuestions(productData.slug, 1);
         }
+        
+        // Load wishlist
+        await loadWishlist();
       } catch (error: any) {
         console.error('Error loading product:', error);
         Alert.alert('Lỗi', error?.response?.data?.message || 'Không thể tải sản phẩm');
@@ -96,6 +107,75 @@ export default function ProductDetailScreen() {
 
     loadProduct();
   }, [params.id, params.slug]);
+  
+  // Load wishlist
+  const loadWishlist = async () => {
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (!isAuthenticated) {
+      setWishListItems([]);
+      return;
+    }
+    
+    try {
+      const wishListRes = await wishListService.getMyWishList();
+      setWishListItems(Array.isArray(wishListRes) ? wishListRes : []);
+    } catch (error) {
+      console.error('Error loading wishlist:', error);
+      setWishListItems([]);
+    }
+  };
+  
+  // Check if product is in wishlist (backend uses productId, not variantId)
+  const isInWishlist = (): boolean => {
+    if (!product?.id || !Array.isArray(wishListItems) || wishListItems.length === 0) {
+      return false;
+    }
+    const productId = product.id;
+    // Backend stores by Product, so we check by productId
+    // Response has id field which is the wishlist entry id, and productId field
+    return wishListItems.some(item => {
+      // Check if item has productId field matching our product.id
+      return (item as any).productId === productId;
+    });
+  };
+  
+  // Toggle wishlist
+  const handleToggleWishlist = async () => {
+    if (!product?.id) {
+      Alert.alert('Thông báo', 'Không tìm thấy thông tin sản phẩm');
+      return;
+    }
+    
+    const isAuthenticated = await AuthStorageUtil.isAuthenticated();
+    if (!isAuthenticated) {
+      Alert.alert('Thông báo', 'Vui lòng đăng nhập để thêm vào danh sách yêu thích');
+      router.push('/login');
+      return;
+    }
+    
+    try {
+      setIsWishlistLoading(true);
+      const productId = product.id;
+      
+      // Check if product is already in wishlist
+      const inWishlist = isInWishlist();
+      
+      if (inWishlist) {
+        await wishListService.removeProductFromWishList(productId);
+        Alert.alert('Thành công', 'Đã xóa khỏi danh sách yêu thích');
+      } else {
+        await wishListService.addProducToWishList({ productId });
+        Alert.alert('Thành công', 'Đã thêm vào danh sách yêu thích');
+      }
+      
+      await loadWishlist();
+    } catch (error: any) {
+      console.error('Wishlist error:', error);
+      Alert.alert('Lỗi', error?.response?.data?.message || 'Không thể thao tác danh sách yêu thích');
+    } finally {
+      setIsWishlistLoading(false);
+    }
+  };
 
   // Load questions
   const loadQuestions = async (slug: string, page: number) => {
@@ -356,6 +436,19 @@ export default function ProductDetailScreen() {
           
           <Pressable className="bg-red-500 w-10 h-10 rounded-lg items-center justify-center">
             <SearchIcon size={20} color="white" />
+          </Pressable>
+          
+          {/* Wishlist Button */}
+          <Pressable 
+            className="ml-2 bg-gray-100 w-10 h-10 rounded-lg items-center justify-center"
+            onPress={handleToggleWishlist}
+            disabled={isWishlistLoading || !selectedVariant}
+          >
+            <HeartIcon 
+              size={20} 
+              color={isInWishlist() ? "#EF4444" : "#6B7280"}
+              fill={isInWishlist() ? "#EF4444" : "none"}
+            />
           </Pressable>
         </HStack>
       </Box>

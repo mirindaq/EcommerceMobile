@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import LoadingScreen from '../components/loading-screen';
 import { TextEncoder, TextDecoder } from 'text-encoding';
 import 'react-native-get-random-values';
-// PHẢI GÁN VÀO GLOBAL
+
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 

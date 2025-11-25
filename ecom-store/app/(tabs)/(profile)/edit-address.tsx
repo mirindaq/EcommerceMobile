@@ -223,7 +223,7 @@ export default function EditAddressScreen() {
             className="flex-row items-center justify-between p-4 border-b border-gray-200"
           >
             <Text className="text-gray-800 flex-1 pr-2">
-              {selectedWard ? selectedWard.name : "Chọn Tỉnh/Huyện/Xã"}
+              {selectedWard ? selectedWard.name : "Chọn Tỉnh/Xã"}
             </Text>
             <ChevronRightIcon size={20} color="#9CA3AF" />
           </TouchableOpacity>

@@ -7,13 +7,13 @@ export type WishList = {
 
 export type WishListResponse = {
   id: number;
-  productVariantId: number;
+  productId: number; // Backend uses productId, not productVariantId
   productName: string;
+  productSlug?: string; // Backend has productSlug
   productImage: string;
   price: number;
-  sku: string;
 };
 
 export type WishListRequest = {
-  productVariantId: number;
+  productId: number; // Backend expect productId, not productVariantId
 };

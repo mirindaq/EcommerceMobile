@@ -138,7 +138,7 @@ export default function RankingScreen() {
     <SafeAreaView className="flex-1 bg-[#0A327C]" edges={["top"]}>
       {/* Header */}
       <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
-        <Pressable onPress={() => router.back()}>
+        <Pressable onPress={() => router.push("/(tabs)/(profile)/profile")}>
           <Icon as={ArrowLeftIcon} size="lg" color="#000" />
         </Pressable>
         <Text className="flex-1 text-center font-semibold text-lg text-black">

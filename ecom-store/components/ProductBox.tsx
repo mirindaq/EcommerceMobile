@@ -5,8 +5,8 @@ import { WishListResponse } from "@/types/wishList.type";
 import AuthStorageUtil from "@/utils/authStorage.util";
 import { useRouter } from "expo-router";
 import { HeartIcon, StarIcon } from "lucide-react-native";
-import React, { useMemo } from "react";
-import { Image } from "react-native";
+import React, { useMemo, useState } from "react";
+import { Animated, Image } from "react-native";
 
 interface ProductBoxProps {
   product?: Product;
@@ -26,6 +26,7 @@ export default function ProductBox({
   onRemove,
 }: ProductBoxProps) {
   const router = useRouter();
+  const [heartScale] = useState(new Animated.Value(1));
 
   // Format price helper
   const formatPrice = (price: number) => {
@@ -46,10 +47,12 @@ export default function ProductBox({
   const productPrice =
     (isWishlistScreen && wishItem?.price) || firstVariant?.price || 0;
   const productVariantId =
-    (isWishlistScreen && wishItem?.productVariantId) ||
+    (isWishlistScreen && null) || // Wishlist screen doesn't use variantId
     firstVariant?.id ||
     null;
-  const productSlug = product?.slug;
+  // Backend uses productId, not productVariantId
+  const productId = (isWishlistScreen && wishItem?.productId) || product?.id || null;
+  const productSlug = (isWishlistScreen && wishItem?.productSlug) || product?.slug;
   const productImage =
     (isWishlistScreen && wishItem?.productImage) ||
     product?.thumbnail ||
@@ -72,10 +75,13 @@ export default function ProductBox({
     product?.rating && product.rating > 0 ? product.rating.toFixed(1) : null;
 
   const handleProductPress = () => {
-    if (productSlug) {
-      router.push(`/product-detail?slug=${productSlug}`);
-    } else {
-      console.log("Cannot navigate: No product slug found.");
+    // Nếu là wishlist screen, dùng productSlug từ wishItem
+    const slug = isWishlistScreen && wishItem?.productSlug 
+      ? wishItem.productSlug 
+      : productSlug;
+    
+    if (slug) {
+      router.push(`/product-detail?slug=${slug}`);
     }
   };
 
@@ -86,54 +92,68 @@ export default function ProductBox({
       return false;
     }
 
-    if (!productVariantId) return false;
+    // Backend stores by Product, not ProductVariant
+    if (!productId) return false;
 
-    return wishListItems.some(
-      (item) => item.productVariantId === productVariantId
-    );
-  }, [isWishlistScreen, wishListItems, productVariantId]);
+    // Check if productId matches (backend response has productId field)
+    return wishListItems.some((item) => item.productId === productId);
+  }, [isWishlistScreen, wishListItems, productId]);
 
   const handleToggleWishlist = async (e: any) => {
     e.stopPropagation();
 
-    if (!productVariantId) {
-      console.log("Không tìm thấy biến thể sản phẩm.");
+    // Animation effect khi click
+    Animated.sequence([
+      Animated.spring(heartScale, {
+        toValue: 1.3,
+        useNativeDriver: true,
+        tension: 300,
+        friction: 3,
+      }),
+      Animated.spring(heartScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 300,
+        friction: 3,
+      }),
+    ]).start();
+
+    // Backend uses productId, not productVariantId
+    // Nếu là wishlist screen, lấy productId từ wishItem
+    const targetProductId = isWishlistScreen && wishItem?.productId 
+      ? wishItem.productId 
+      : productId;
+
+    if (!targetProductId) {
       return;
     }
 
     if (isWishlistScreen) {
       if (onRemove) {
-        await onRemove(productVariantId);
-        console.log(
-          "Removed from wishlist (from Favorite Screen):",
-          productVariantId
-        );
+        await onRemove(targetProductId);
       }
       return;
     }
 
     const isAuthenticated = await AuthStorageUtil.isAuthenticated();
     if (!isAuthenticated) {
-      console.log("Người dùng chưa đăng nhập, không thể thao tác Wishlist.");
       return;
     }
 
     try {
       if (isFavorite) {
-        await wishListService.removeProductFromWishList(productVariantId);
-        console.log("Removed from wishlist:", productVariantId);
+        await wishListService.removeProductFromWishList(targetProductId);
       } else {
         await wishListService.addProducToWishList({
-          productVariantId: productVariantId,
+          productId: targetProductId,
         });
-        console.log("Added to wishlist:", productVariantId);
       }
 
       if (onWishlistChange) {
         await onWishlistChange();
       }
     } catch (error: any) {
-      console.error("Wishlist error:", error);
+      // Silent error handling
     }
   };
 
@@ -164,18 +184,33 @@ export default function ProductBox({
           </Box>
         )}
 
-        <Pressable
-          className="absolute top-2 right-2 bg-white/80 backdrop-blur-sm rounded-full p-1.5 shadow-sm"
-          onPress={handleToggleWishlist}
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            transform: [{ scale: heartScale }],
+          }}
         >
-          <Icon
-            as={HeartIcon}
-            size="sm"
-            className={
-              isFavorite ? "text-red-500 fill-red-500" : "text-gray-600"
-            }
-          />
-        </Pressable>
+          <Pressable
+            className={`rounded-full p-2 shadow-lg ${
+              isFavorite ? "bg-red-50" : "bg-white"
+            }`}
+            onPress={handleToggleWishlist}
+            style={{
+              borderWidth: 1,
+              borderColor: isFavorite ? "#EF4444" : "#E5E7EB",
+            }}
+          >
+            <Icon
+              as={HeartIcon}
+              size="md"
+              className={
+                isFavorite ? "text-red-600 fill-red-600" : "text-gray-700"
+              }
+            />
+          </Pressable>
+        </Animated.View>
       </Box>
 
       <VStack className="p-3 justify-between flex-1 gap-1">
@@ -201,11 +236,17 @@ export default function ProductBox({
         <VStack className="mt-2">
           <HStack className="items-baseline gap-1">
             <Text className="text-red-600 font-bold text-base">
-              {firstVariant ? formatPrice(firstVariant.price) : "Liên hệ"}
+              {isWishlistScreen && wishItem?.price
+                ? formatPrice(wishItem.price)
+                : firstVariant
+                ? formatPrice(firstVariant.price)
+                : "Liên hệ"}
             </Text>
           </HStack>
 
-          {firstVariant &&
+          {/* Hiển thị giá cũ nếu có (chỉ cho product, không có trong wishItem) */}
+          {!isWishlistScreen &&
+            firstVariant &&
             firstVariant.oldPrice > 0 &&
             firstVariant.price < firstVariant.oldPrice && (
               <Text className="text-gray-400 text-xs line-through">

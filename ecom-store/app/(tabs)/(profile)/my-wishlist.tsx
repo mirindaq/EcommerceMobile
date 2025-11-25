@@ -1,11 +1,12 @@
 import ProductBox from "@/components/ProductBox";
-import { Box, HStack, SafeAreaView, Text } from "@/components/ui";
+import { Box, HStack, Pressable, SafeAreaView, Text, VStack } from "@/components/ui";
 import { useHideTabBar } from "@/hooks/use-hide-tab-bar";
 import { wishListService } from "@/services/wishList.service";
 import { WishListResponse } from "@/types/wishList.type";
 import { useRouter } from "expo-router";
+import { ArrowLeftIcon, HeartIcon, ShoppingCartIcon } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 export default function FavoriteProductsScreen() {
   const router = useRouter();
@@ -18,9 +19,9 @@ export default function FavoriteProductsScreen() {
     try {
       setLoading(true);
       const data = await wishListService.getMyWishList();
-      setWishList(data || []);
+      // Đảm bảo data luôn là một mảng
+      setWishList(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error fetching wishlist:", error);
       setWishList([]);
     } finally {
       setLoading(false);
@@ -31,15 +32,16 @@ export default function FavoriteProductsScreen() {
     loadWishList();
   }, [loadWishList]);
 
-  const handleRemoveFromWishlist = async (productVariantId: number) => {
+  const handleRemoveFromWishlist = async (productId: number) => {
     try {
       const updatedList = await wishListService.removeProductFromWishList(
-        productVariantId
+        productId
       );
-      setWishList(updatedList || []);
-      console.log("Removed from wishlist:", productVariantId);
+      // Đảm bảo updatedList luôn là một mảng
+      setWishList(Array.isArray(updatedList) ? updatedList : []);
     } catch (error) {
-      console.error("Error removing from wishlist:", error);
+      // Reload wishlist nếu có lỗi
+      loadWishList();
     }
   };
 
@@ -59,32 +61,52 @@ export default function FavoriteProductsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
-      {/* Header (GIỮ NGUYÊN) */}
-      <Box className="bg-white px-4 py-3 border-b border-gray-200 z-10">
-        {/* ... */}
-      </Box>
+      {/* Header - Đồng nhất với các trang profile khác */}
+      <HStack className="items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <Pressable onPress={handleGoBack}>
+          <ArrowLeftIcon size={24} color="#000" />
+        </Pressable>
+        <Text className="text-lg font-semibold">Danh sách yêu thích</Text>
+        <View style={{ width: 24 }} />
+      </HStack>
+
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
         {/* Thông báo số lượng sản phẩm */}
-        <Box className="p-4 bg-white border-b border-gray-200">
-          <Text className="text-gray-700 text-sm font-medium">
-            Bạn có **{wishList.length}** sản phẩm trong danh sách yêu thích.
-          </Text>
-        </Box>
+        {wishList.length > 0 && (
+          <Box className="p-4 bg-white border-b border-gray-200">
+            <Text className="text-gray-700 text-sm font-medium">
+              Bạn có <Text className="font-bold text-red-600">{wishList.length}</Text> sản phẩm trong danh sách yêu thích.
+            </Text>
+          </Box>
+        )}
+
         <Box className="px-4 py-4">
           {wishList.length === 0 ? (
-            <Text className="text-gray-500 text-center mt-10">
-              Danh sách yêu thích của bạn đang trống.
-            </Text>
+            <VStack className="items-center justify-center py-20 px-4">
+              <Box className="w-24 h-24 bg-red-50 rounded-full items-center justify-center mb-4">
+                <HeartIcon size={48} color="#EF4444" />
+              </Box>
+              <Text className="text-gray-900 font-bold text-lg mb-2 text-center">
+                Chưa có sản phẩm yêu thích
+              </Text>
+              <Text className="text-gray-500 text-center text-sm mb-6">
+                Hãy thêm sản phẩm vào danh sách yêu thích để dễ dàng tìm lại sau
+              </Text>
+              <Pressable
+                onPress={() => router.push("/(tabs)")}
+                className="bg-red-600 px-6 py-3 rounded-lg flex-row items-center"
+              >
+                <ShoppingCartIcon size={20} color="white" />
+                <Text className="text-white font-semibold ml-2">Tiếp tục mua sắm</Text>
+              </Pressable>
+            </VStack>
           ) : (
             <HStack space="md" className="flex-wrap justify-between">
               {wishList.map((wishItem) => (
                 <Box key={wishItem.id} style={{ width: "48%" }}>
                   <ProductBox
-                    // Truyền dữ liệu WishListResponse qua prop `wishItem`
                     wishItem={wishItem}
-                    // Đánh dấu đây là màn hình WishList để ProductBox biết cách hiển thị
                     isWishlistScreen={true}
-                    // Truyền hàm xóa
                     onRemove={handleRemoveFromWishlist}
                   />
                 </Box>
