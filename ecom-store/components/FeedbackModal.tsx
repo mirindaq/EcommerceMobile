@@ -1,21 +1,23 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  SafeAreaView,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  Alert,
-  ActivityIndicator,
-  ScrollView,
-  Image,
-} from "react-native";
-import { XIcon, StarIcon, ImageIcon, Trash2Icon } from "lucide-react-native";
-import * as ImagePicker from "expo-image-picker";
 import { feedbackService } from "@/services/feedback.service";
 import { uploadService } from "@/services/upload.service";
 import type { CreateFeedbackRequest } from "@/types/feedback.type";
+import * as ImagePicker from "expo-image-picker";
+import { ImageIcon, StarIcon, Trash2Icon, XIcon } from "lucide-react-native";
+import React, { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface FeedbackModalProps {
   visible: boolean;
@@ -127,6 +129,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       <View className="flex-row justify-center gap-2 my-4">
         {[1, 2, 3, 4, 5].map((star) => (
           <TouchableOpacity
+            activeOpacity={1}
             key={star}
             onPress={() => setRating(star)}
             disabled={loading}
@@ -150,10 +153,14 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
       transparent={true}
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-black/50 justify-end">
-        <View className="bg-white rounded-t-3xl max-h-[80%]">
-          <SafeAreaView>
-            {/* Header */}
+      <View className="flex-1 bg-black/50">
+        {/* Dùng KeyboardAvoidingView để đẩy nội dung lên khi mở bàn phím */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+          className="flex-1 justify-end w-full"
+        >
+          <View className="bg-white rounded-t-3xl max-h-[90%] w-full">
+            {/* --- HEADER --- */}
             <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-200">
               <Text className="text-lg font-semibold flex-1">
                 Đánh giá sản phẩm
@@ -163,6 +170,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
               </TouchableOpacity>
             </View>
 
+            {/* --- BODY (SCROLLABLE) --- */}
             <ScrollView className="px-4" showsVerticalScrollIndicator={false}>
               {/* Product Name */}
               <View className="py-3 border-b border-gray-200">
@@ -206,7 +214,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
               </View>
 
               {/* Images */}
-              <View className="py-4">
+              <View className="py-4 mb-4">
                 <Text className="text-sm font-medium mb-2">
                   Hình ảnh (tùy chọn, tối đa 5 ảnh)
                 </Text>
@@ -256,28 +264,31 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({
                   </TouchableOpacity>
                 )}
               </View>
-
-              {/* Submit Button */}
-              <View className="pb-4">
-                <TouchableOpacity
-                  className={`rounded-lg py-3 ${
-                    loading ? "bg-gray-400" : "bg-red-600"
-                  }`}
-                  onPress={handleSubmit}
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <ActivityIndicator color="#FFF" />
-                  ) : (
-                    <Text className="text-white text-center font-semibold text-base">
-                      Gửi đánh giá
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </View>
             </ScrollView>
-          </SafeAreaView>
-        </View>
+
+            {/* --- FOOTER (FIXED) --- */}
+            {/* Đưa nút bấm ra ngoài ScrollView và thêm SafeAreaView/Padding */}
+            <View className="p-4 border-t border-gray-200 bg-white">
+              <TouchableOpacity
+                className={`rounded-lg py-3 ${
+                  loading ? "bg-gray-400" : "bg-red-600"
+                }`}
+                onPress={handleSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <Text className="text-white text-center font-semibold text-base">
+                    Gửi đánh giá
+                  </Text>
+                )}
+              </TouchableOpacity>
+              {/* Spacer cho dòng iPhone X trở lên */}
+              <SafeAreaView />
+            </View>
+          </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
