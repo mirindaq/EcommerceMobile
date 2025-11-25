@@ -60,7 +60,6 @@ spring:
   ai:
     google:
       genai:
-        project-id: ecommerce-mobile
         api-key: ${GEMINI_KEY}
         chat:
           options:
